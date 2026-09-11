@@ -1,0 +1,663 @@
+// Prisma Schema for MAX ELECTRIC VIỆT NAM (MEVN WMS)
+// PostgreSQL Database Schema for Industrial Switchboard Production & Warehouse Management
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ---------------------------------------------------------
+// 1. AUTHENTICATION & USERS (5-8 Internal Users)
+// ---------------------------------------------------------
+
+enum Role {
+  ADMIN          // Quản lý / Ban Giám Đốc
+  THU_KHO        // Thủ kho (Kho Điện, Kho Đồng)
+  MUA_HANG       // Phòng Mua Hàng
+  KY_THUAT       // Phòng Kỹ Thuật (Lập BOM)
+  SAN_XUAT       // Đội Sản Xuất Lắp Ráp
+  SALE_ADMIN     // Kinh Doanh / Sale Admin
+  KE_TOAN        // Kế Toán Đối Chiếu Kho
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  username     String    @unique
+  passwordHash String    @map("password_hash")
+  fullName     String    @map("full_name")
+  phone        String?
+  role         Role      @default(THU_KHO)
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // Quan hệ
+  ordersCreated       Order[]                @relation("OrderCreatedBy")
+  bomsSubmitted       Bom[]                  @relation("BomSubmittedBy")
+  bomsVerified        Bom[]                  @relation("BomVerifiedBy")
+  posCreated          PurchaseOrder[]        @relation("PoCreatedBy")
+  grnsCreated         GoodsReceiptNote[]     @relation("GrnCreatedBy")
+  gdnsCreated         GoodsDispatchNote[]    @relation("GdnCreatedBy")
+  gdnsApproved        GoodsDispatchNote[]    @relation("GdnApprovedBy")
+  returnsCreated      StockReturnNote[]      @relation("ReturnCreatedBy")
+  stocktakesConducted Stocktake[]            @relation("StocktakeConductedBy")
+  stocktakesApproved  Stocktake[]            @relation("StocktakeApprovedBy")
+  pickupRegistrations PickupRegistration[]   @relation("PickupRegisteredBy")
+
+  @@map("users")
+}
+
+// ---------------------------------------------------------
+// 2. MASTER DATA (Kho, Vật tư, Đơn vị tính, Quy đổi)
+// ---------------------------------------------------------
+
+model Warehouse {
+  id              String         @id @default(uuid())
+  code            String         @unique // KHO_DIEN, KHO_DONG, KHO_CACH_LY
+  name            String         // Kho Vật tư Điện (Tầng 1), Kho Đồng (Xưởng A), Kho Hàng Lỗi
+  address         String?
+  description     String?
+  isScrapLocation Boolean        @default(false) @map("is_scrap_location")
+  isActive        Boolean        @default(true) @map("is_active")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  // Quan hệ
+  stockBalances   StockBalance[]
+  defaultSkus     Sku[]          @relation("DefaultWarehouse")
+  bomItems        BomItem[]
+  grns            GoodsReceiptNote[]
+  gdns            GoodsDispatchNote[]
+  returns         StockReturnNote[]
+  stocktakes      Stocktake[]
+  transactions    StockTransaction[]
+  reservations    StockReservation[]
+
+  @@map("warehouses")
+}
+
+model Uom {
+  id          String          @id @default(uuid())
+  code        String          @unique // MET, CAI, KG, CUON, THUNG, CAY, TUI
+  name        String          // Mét, Cái, Kilogram, Cuộn, Thùng, Cây, Túi
+  description String?
+  createdAt   DateTime        @default(now()) @map("created_at")
+
+  // Quan hệ
+  skusBaseUom      Sku[]           @relation("BaseUom")
+  fromConversions  UomConversion[] @relation("FromUom")
+  toConversions    UomConversion[] @relation("ToUom")
+  poItems          PurchaseOrderItem[]
+  grnItems         GoodsReceiptItem[]
+
+  @@map("uoms")
+}
+
+model Sku {
+  id                 String          @id @default(uuid())
+  code               String          @unique // Mã SKU định danh duy nhất
+  name               String          // Tên vật tư thiết bị
+  specification      String?         // Quy cách kỹ thuật (vd: 3P 100A 36kA, Cu/PVC 1x50mm2)
+  category           String?         // Nhóm vật tư (vd: Aptomat, Dây cáp, Thanh cái, Phụ kiện)
+  baseUomId          String          @map("base_uom_id")
+  defaultWarehouseId String          @map("default_warehouse_id")
+  minStockAlert      Decimal         @default(0) @db.Decimal(12, 4) @map("min_stock_alert") // Tồn tối thiểu cảnh báo
+  averageCost        Decimal         @default(0) @db.Decimal(15, 2) @map("average_cost")    // Giá vốn bình quân gia quyền
+  isActive           Boolean         @default(true) @map("is_active")
+  createdAt          DateTime        @default(now()) @map("created_at")
+  updatedAt          DateTime        @updatedAt @map("updated_at")
+
+  // Quan hệ
+  baseUom            Uom             @relation("BaseUom", fields: [baseUomId], references: [id])
+  defaultWarehouse   Warehouse       @relation("DefaultWarehouse", fields: [defaultWarehouseId], references: [id])
+  conversions        UomConversion[]
+  stockBalances      StockBalance[]
+  bomItems           BomItem[]
+  poItems            PurchaseOrderItem[]
+  grnItems           GoodsReceiptItem[]
+  gdnItems           GoodsDispatchItem[]
+  returnItems        StockReturnItem[]
+  stocktakeItems     StocktakeItem[]
+  transactions       StockTransaction[]
+  reservations       StockReservation[]
+
+  @@map("skus")
+}
+
+model UomConversion {
+  id             String   @id @default(uuid())
+  skuId          String   @map("sku_id")
+  fromUomId      String   @map("from_uom_id") // ĐVT mua (vd: Cuộn)
+  toUomId        String   @map("to_uom_id")   // ĐVT cơ sở (vd: Mét)
+  conversionRate Decimal  @db.Decimal(12, 4)  @map("conversion_rate") // 1 Cuộn = 100 Mét -> Rate = 100
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  sku            Sku      @relation(fields: [skuId], references: [id], onDelete: Cascade)
+  fromUom        Uom      @relation("FromUom", fields: [fromUomId], references: [id])
+  toUom          Uom      @relation("ToUom", fields: [toUomId], references: [id])
+
+  @@unique([skuId, fromUomId, toUomId])
+  @@map("uom_conversions")
+}
+
+model StockBalance {
+  id               String    @id @default(uuid())
+  skuId            String    @map("sku_id")
+  warehouseId      String    @map("warehouse_id")
+  quantityPhysical Decimal   @default(0) @db.Decimal(12, 4) @map("quantity_physical") // Tồn thực tế
+  quantityReserved Decimal   @default(0) @db.Decimal(12, 4) @map("quantity_reserved") // Tồn đã giữ chỗ
+  binLocation      String?   @map("bin_location")                                     // Vị trí kệ/ngăn (Kệ A1, Tầng 2)
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+
+  sku              Sku       @relation(fields: [skuId], references: [id], onDelete: Cascade)
+  warehouse        Warehouse @relation(fields: [warehouseId], references: [id])
+
+  @@unique([skuId, warehouseId])
+  @@map("stock_balances")
+}
+
+// ---------------------------------------------------------
+// 3. ORDER, PANEL & BILL OF MATERIALS (BOM)
+// ---------------------------------------------------------
+
+enum OrderStatus {
+  MOI_NHAN            // 1. Sale chốt đơn, thông báo nhóm
+  CHO_BOM             // 2. Chờ kỹ thuật gửi file BOM & Lắp ráp
+  DANG_DOI_CHIEU_TON  // 3. Kho đang đối chiếu tồn (SLA 2-4h)
+  DA_GIU_CHO          // 4. Kho xác nhận BOM hợp lệ -> Khóa giữ chỗ
+  CHO_MUA             // 5. Thiếu hàng -> Mua hàng tạo PO
+  DA_NHAP_KHO         // 6. Hàng mua đã về, nhập kho & bổ sung giữ chỗ
+  SAN_SANG_XUAT       // 7. Đủ 100% vật tư theo BOM hoặc theo Tủ
+  DA_XUAT_MOT_PHAN    // 8. Đã xuất 1 phần theo tủ/vật tư có sẵn
+  HOAN_TAT            // 9. Đã xuất đủ toàn bộ BOM cho sản xuất
+  DA_HUY              // Đơn hàng bị hủy
+}
+
+model Order {
+  id                 String               @id @default(uuid())
+  code               String               @unique // Mã Đơn hàng / Mã Dự án (vd: DH-2026-088)
+  title              String               // Tên công trình / Tủ điện dự án
+  customerName       String               @map("customer_name")
+  saleAdminId        String               @map("sale_admin_id")
+  status             OrderStatus          @default(MOI_NHAN)
+  targetDeliveryDate DateTime?            @map("target_delivery_date")
+  note               String?
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+
+  saleAdmin          User                 @relation("OrderCreatedBy", fields: [saleAdminId], references: [id])
+  panels             OrderPanel[]
+  boms               Bom[]
+  purchaseOrders     PurchaseOrder[]
+  goodsDispatchNotes GoodsDispatchNote[]
+  stockReturnNotes   StockReturnNote[]
+  pickupRegistrations PickupRegistration[]
+  reservations       StockReservation[]
+
+  @@map("orders")
+}
+
+model OrderPanel {
+  id                 String               @id @default(uuid())
+  orderId            String               @map("order_id")
+  code               String               // Mã Tủ (vd: TU-MSB-01, TU-DB-01)
+  name               String               // Tên tủ (Tủ phân phối chính, Tủ chiếu sáng)
+  description        String?
+  panelType          String?              @map("panel_type") // MSB, DB, ATS, Tụ Bù...
+  createdAt          DateTime             @default(now()) @map("created_at")
+
+  order              Order                @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  boms               Bom[]
+  goodsDispatchNotes GoodsDispatchNote[]
+  stockReturnNotes   StockReturnNote[]
+  pickupRegistrations PickupRegistration[]
+  reservations       StockReservation[]
+
+  @@unique([orderId, code])
+  @@map("order_panels")
+}
+
+enum BomStatus {
+  DRAFT       // Kỹ thuật đang soạn thảo
+  SUBMITTED   // Đã gửi lên hệ thống (bắt đầu tính SLA đối chiếu)
+  VERIFIED    // Kho đã đối chiếu & giữ chỗ thành công
+  REVISED     // Đã bị thay thế bởi Revision mới
+  CANCELLED   // Đã hủy
+}
+
+model Bom {
+  id               String       @id @default(uuid())
+  orderId          String       @map("order_id")
+  panelId          String?      @map("panel_id") // Null nếu là BOM chung cho cả đơn
+  version          Int          @default(1)      // Phiên bản BOM (1, 2, 3...)
+  status           BomStatus    @default(SUBMITTED)
+  submittedById    String       @map("submitted_by_id")
+  verifiedById     String?      @map("verified_by_id")
+  submittedAt      DateTime     @default(now()) @map("submitted_at")
+  verifiedAt       DateTime?    @map("verified_at")
+  notes            String?
+  createdAt        DateTime     @default(now()) @map("created_at")
+  updatedAt        DateTime     @updatedAt @map("updated_at")
+
+  order            Order        @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  panel            OrderPanel?  @relation(fields: [panelId], references: [id])
+  submittedBy      User         @relation("BomSubmittedBy", fields: [submittedById], references: [id])
+  verifiedBy       User?        @relation("BomVerifiedBy", fields: [verifiedById], references: [id])
+  items            BomItem[]
+
+  @@unique([orderId, panelId, version])
+  @@map("boms")
+}
+
+enum BomItemStatus {
+  PENDING               // Chờ đối chiếu tồn
+  RESERVED              // Đã giữ chỗ đủ 100%
+  PO_REQUESTED          // Thiếu hàng, đã sinh yêu cầu PO
+  PARTIALLY_DISPATCHED  // Đã xuất 1 phần
+  COMPLETED             // Đã xuất đủ 100%
+}
+
+model BomItem {
+  id                 String             @id @default(uuid())
+  bomId              String             @map("bom_id")
+  skuId              String             @map("sku_id")
+  warehouseId        String             @map("warehouse_id") // Kho phụ trách xuất
+  quantityRequired   Decimal            @db.Decimal(12, 4) @map("quantity_required")   // Định mức BOM
+  quantityReserved   Decimal            @default(0) @db.Decimal(12, 4) @map("quantity_reserved")   // Đã giữ chỗ
+  quantityDispatched Decimal            @default(0) @db.Decimal(12, 4) @map("quantity_dispatched") // Đã xuất thực tế
+  quantityPendingPo  Decimal            @default(0) @db.Decimal(12, 4) @map("quantity_pending_po")  // Đang chờ PO mua
+  status             BomItemStatus      @default(PENDING)
+  note               String?
+
+  bom                Bom                @relation(fields: [bomId], references: [id], onDelete: Cascade)
+  sku                Sku                @relation(fields: [skuId], references: [id])
+  warehouse          Warehouse          @relation(fields: [warehouseId], references: [id])
+  reservations       StockReservation[]
+  poItems            PurchaseOrderItem[]
+  grnItems           GoodsReceiptItem[]
+  gdnItems           GoodsDispatchItem[]
+
+  @@map("bom_items")
+}
+
+model StockReservation {
+  id          String     @id @default(uuid())
+  orderId     String     @map("order_id")
+  panelId     String?    @map("panel_id")
+  bomItemId   String     @map("bom_item_id")
+  skuId       String     @map("sku_id")
+  warehouseId String     @map("warehouse_id")
+  quantity    Decimal    @db.Decimal(12, 4)
+  isActive    Boolean    @default(true) @map("is_active")
+  reservedAt  DateTime   @default(now()) @map("reserved_at")
+  releasedAt  DateTime?  @map("released_at")
+
+  order       Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  panel       OrderPanel? @relation(fields: [panelId], references: [id])
+  bomItem     BomItem    @relation(fields: [bomItemId], references: [id], onDelete: Cascade)
+  sku         Sku        @relation(fields: [skuId], references: [id])
+  warehouse   Warehouse  @relation(fields: [warehouseId], references: [id])
+
+  @@map("stock_reservations")
+}
+
+// ---------------------------------------------------------
+// 4. PROCUREMENT (Nhà cung cấp & Đơn mua hàng PO)
+// ---------------------------------------------------------
+
+model Supplier {
+  id            String          @id @default(uuid())
+  code          String          @unique // NCC-LS, NCC-SCHNEIDER, NCC-CADIVI
+  name          String          // Tên nhà cung cấp
+  contactPerson String?         @map("contact_person")
+  phone         String?
+  email         String?
+  address       String?
+  isActive      Boolean         @default(true) @map("is_active")
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  purchaseOrders PurchaseOrder[]
+
+  @@map("suppliers")
+}
+
+enum PoStatus {
+  DRAFT               // Mới tạo bản nháp
+  ORDERED             // Đã gửi đặt hàng NCC
+  PARTIALLY_RECEIVED  // Đã về 1 phần hàng
+  COMPLETED           // Đã nhập kho đủ 100%
+  CANCELLED           // Đã hủy đơn
+}
+
+model PurchaseOrder {
+  id                   String              @id @default(uuid())
+  code                 String              @unique // PO-2026-0012
+  supplierId           String              @map("supplier_id")
+  orderId              String?             @map("order_id") // Null nếu mua gom tồn kho chung
+  createdById          String              @map("created_by_id")
+  status               PoStatus            @default(DRAFT)
+  expectedDeliveryDate DateTime?           @map("expected_delivery_date")
+  actualDeliveryDate   DateTime?           @map("actual_delivery_date")
+  totalAmount          Decimal             @default(0) @db.Decimal(15, 2) @map("total_amount")
+  note                 String?
+  createdAt            DateTime            @default(now()) @map("created_at")
+  updatedAt            DateTime            @updatedAt @map("updated_at")
+
+  supplier             Supplier            @relation(fields: [supplierId], references: [id])
+  order                Order?              @relation(fields: [orderId], references: [id])
+  createdBy            User                @relation("PoCreatedBy", fields: [createdById], references: [id])
+  items                PurchaseOrderItem[]
+  goodsReceiptNotes    GoodsReceiptNote[]
+
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id                   String            @id @default(uuid())
+  poId                 String            @map("po_id")
+  skuId                String            @map("sku_id")
+  bomItemId            String?           @map("bom_item_id") // Gắn với dòng BOM cần mua bù
+  purchasingUomId      String            @map("purchasing_uom_id") // ĐVT khi mua (vd: Cuộn)
+  quantityPurchased    Decimal           @db.Decimal(12, 4) @map("quantity_purchased")
+  baseQuantityExpected Decimal           @db.Decimal(12, 4) @map("base_quantity_expected") // Đã nhân hệ số quy đổi
+  baseQuantityReceived Decimal           @default(0) @db.Decimal(12, 4) @map("base_quantity_received")
+  unitPrice            Decimal           @db.Decimal(15, 2) @map("unit_price") // Đơn giá theo ĐVT Mua
+  lineTotal            Decimal           @db.Decimal(15, 2) @map("line_total")
+
+  po                   PurchaseOrder     @relation(fields: [poId], references: [id], onDelete: Cascade)
+  sku                  Sku               @relation(fields: [skuId], references: [id])
+  bomItem              BomItem?          @relation(fields: [bomItemId], references: [id])
+  purchasingUom        Uom               @relation(fields: [purchasingUomId], references: [id])
+  grnItems             GoodsReceiptItem[]
+
+  @@map("purchase_order_items")
+}
+
+// ---------------------------------------------------------
+// 5. INBOUND, OUTBOUND, SHIFT & RETURNS
+// ---------------------------------------------------------
+
+enum GrnType {
+  PO_RECEIPT             // Nhập kho hàng mua từ NCC theo PO
+  INITIAL_STOCK          // Nạp tồn kho đầu kỳ
+  RETURN_FROM_PRODUCTION // Nhập trả lại từ sản xuất
+  STOCKTAKE_ADJUSTMENT   // Điều chỉnh tăng sau kiểm kê
+}
+
+model GoodsReceiptNote {
+  id           String             @id @default(uuid())
+  code         String             @unique // PNK-2026-0045
+  grnType      GrnType            @default(PO_RECEIPT) @map("grn_type")
+  poId         String?            @map("po_id")
+  warehouseId  String             @map("warehouse_id")
+  createdById  String             @map("created_by_id")
+  receivedAt   DateTime           @default(now()) @map("received_at")
+  documentRef  String?            @map("document_ref") // Số hóa đơn / Phiếu giao hàng của NCC
+  note         String?
+  createdAt    DateTime           @default(now()) @map("created_at")
+
+  po           PurchaseOrder?     @relation(fields: [poId], references: [id])
+  warehouse    Warehouse          @relation(fields: [warehouseId], references: [id])
+  createdBy    User               @relation("GrnCreatedBy", fields: [createdById], references: [id])
+  items        GoodsReceiptItem[]
+  transactions StockTransaction[]
+
+  @@map("goods_receipt_notes")
+}
+
+model GoodsReceiptItem {
+  id             String             @id @default(uuid())
+  grnId          String             @map("grn_id")
+  poItemId       String?            @map("po_item_id")
+  bomItemId      String?            @map("bom_item_id") // Auto-reserve vào BOM này nếu có
+  skuId          String             @map("sku_id")
+  purchasingUomId String            @map("purchasing_uom_id")
+  quantity       Decimal            @db.Decimal(12, 4) // Số lượng theo ĐVT Mua
+  conversionRate Decimal            @default(1) @db.Decimal(12, 4) @map("conversion_rate")
+  baseQuantity   Decimal            @db.Decimal(12, 4) @map("base_quantity") // Số lượng quy đổi về Base UoM
+  unitPrice      Decimal            @db.Decimal(15, 2) @map("unit_price")    // Đơn giá nhập theo ĐVT Mua
+  baseUnitCost   Decimal            @db.Decimal(15, 2) @map("base_unit_cost")// Đơn giá nhập quy đổi về Base UoM
+  lineTotal      Decimal            @db.Decimal(15, 2) @map("line_total")
+  note           String?
+
+  grn            GoodsReceiptNote   @relation(fields: [grnId], references: [id], onDelete: Cascade)
+  poItem         PurchaseOrderItem? @relation(fields: [poItemId], references: [id])
+  bomItem        BomItem?           @relation(fields: [bomItemId], references: [id])
+  sku            Sku                @relation(fields: [skuId], references: [id])
+  purchasingUom  Uom                @relation(fields: [purchasingUomId], references: [id])
+
+  @@map("goods_receipt_items")
+}
+
+enum ShiftType {
+  CA_SANG     // 09:00 - 11:00 (Hạn chót đăng ký: 15:30 chiều hôm trước)
+  CA_CHIEU    // 15:00 - 16:30 (Hạn chót đăng ký: 09:00 sáng cùng ngày)
+}
+
+enum PickupStatus {
+  REGISTERED  // Sản xuất đã gửi đăng ký
+  STAGED      // Kho đã soạn xong gom hàng
+  DISPATCHED  // Đã xuất kho bàn giao
+  CANCELLED   // Đã hủy đăng ký
+}
+
+model PickupRegistration {
+  id             String              @id @default(uuid())
+  code           String              @unique // DKLH-2026-012
+  orderId        String              @map("order_id")
+  panelId        String?             @map("panel_id")
+  shiftType      ShiftType           @map("shift_type")
+  pickupDate     DateTime            @db.Date @map("pickup_date")
+  registeredById String              @map("registered_by_id")
+  status         PickupStatus        @default(REGISTERED)
+  isComplyKpi    Boolean             @default(true) @map("is_comply_kpi") // Đăng ký trước hạn chót quy định
+  registeredAt   DateTime            @default(now()) @map("registered_at")
+  note           String?
+
+  order          Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  panel          OrderPanel?         @relation(fields: [panelId], references: [id])
+  registeredBy   User                @relation("PickupRegisteredBy", fields: [registeredById], references: [id])
+  dispatchNotes  GoodsDispatchNote[]
+
+  @@map("pickup_registrations")
+}
+
+enum GdnStatus {
+  DRAFT       // Thủ kho lập phiếu
+  APPROVED    // Quản lý đã duyệt xuất
+  DISPATCHED  // Đã bàn giao & ký nhận điện tử
+  CANCELLED   // Đã hủy
+}
+
+model GoodsDispatchNote {
+  id                     String              @id @default(uuid())
+  code                   String              @unique // PXK-BOM-01 mẫu chuẩn
+  orderId                String              @map("order_id")
+  panelId                String?             @map("panel_id")
+  pickupRegistrationId   String?             @map("pickup_registration_id")
+  warehouseId            String              @map("warehouse_id")
+  shiftType              ShiftType           @map("shift_type")
+  isOutOfShift           Boolean             @default(false) @map("is_out_of_shift")
+  outOfShiftReason       String?             @map("out_of_shift_reason")
+  isEmergency            Boolean             @default(false) @map("is_emergency")
+  emergencyApproverName  String?             @map("emergency_approver_name")
+  createdById            String              @map("created_by_id")
+  approvedById           String?             @map("approved_by_id")
+  approvedAt             DateTime?           @map("approved_at")
+  receiverName           String              @map("receiver_name") // Đại diện sản xuất nhận hàng
+  receiverRole           String              @default("Đội Sản Xuất Lắp Ráp Tủ Điện") @map("receiver_role")
+  status                 GdnStatus           @default(DRAFT)
+  dispatchedAt           DateTime?           @map("dispatched_at")
+  note                   String?
+  createdAt              DateTime            @default(now()) @map("created_at")
+
+  order                  Order               @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  panel                  OrderPanel?         @relation(fields: [panelId], references: [id])
+  pickupRegistration     PickupRegistration? @relation(fields: [pickupRegistrationId], references: [id])
+  warehouse              Warehouse           @relation(fields: [warehouseId], references: [id])
+  createdBy              User                @relation("GdnCreatedBy", fields: [createdById], references: [id])
+  approvedBy             User?               @relation("GdnApprovedBy", fields: [approvedById], references: [id])
+  items                  GoodsDispatchItem[]
+  transactions           StockTransaction[]
+
+  @@map("goods_dispatch_notes")
+}
+
+model GoodsDispatchItem {
+  id           String            @id @default(uuid())
+  gdnId        String            @map("gdn_id")
+  bomItemId    String            @map("bom_item_id")
+  skuId        String            @map("sku_id")
+  quantityBom  Decimal           @db.Decimal(12, 4) @map("quantity_bom")    // Số lượng theo BOM
+  quantityReal Decimal           @db.Decimal(12, 4) @map("quantity_real")   // Số lượng thực xuất
+  unitCost     Decimal           @default(0) @db.Decimal(15, 2) @map("unit_cost") // Giá vốn xuất kho
+  note         String?           // Ghi chú / Tình trạng vật tư
+
+  gdn          GoodsDispatchNote @relation(fields: [gdnId], references: [id], onDelete: Cascade)
+  bomItem      BomItem           @relation(fields: [bomItemId], references: [id])
+  sku          Sku               @relation(fields: [skuId], references: [id])
+
+  @@map("goods_dispatch_items")
+}
+
+model StockReturnNote {
+  id           String            @id @default(uuid())
+  code         String            @unique // PTK-2026-0009
+  orderId      String            @map("order_id")
+  panelId      String?           @map("panel_id")
+  warehouseId  String            @map("warehouse_id")
+  isDefective  Boolean           @default(false) @map("is_defective") // True nếu là hàng hỏng/phế liệu
+  defectReason String?           @map("defect_reason")
+  createdById  String            @map("created_by_id")
+  returnedAt   DateTime          @default(now()) @map("returned_at")
+  note         String?
+  createdAt    DateTime          @default(now()) @map("created_at")
+
+  order        Order             @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  panel        OrderPanel?       @relation(fields: [panelId], references: [id])
+  warehouse    Warehouse         @relation(fields: [warehouseId], references: [id])
+  createdBy    User              @relation("ReturnCreatedBy", fields: [createdById], references: [id])
+  items        StockReturnItem[]
+  transactions StockTransaction[]
+
+  @@map("stock_return_notes")
+}
+
+model StockReturnItem {
+  id           String          @id @default(uuid())
+  returnNoteId String          @map("return_note_id")
+  skuId        String          @map("sku_id")
+  quantity     Decimal         @db.Decimal(12, 4)
+  unitCost     Decimal         @default(0) @db.Decimal(15, 2) @map("unit_cost")
+  isReusable   Boolean         @default(true) @map("is_reusable") // Tái sử dụng được hay thanh lý
+  note         String?
+
+  returnNote   StockReturnNote @relation(fields: [returnNoteId], references: [id], onDelete: Cascade)
+  sku          Sku             @relation(fields: [skuId], references: [id])
+
+  @@map("stock_return_items")
+}
+
+// ---------------------------------------------------------
+// 6. STOCKTAKE & AUDIT LEDGER (Kiểm kê & Sổ cái kho)
+// ---------------------------------------------------------
+
+enum StocktakeType {
+  QUARTERLY // Kiểm kê định kỳ hằng quý
+  AD_HOC    // Kiểm kê đột xuất khi có chênh lệch
+}
+
+enum StocktakeStatus {
+  DRAFT     // Đang kiểm đếm
+  COMPLETED // Đã đối chiếu xong & cân đối kho
+  CANCELLED
+}
+
+model Stocktake {
+  id            String          @id @default(uuid())
+  code          String          @unique // PKK-2026-Q3
+  warehouseId   String          @map("warehouse_id")
+  stocktakeType StocktakeType   @default(QUARTERLY) @map("stocktake_type")
+  status        StocktakeStatus @default(DRAFT)
+  conductedById String          @map("conducted_by_id")
+  approvedById  String?         @map("approved_by_id")
+  conductedAt   DateTime        @default(now()) @map("conducted_at")
+  note          String?
+  createdAt     DateTime        @default(now()) @map("created_at")
+
+  warehouse     Warehouse       @relation(fields: [warehouseId], references: [id])
+  conductedBy   User            @relation("StocktakeConductedBy", fields: [conductedById], references: [id])
+  approvedBy    User?           @relation("StocktakeApprovedBy", fields: [approvedById], references: [id])
+  items         StocktakeItem[]
+
+  @@map("stocktakes")
+}
+
+model StocktakeItem {
+  id               String    @id @default(uuid())
+  stocktakeId      String    @map("stocktake_id")
+  skuId            String    @map("sku_id")
+  systemQuantity   Decimal   @db.Decimal(12, 4) @map("system_quantity")   // Số lượng sổ sách
+  physicalQuantity Decimal   @db.Decimal(12, 4) @map("physical_quantity") // Số lượng kiểm đếm thực tế
+  varianceQuantity Decimal   @db.Decimal(12, 4) @map("variance_quantity") // Lệch = Thực tế - Sổ sách
+  unitCost         Decimal   @default(0) @db.Decimal(15, 2) @map("unit_cost")
+  varianceAmount   Decimal   @default(0) @db.Decimal(15, 2) @map("variance_amount")
+  explanation      String?   // Giải trình lý do chênh lệch
+  isAdjusted       Boolean   @default(false) @map("is_adjusted") // Đã tạo bút toán điều chỉnh chưa
+
+  stocktake        Stocktake @relation(fields: [stocktakeId], references: [id], onDelete: Cascade)
+  sku              Sku       @relation(fields: [skuId], references: [id])
+
+  @@map("stocktake_items")
+}
+
+enum TransactionType {
+  INBOUND_PO
+  INBOUND_INITIAL
+  INBOUND_RETURN
+  INBOUND_ADJUSTMENT
+  OUTBOUND_BOM
+  OUTBOUND_SCRAP
+  OUTBOUND_ADJUSTMENT
+}
+
+model StockTransaction {
+  id              String            @id @default(uuid())
+  skuId           String            @map("sku_id")
+  warehouseId     String            @map("warehouse_id")
+  transactionType TransactionType   @map("transaction_type")
+  quantityChange  Decimal           @db.Decimal(12, 4) @map("quantity_change") // Dương (nhập), Âm (xuất)
+  quantityBefore  Decimal           @db.Decimal(12, 4) @map("quantity_before")
+  quantityAfter   Decimal           @db.Decimal(12, 4) @map("quantity_after")
+  unitCost        Decimal           @db.Decimal(15, 2) @map("unit_cost")
+  grnId           String?           @map("grn_id")
+  gdnId           String?           @map("gdn_id")
+  returnNoteId    String?           @map("return_note_id")
+  createdAt       DateTime          @default(now()) @map("created_at")
+
+  sku             Sku               @relation(fields: [skuId], references: [id])
+  warehouse       Warehouse         @relation(fields: [warehouseId], references: [id])
+  grn             GoodsReceiptNote? @relation(fields: [grnId], references: [id])
+  gdn             GoodsDispatchNote? @relation(fields: [gdnId], references: [id])
+  returnNote      StockReturnNote?  @relation(fields: [returnNoteId], references: [id])
+
+  @@map("stock_transactions")
+}
+
+model KpiLog {
+  id                String    @id @default(uuid())
+  metricCode        String    @map("metric_code") // KPI_BOM_RESPONSE_TIME, KPI_PICKUP_ON_TIME, KPI_DISPATCH_ACCURACY
+  referenceCode     String    @map("reference_code") // Mã Order / BOM / GDN
+  expectedTimestamp DateTime? @map("expected_timestamp")
+  actualTimestamp   DateTime  @default(now()) @map("actual_timestamp")
+  isCompliant       Boolean   @map("is_compliant")
+  deviationMinutes  Int?      @map("deviation_minutes")
+  details           String?
+  createdAt         DateTime  @default(now()) @map("created_at")
+
+  @@map("kpi_logs")
+}
