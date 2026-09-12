@@ -27,13 +27,16 @@ async function handleApiRequest(req, res, pathname, query) {
   // GET State (Real-time data directly from Supabase PostgreSQL)
   if (req.method === 'GET' && pathname === '/api/state') {
     try {
+      if (!process.env.DATABASE_URL) {
+        throw new Error('Chưa cài đặt biến môi trường DATABASE_URL trên Vercel. Vui lòng vào Vercel Dashboard -> Project -> Settings -> Environment Variables để cấu hình.');
+      }
       const data = await wmsService.getFullState();
       res.writeHead(200);
       res.end(JSON.stringify({ success: true, data }));
     } catch (err) {
       console.error('[API ERROR] /api/state:', err);
       res.writeHead(500);
-      res.end(JSON.stringify({ success: false, message: err.message }));
+      res.end(JSON.stringify({ success: false, message: err.message || 'Lỗi kết nối cơ sở dữ liệu Supabase' }));
     }
     return;
   }
