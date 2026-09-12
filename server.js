@@ -209,10 +209,14 @@ const server = http.createServer((req, res) => {
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`================================================================`);
-  console.log(`🚀 MEVN WMS (Hệ thống Quản lý Kho Tủ Điện) đang chạy tại:`);
-  console.log(`👉 http://localhost:${PORT}`);
-  console.log(`📡 Kết nối Database: Supabase Cloud PostgreSQL (Schema: mevn_wms)`);
-  console.log(`================================================================`);
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log(`================================================================`);
+    console.log(`🚀 MEVN WMS (Hệ thống Quản lý Kho Tủ Điện) đang chạy tại:`);
+    console.log(`👉 http://localhost:${PORT}`);
+    console.log(`📡 Kết nối Database: Supabase Cloud PostgreSQL (Schema: mevn_wms)`);
+    console.log(`================================================================`);
+  });
+}
+
+module.exports = server;
