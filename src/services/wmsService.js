@@ -11,141 +11,160 @@ class WmsService {
    * Lấy toàn bộ trạng thái dữ liệu thời gian thực từ Supabase PostgreSQL
    */
   async getFullState() {
-    // Execute sequentially on a single client connection to prevent Supabase session pool exhaustion (EMAXCONNSESSION)
-    const users = await prisma.user.findMany({ orderBy: { createdAt: 'asc' } });
-    const warehouses = await prisma.warehouse.findMany({ orderBy: { code: 'asc' } });
-    const uoms = await prisma.uom.findMany({ orderBy: { code: 'asc' } });
-    const skus = await prisma.sku.findMany({
-      include: {
-        conversions: { include: { fromUom: true, toUom: true } },
-        baseUom: true,
-        defaultWarehouse: true,
-      },
-      orderBy: { code: 'asc' },
-    });
-    const stockBalances = await prisma.stockBalance.findMany({
-      include: { sku: { include: { baseUom: true } }, warehouse: true },
-      orderBy: [{ warehouse: { code: 'asc' } }, { sku: { code: 'asc' } }],
-    });
-    const suppliers = await prisma.supplier.findMany({ orderBy: { code: 'asc' } });
-    const orders = await prisma.order.findMany({
-      include: {
-        panels: true,
-        saleAdmin: true,
-        boms: {
-          include: {
-            items: { include: { sku: { include: { baseUom: true } } } },
-            submittedBy: true,
-            verifiedBy: true,
+    // Chạy truy vấn gộp qua Prisma $transaction Batching: an toàn tuyệt đối trên 1 connection pooler và tối ưu thời gian phản hồi
+    const [
+      users,
+      warehouses,
+      uoms,
+      skus,
+      stockBalances,
+      suppliers,
+      orders,
+      boms,
+      purchaseOrders,
+      goodsReceiptNotes,
+      pickupRegistrations,
+      goodsDispatchNotes,
+      stockReturnNotes,
+      stocktakes,
+      kpiLogs,
+      stockTransactions,
+    ] = await prisma.$transaction([
+      prisma.user.findMany({ orderBy: { createdAt: 'asc' } }),
+      prisma.warehouse.findMany({ orderBy: { code: 'asc' } }),
+      prisma.uom.findMany({ orderBy: { code: 'asc' } }),
+      prisma.sku.findMany({
+        include: {
+          conversions: { include: { fromUom: true, toUom: true } },
+          baseUom: true,
+          defaultWarehouse: true,
+        },
+        orderBy: { code: 'asc' },
+      }),
+      prisma.stockBalance.findMany({
+        include: { sku: { include: { baseUom: true } }, warehouse: true },
+        orderBy: [{ warehouse: { code: 'asc' } }, { sku: { code: 'asc' } }],
+      }),
+      prisma.supplier.findMany({ orderBy: { code: 'asc' } }),
+      prisma.order.findMany({
+        include: {
+          panels: true,
+          saleAdmin: true,
+          boms: {
+            include: {
+              items: { include: { sku: { include: { baseUom: true } } } },
+              submittedBy: true,
+              verifiedBy: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    const boms = await prisma.bom.findMany({
-      include: {
-        order: true,
-        panel: true,
-        submittedBy: true,
-        verifiedBy: true,
-        items: {
-          include: {
-            sku: { include: { baseUom: true } },
-            warehouse: true,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.bom.findMany({
+        include: {
+          order: true,
+          panel: true,
+          submittedBy: true,
+          verifiedBy: true,
+          items: {
+            include: {
+              sku: { include: { baseUom: true } },
+              warehouse: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    const purchaseOrders = await prisma.purchaseOrder.findMany({
-      include: {
-        supplier: true,
-        order: true,
-        createdBy: true,
-        items: {
-          include: {
-            sku: { include: { baseUom: true } },
-            purchasingUom: true,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.purchaseOrder.findMany({
+        include: {
+          supplier: true,
+          order: true,
+          createdBy: true,
+          items: {
+            include: {
+              sku: { include: { baseUom: true } },
+              purchasingUom: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    const goodsReceiptNotes = await prisma.goodsReceiptNote.findMany({
-      include: {
-        po: { include: { supplier: true } },
-        warehouse: true,
-        createdBy: true,
-        items: {
-          include: {
-            sku: { include: { baseUom: true } },
-            purchasingUom: true,
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.goodsReceiptNote.findMany({
+        include: {
+          po: { include: { supplier: true } },
+          warehouse: true,
+          createdBy: true,
+          items: {
+            include: {
+              sku: { include: { baseUom: true } },
+              purchasingUom: true,
+            },
           },
         },
-      },
-      orderBy: { receivedAt: 'desc' },
-    });
-    const pickupRegistrations = await prisma.pickupRegistration.findMany({
-      include: {
-        order: true,
-        panel: true,
-        registeredBy: true,
-      },
-      orderBy: { registeredAt: 'desc' },
-    });
-    const goodsDispatchNotes = await prisma.goodsDispatchNote.findMany({
-      include: {
-        order: true,
-        panel: true,
-        warehouse: true,
-        createdBy: true,
-        approvedBy: true,
-        items: {
-          include: {
-            sku: { include: { baseUom: true } },
-            bomItem: true,
+        orderBy: { receivedAt: 'desc' },
+      }),
+      prisma.pickupRegistration.findMany({
+        include: {
+          order: true,
+          panel: true,
+          registeredBy: true,
+        },
+        orderBy: { registeredAt: 'desc' },
+      }),
+      prisma.goodsDispatchNote.findMany({
+        include: {
+          order: true,
+          panel: true,
+          warehouse: true,
+          createdBy: true,
+          approvedBy: true,
+          items: {
+            include: {
+              sku: { include: { baseUom: true } },
+              bomItem: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    const stockReturnNotes = await prisma.stockReturnNote.findMany({
-      include: {
-        order: true,
-        panel: true,
-        warehouse: true,
-        createdBy: true,
-        items: {
-          include: {
-            sku: { include: { baseUom: true } },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.stockReturnNote.findMany({
+        include: {
+          order: true,
+          panel: true,
+          warehouse: true,
+          createdBy: true,
+          items: {
+            include: {
+              sku: { include: { baseUom: true } },
+            },
           },
         },
-      },
-      orderBy: { returnedAt: 'desc' },
-    });
-    const stocktakes = await prisma.stocktake.findMany({
-      include: {
-        warehouse: true,
-        conductedBy: true,
-        approvedBy: true,
-        items: { include: { sku: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
-    const kpiLogs = await prisma.kpiLog.findMany({
-      orderBy: { actualTimestamp: 'desc' },
-    });
-    const stockTransactions = await prisma.stockTransaction.findMany({
-      include: {
-        sku: { include: { baseUom: true } },
-        warehouse: true,
-        grn: true,
-        gdn: true,
-        returnNote: true,
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 200,
-    });
+        orderBy: { returnedAt: 'desc' },
+      }),
+      prisma.stocktake.findMany({
+        include: {
+          warehouse: true,
+          conductedBy: true,
+          approvedBy: true,
+          items: { include: { sku: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.kpiLog.findMany({
+        orderBy: { actualTimestamp: 'desc' },
+      }),
+      prisma.stockTransaction.findMany({
+        include: {
+          sku: { include: { baseUom: true } },
+          warehouse: true,
+          grn: true,
+          gdn: true,
+          returnNote: true,
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 200,
+      }),
+    ]);
 
     // Normalize and serialize full state with frontend aliases and safe number conversions
     const normalizedUsers = users.map(u => DataNormalizer.normalizeUser(u));
