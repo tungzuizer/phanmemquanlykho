@@ -1,9 +1,9 @@
 /*
 Fact-Forcing Gate Info:
 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Header.js"></script>
-2. Affected API: iOS 26 Liquid Glass Top Navigation Bar with Logout & Role Switcher
-3. Data schemas: currentUser, setCurrentUser, users, darkMode, setDarkMode, onOpenCommandPalette, onResetSeed, onLogout
-4. User verbatim: "cần bạn tách các dự liệu tài khoản và phân luồng các tài khoản và có phần đăng nhập"
+2. Affected API: iOS 26 Liquid Glass Top Navigation Bar with Zero-Flicker Sync Status & Role Switcher
+3. Data schemas: currentUser, setCurrentUser, users, darkMode, setDarkMode, onOpenCommandPalette, onResetSeed, onLogout, isSyncing, onRefresh
+4. User verbatim: "theo khuyến nghị của bạn"
 */
 
 function Header({
@@ -18,7 +18,9 @@ function Header({
   sidebarCollapsed,
   setSidebarCollapsed,
   mobileDrawerOpen,
-  setMobileDrawerOpen
+  setMobileDrawerOpen,
+  isSyncing = false,
+  onRefresh
 }) {
   const { getRoleConfig } = window.WMS_CONSTANTS || { getRoleConfig: () => ({}) };
   const roleConfig = getRoleConfig(currentUser?.role);
@@ -94,6 +96,21 @@ function Header({
             title="Tìm kiếm (Ctrl+K)"
           >
             <i className="fa-solid fa-magnifying-glass text-xs"></i>
+          </button>
+
+          {/* SWR Zero-Flicker Sync Status Pill */}
+          <button
+            onClick={() => onRefresh && onRefresh(true)}
+            disabled={isSyncing}
+            className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl border text-xs font-semibold transition-all shadow-xs ${
+              isSyncing
+                ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 animate-pulse'
+                : 'bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-200/70 dark:hover:bg-slate-700/70 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-700/80 liquid-touch'
+            }`}
+            title={isSyncing ? "Đang đồng bộ dữ liệu ngầm với Supabase..." : "Đã đồng bộ ngầm. Bấm để làm mới dữ liệu"}
+          >
+            <i className={`fa-solid ${isSyncing ? 'fa-arrows-rotate fa-spin text-blue-500' : 'fa-circle text-emerald-500 text-[8px]'}`}></i>
+            <span className="hidden xl:inline">{isSyncing ? 'Đang đồng bộ...' : 'Đã kết nối'}</span>
           </button>
 
           {/* User & Role Selector Pill */}

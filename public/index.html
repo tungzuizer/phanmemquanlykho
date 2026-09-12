@@ -1,8 +1,8 @@
 <!--
 1. Importers/Callers: Direct browser entrypoint at http://localhost:3000/
-2. Affected API: Main React 18 Application Shell coordinating all domain components and state (/api/state, /api/auth/login, /api/auth/logout, /api/orders, /api/boms, /api/pos, /api/grns, /api/pickup-registrations, /api/gdns, /api/returns, /api/reset-seed).
-3. Data schemas: Full WMS application state from /api/state (orders, boms, purchaseOrders, goodsReceiptNotes, goodsDispatchNotes, pickupRegistrations, returnVouchers, stockBalances, stockTransactions, kpis, users, warehouses, bins, skus, uoms) + authUser session state in localStorage ('mevn_auth_user').
-4. User's verbatim instruction: "cần bạn tách các dự liệu tài khoản và phân luồng các tài khoản và có phần đăng nhập"
+2. Affected API: Main React 18 Application Shell coordinating all domain components, SWR zero-flicker background sync, and role permissions (/api/state, /api/auth/login, /api/auth/logout, /api/orders, /api/boms, /api/pos, /api/grns, /api/pickup-registrations, /api/gdns, /api/returns, /api/reset-seed).
+3. Data schemas: Full WMS application state from /api/state (orders, boms, purchaseOrders, goodsReceiptNotes, goodsDispatchNotes, pickupRegistrations, stockReturnNotes, stockBalances, stockTransactions, kpis, users, warehouses, skus, uoms) + localStorage snapshot cache ('mevn_wms_state_cache') + authUser session state ('mevn_auth_user').
+4. User's verbatim instruction: "theo khuyến nghị của bạn" / "bấm vô cái gì cũng bị Đang kết nối Supabase & Khởi động MEVN WMS Enterprise... hãy tìm phương án khắc phục thật sự"
 -->
 <!DOCTYPE html>
 <html lang="vi" class="h-full">
@@ -71,8 +71,24 @@
     const { useState, useEffect, useMemo, useCallback } = React;
 
     function App() {
-      const [data, setData] = useState(null);
-      const [loading, setLoading] = useState(true);
+      // 0. SWR Local State Snapshot Cache for instantaneous zero-flicker cold starts
+      const [data, setData] = useState(() => {
+        try {
+          const cached = localStorage.getItem('mevn_wms_state_cache');
+          return cached ? JSON.parse(cached) : null;
+        } catch (e) {
+          return null;
+        }
+      });
+      const [isInitialLoading, setIsInitialLoading] = useState(() => {
+        try {
+          const cached = localStorage.getItem('mevn_wms_state_cache');
+          return !cached;
+        } catch (e) {
+          return true;
+        }
+      });
+      const [isSyncing, setIsSyncing] = useState(false);
       const [fetchError, setFetchError] = useState(null);
       const [activeTab, setActiveTab] = useState('dashboard');
       const [currentUser, setCurrentUser] = useState(() => {
@@ -116,9 +132,13 @@
         setTimeout(() => setToast(null), 4000);
       }, []);
 
-      // Fetch Full System State from Supabase with AbortController Timeout (30s)
-      const fetchState = useCallback(async () => {
-        setLoading(true);
+      // Fetch Full System State with SWR Zero-Flicker Background Sync (Silent Revalidation)
+      const fetchState = useCallback(async (isSilent = false) => {
+        if (isSilent || data) {
+          setIsSyncing(true);
+        } else {
+          setIsInitialLoading(true);
+        }
         setFetchError(null);
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
@@ -134,6 +154,9 @@
           if (json.success) {
             setData(json.data);
             setFetchError(null);
+            try {
+              localStorage.setItem('mevn_wms_state_cache', JSON.stringify(json.data));
+            } catch (e) {}
             // Refresh currentUser profile if still authenticated
             setCurrentUser(prevUser => {
               if (prevUser && json.data.users) {
@@ -147,7 +170,7 @@
             });
           } else {
             const msg = json.message || 'Lỗi nạp dữ liệu từ máy chủ Supabase';
-            setFetchError(msg);
+            if (!data) setFetchError(msg);
             showToast(msg, 'error');
           }
         } catch (err) {
@@ -159,16 +182,17 @@
           } else if (err.message) {
             msg = err.message;
           }
-          setFetchError(msg);
+          if (!data) setFetchError(msg);
           showToast(msg, 'error');
         } finally {
-          setLoading(false);
+          setIsInitialLoading(false);
+          setIsSyncing(false);
         }
-      }, [showToast]);
+      }, [data, showToast]);
 
       useEffect(() => {
-        fetchState();
-      }, [fetchState]);
+        fetchState(false);
+      }, []);
 
       // Global Shortcut (Ctrl+K / Cmd+K)
       useEffect(() => {
@@ -195,7 +219,7 @@
           const firstTab = cfg?.allowedTabs?.[0] || 'dashboard';
           setActiveTab(firstTab);
         }
-        fetchState();
+        fetchState(true);
       };
 
       const handleLogout = async () => {
@@ -245,7 +269,7 @@
           if (json.success) {
             showToast('Đã tạo thành công Đơn Hàng mới!');
             setActiveModal(null);
-            fetchState();
+            fetchState(true);
           } else {
             showToast(json.message || 'Lỗi tạo đơn hàng', 'error');
           }
@@ -265,7 +289,7 @@
           if (json.success) {
             showToast('Đã nạp và phát hành BOM thành công!');
             setActiveModal(null);
-            fetchState();
+            fetchState(true);
           } else {
             showToast(json.message || 'Lỗi nạp BOM', 'error');
           }
@@ -284,7 +308,7 @@
           const json = await res.json();
           if (json.success) {
             showToast('Đã đối chiếu tồn & tự động khóa giữ chỗ vật tư thành công!');
-            fetchState();
+            fetchState(true);
           } else {
             showToast(json.message || 'Lỗi đối chiếu BOM', 'error');
           }
@@ -304,7 +328,7 @@
           if (json.success) {
             showToast('Đã phát hành Đơn Mua Hàng PO thành công!');
             setActiveModal(null);
-            fetchState();
+            fetchState(true);
           } else {
             showToast(json.message || 'Lỗi tạo PO', 'error');
           }
@@ -324,7 +348,7 @@
           if (json.success) {
             showToast('Đã tạo Phiếu Nhập Kho GRN & Tự động giữ chỗ thành công!');
             setActiveModal(null);
-            fetchState();
+            fetchState(true);
           } else {
             showToast(json.message || 'Lỗi tạo GRN', 'error');
           }
@@ -344,7 +368,7 @@
           if (json.success) {
             showToast('Đã gửi Đăng Ký Ca Lấy Vật Tư Mẫu 1!');
             setActiveModal(null);
-            fetchState();
+            fetchState(true);
           } else {
             showToast(json.message || 'Lỗi gửi đăng ký ca', 'error');
           }
@@ -364,7 +388,7 @@
           if (json.success) {
             showToast('Đã lập Phiếu Xuất Kho PXK-BOM-01 thành công!');
             setActiveModal(null);
-            fetchState();
+            fetchState(true);
           } else {
             showToast(json.message || 'Lỗi lập GDN', 'error');
           }
@@ -383,7 +407,7 @@
           const json = await res.json();
           if (json.success) {
             showToast('Đã duyệt Phiếu Xuất Kho GDN!');
-            fetchState();
+            fetchState(true);
           } else {
             showToast(json.message || 'Lỗi duyệt GDN', 'error');
           }
@@ -402,7 +426,7 @@
           const json = await res.json();
           if (json.success) {
             showToast('Thực xuất kho thành công! Đã trừ tồn và ghi Sổ cái bất biến.');
-            fetchState();
+            fetchState(true);
           } else {
             showToast(json.message || 'Lỗi thực xuất kho', 'error');
           }
@@ -422,7 +446,7 @@
           if (json.success) {
             showToast('Đã tạo Phiếu Nhập Trả / Thu hồi phế phẩm thành công!');
             setActiveModal(null);
-            fetchState();
+            fetchState(true);
           } else {
             showToast(json.message || 'Lỗi tạo phiếu nhập trả', 'error');
           }
@@ -571,7 +595,7 @@
         );
       }
 
-      // 2. If user is authenticated but data failed to fetch from Supabase
+      // 2. If user is authenticated but data failed to fetch from Supabase (and no cached state available)
       if (fetchError && !data) {
         return (
           <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white p-6 text-center">
@@ -582,7 +606,7 @@
             <p className="text-sm text-slate-400 max-w-md mb-6">{fetchError}</p>
             <div className="flex items-center gap-3">
               <button
-                onClick={fetchState}
+                onClick={() => fetchState(false)}
                 className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center gap-2 transition-all shadow-lg shadow-blue-500/30 cursor-pointer"
               >
                 <i className="fa-solid fa-rotate-right"></i>
@@ -600,8 +624,8 @@
         );
       }
 
-      // 3. If user is authenticated and data is loading for the first time
-      if (loading || !data) {
+      // 3. If user is authenticated and data is loading for the first time without any cache
+      if (!data && isInitialLoading) {
         return (
           <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white p-6 text-center">
             <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center font-black text-2xl shadow-xl shadow-blue-500/30 text-white mb-5 animate-pulse">
@@ -616,7 +640,7 @@
             </p>
             <div className="flex items-center gap-3">
               <button
-                onClick={fetchState}
+                onClick={() => fetchState(false)}
                 className="px-4 py-2 rounded-xl bg-blue-600/30 hover:bg-blue-600/50 border border-blue-500/40 text-blue-300 hover:text-white font-bold text-xs flex items-center gap-2 transition-all cursor-pointer"
               >
                 <i className="fa-solid fa-rotate-right"></i>
@@ -653,7 +677,7 @@
             <Header
               currentUser={currentUser}
               setCurrentUser={handleSwitchUser}
-              users={data.users || []}
+              users={data?.users || []}
               darkMode={darkMode}
               setDarkMode={setDarkMode}
               onOpenCommandPalette={() => setCommandPaletteOpen(true)}
@@ -663,6 +687,8 @@
               setSidebarCollapsed={setSidebarCollapsed}
               mobileDrawerOpen={mobileDrawerOpen}
               setMobileDrawerOpen={setMobileDrawerOpen}
+              isSyncing={isSyncing}
+              onRefresh={() => fetchState(true)}
             />
           )}
 
@@ -679,7 +705,7 @@
                 setMobileDrawerOpen={setMobileDrawerOpen}
                 currentUser={currentUser}
                 setCurrentUser={handleSwitchUser}
-                users={data.users || []}
+                users={data?.users || []}
                 darkMode={darkMode}
                 setDarkMode={setDarkMode}
                 onOpenCommandPalette={() => setCommandPaletteOpen(true)}
