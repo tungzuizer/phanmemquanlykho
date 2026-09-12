@@ -4,6 +4,7 @@
 // 4. User's Verbatim Instruction: "check lại logic cốt lõi cấm đươc fake dự liệu phải thật nghiệm ngặt về luồng dữ liệu và logic code và dữ liệu sẽ lưu trên database" and "dùng data base trên supabase"
 
 const prisma = require('../db');
+const DataNormalizer = require('./dataNormalizer');
 
 class WmsService {
   /**
@@ -31,7 +32,13 @@ class WmsService {
       include: {
         panels: true,
         saleAdmin: true,
-        boms: { include: { items: { include: { sku: { include: { baseUom: true } } } } } },
+        boms: {
+          include: {
+            items: { include: { sku: { include: { baseUom: true } } } },
+            submittedBy: true,
+            verifiedBy: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -129,108 +136,53 @@ class WmsService {
       orderBy: { actualTimestamp: 'desc' },
     });
     const stockTransactions = await prisma.stockTransaction.findMany({
-      include: { sku: true, warehouse: true },
+      include: {
+        sku: { include: { baseUom: true } },
+        warehouse: true,
+        grn: true,
+        gdn: true,
+        returnNote: true,
+      },
       orderBy: { createdAt: 'desc' },
-      take: 100,
+      take: 200,
     });
 
-    // Format UoM Conversions map and serialize Decimals for frontend
+    // Normalize and serialize full state with frontend aliases and safe number conversions
+    const normalizedUsers = users.map(u => DataNormalizer.normalizeUser(u));
+    const normalizedWarehouses = warehouses.map(w => DataNormalizer.normalizeWarehouse(w));
+    const normalizedUoms = uoms.map(u => DataNormalizer.normalizeUom(u));
+    const normalizedSkus = skus.map(s => DataNormalizer.normalizeSku(s));
+    const normalizedStockBalances = stockBalances.map(sb => DataNormalizer.normalizeStockBalance(sb, skus, warehouses));
+    const normalizedOrders = orders.map(o => DataNormalizer.normalizeOrder(o));
+    const normalizedBoms = boms.map(b => DataNormalizer.normalizeBom(b));
+    const normalizedPurchaseOrders = purchaseOrders.map(p => DataNormalizer.normalizePurchaseOrder(p));
+    const normalizedGoodsReceiptNotes = goodsReceiptNotes.map(g => DataNormalizer.normalizeGoodsReceiptNote(g));
+    const normalizedPickupRegistrations = pickupRegistrations.map(pr => DataNormalizer.normalizePickupRegistration(pr));
+    const normalizedGoodsDispatchNotes = goodsDispatchNotes.map(g => DataNormalizer.normalizeGoodsDispatchNote(g));
+    const normalizedStockReturnNotes = stockReturnNotes.map(r => DataNormalizer.normalizeStockReturnNote(r));
+    const normalizedStockTransactions = stockTransactions.map(t => DataNormalizer.normalizeStockTransaction(t));
+    const normalizedKpiLogs = kpiLogs.map(k => DataNormalizer.normalizeKpiLog(k));
+    const standardBins = DataNormalizer.getStandardBins(warehouses);
+
     return {
-      users,
-      warehouses,
-      uoms,
-      skus: skus.map(s => ({
-        ...s,
-        minStockAlert: Number(s.minStockAlert),
-        averageCost: Number(s.averageCost),
-        conversions: s.conversions.map(c => ({
-          fromUomId: c.fromUomId,
-          toUomId: c.toUomId,
-          conversionRate: Number(c.conversionRate),
-        })),
-      })),
-      stockBalances: stockBalances.map(sb => ({
-        id: sb.id,
-        skuId: sb.skuId,
-        warehouseId: sb.warehouseId,
-        quantityPhysical: Number(sb.quantityPhysical),
-        quantityReserved: Number(sb.quantityReserved),
-        binLocation: sb.binLocation || 'Kệ chính',
-      })),
-      suppliers,
-      orders: orders.map(o => ({
-        ...o,
-        targetDeliveryDate: o.targetDeliveryDate ? o.targetDeliveryDate.toISOString().split('T')[0] : null,
-      })),
-      boms: boms.map(b => ({
-        ...b,
-        items: b.items.map(i => ({
-          ...i,
-          quantityRequired: Number(i.quantityRequired),
-          quantityReserved: Number(i.quantityReserved),
-          quantityDispatched: Number(i.quantityDispatched),
-          quantityPendingPo: Number(i.quantityPendingPo),
-        })),
-      })),
-      purchaseOrders: purchaseOrders.map(p => ({
-        ...p,
-        totalAmount: Number(p.totalAmount),
-        expectedDeliveryDate: p.expectedDeliveryDate ? p.expectedDeliveryDate.toISOString().split('T')[0] : null,
-        items: p.items.map(i => ({
-          ...i,
-          quantityPurchased: Number(i.quantityPurchased),
-          baseQuantityExpected: Number(i.baseQuantityExpected),
-          baseQuantityReceived: Number(i.baseQuantityReceived),
-          unitPrice: Number(i.unitPrice),
-          lineTotal: Number(i.lineTotal),
-        })),
-      })),
-      goodsReceiptNotes: goodsReceiptNotes.map(g => ({
-        ...g,
-        items: g.items.map(i => ({
-          ...i,
-          quantity: Number(i.quantity),
-          conversionRate: Number(i.conversionRate),
-          baseQuantity: Number(i.baseQuantity),
-          unitPrice: Number(i.unitPrice),
-          baseUnitCost: Number(i.baseUnitCost),
-          lineTotal: Number(i.lineTotal),
-        })),
-      })),
-      pickupRegistrations: pickupRegistrations.map(pr => ({
-        ...pr,
-        pickupDate: pr.pickupDate ? pr.pickupDate.toISOString().split('T')[0] : null,
-      })),
-      goodsDispatchNotes: goodsDispatchNotes.map(g => ({
-        ...g,
-        items: g.items.map(i => ({
-          ...i,
-          quantityBom: Number(i.quantityBom),
-          quantityReal: Number(i.quantityReal),
-          unitCost: Number(i.unitCost),
-        })),
-      })),
-      stockReturnNotes: stockReturnNotes.map(r => ({
-        ...r,
-        items: r.items.map(i => ({
-          ...i,
-          quantity: Number(i.quantity),
-          unitCost: Number(i.unitCost),
-        })),
-      })),
-      stocktakes,
-      kpiLogs: kpiLogs.map(k => ({
-        ...k,
-        expectedTimestamp: k.expectedTimestamp ? k.expectedTimestamp.toISOString() : null,
-        actualTimestamp: k.actualTimestamp ? k.actualTimestamp.toISOString() : null,
-      })),
-      stockTransactions: stockTransactions.map(t => ({
-        ...t,
-        quantityChange: Number(t.quantityChange),
-        quantityBefore: Number(t.quantityBefore),
-        quantityAfter: Number(t.quantityAfter),
-        unitCost: Number(t.unitCost),
-      })),
+      users: normalizedUsers,
+      warehouses: normalizedWarehouses,
+      uoms: normalizedUoms,
+      skus: normalizedSkus,
+      stockBalances: normalizedStockBalances,
+      suppliers: suppliers,
+      orders: normalizedOrders,
+      boms: normalizedBoms,
+      purchaseOrders: normalizedPurchaseOrders,
+      goodsReceiptNotes: normalizedGoodsReceiptNotes,
+      pickupRegistrations: normalizedPickupRegistrations,
+      goodsDispatchNotes: normalizedGoodsDispatchNotes,
+      stockReturnNotes: normalizedStockReturnNotes,
+      returnVouchers: normalizedStockReturnNotes, // Dual-alias for ReturnsTab
+      stocktakes: stocktakes,
+      kpiLogs: normalizedKpiLogs,
+      stockTransactions: normalizedStockTransactions,
+      bins: standardBins, // Standard visual bins for InventoryTab Visual Map
     };
   }
 
