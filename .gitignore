@@ -1,0 +1,45 @@
+# Fact-Forcing Gate Info:
+# 1. Importers/Callers: Git CLI (git add, git status, git commit)
+# 2. Existing files: No .gitignore exists in repo root
+# 3. Data schemas: Standard gitignore syntax for excluding node_modules, .env secrets, and temp files
+# 4. User verbatim: "Filename too long error: unable to index file 'node_modules/...'"
+
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment variables & secrets (CRITICAL: Do NOT commit .env)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor & OS temporary files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Microsoft Office temporary lock files
+~$*.xlsx
+~$*.docx
+~$*.pptx
+
+# Temporary data stores
+data_store.json
+*.tmp

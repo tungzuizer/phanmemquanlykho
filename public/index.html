@@ -1,0 +1,770 @@
+<!--
+1. Importers/Callers: Direct browser entrypoint at http://localhost:3000/
+2. Affected API: Main React 18 Application Shell coordinating all domain components and state (/api/state, /api/auth/login, /api/auth/logout, /api/orders, /api/boms, /api/pos, /api/grns, /api/pickup-registrations, /api/gdns, /api/returns, /api/reset-seed).
+3. Data schemas: Full WMS application state from /api/state (orders, boms, purchaseOrders, goodsReceiptNotes, goodsDispatchNotes, pickupRegistrations, returnVouchers, stockBalances, stockTransactions, kpis, users, warehouses, bins, skus, uoms) + authUser session state in localStorage ('mevn_auth_user').
+4. User's verbatim instruction: "cần bạn tách các dự liệu tài khoản và phân luồng các tài khoản và có phần đăng nhập"
+-->
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEVN WMS - Quản Lý Kho & Cung Ứng Sản Xuất Tủ Điện Chuẩn ISO</title>
+
+  <!-- Tailwind CSS & FontAwesome -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Custom Design Tokens & Print Engine CSS -->
+  <link rel="stylesheet" href="/css/custom.css">
+
+  <!-- React 18, ReactDOM & Babel -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-full font-sans antialiased">
+  <div id="root"></div>
+
+  <!-- Domain Constants & Shared Helpers -->
+  <script type="text/babel" src="/js/dataConstants.js"></script>
+
+  <!-- Core Layout & Overlay Components -->
+  <script type="text/babel" src="/js/components/LoginScreen.js"></script>
+  <script type="text/babel" src="/js/components/Header.js"></script>
+  <script type="text/babel" src="/js/components/Sidebar.js"></script>
+  <script type="text/babel" src="/js/components/MobileBottomDock.js"></script>
+  <script type="text/babel" src="/js/components/CommandPalette.js"></script>
+  <script type="text/babel" src="/js/components/ActionInbox.js"></script>
+  <script type="text/babel" src="/js/components/OrderDrawer.js"></script>
+
+  <!-- Domain Tabs -->
+  <script type="text/babel" src="/js/components/Tabs/DashboardTab.js"></script>
+  <script type="text/babel" src="/js/components/Tabs/OrdersTab.js"></script>
+  <script type="text/babel" src="/js/components/Tabs/InventoryTab.js"></script>
+  <script type="text/babel" src="/js/components/Tabs/BomsTab.js"></script>
+  <script type="text/babel" src="/js/components/Tabs/PosTab.js"></script>
+  <script type="text/babel" src="/js/components/Tabs/GrnsTab.js"></script>
+  <script type="text/babel" src="/js/components/Tabs/DispatchTab.js"></script>
+  <script type="text/babel" src="/js/components/Tabs/ReturnsTab.js"></script>
+  <script type="text/babel" src="/js/components/Tabs/KpiTab.js"></script>
+  <script type="text/babel" src="/js/components/Tabs/LedgerTab.js"></script>
+
+  <!-- Modals & Print Preview Engine Suite -->
+  <script type="text/babel" src="/js/components/Modals.js"></script>
+
+  <!-- Root Application Orchestration -->
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useCallback } = React;
+
+    function App() {
+      const [data, setData] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [activeTab, setActiveTab] = useState('dashboard');
+      const [currentUser, setCurrentUser] = useState(() => {
+        try {
+          const saved = localStorage.getItem('mevn_auth_user');
+          return saved ? JSON.parse(saved) : null;
+        } catch (e) {
+          return null;
+        }
+      });
+      const [darkMode, setDarkMode] = useState(() => {
+        return localStorage.getItem('mevn_theme') === 'dark' ||
+          (!localStorage.getItem('mevn_theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      });
+      const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
+        return localStorage.getItem('mevn_sidebar_collapsed') === 'true';
+      });
+      const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+
+      // Overlay & Inspection States
+      const [selectedOrder, setSelectedOrder] = useState(null);
+      const [orderDrawerOpen, setOrderDrawerOpen] = useState(false);
+      const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
+      const [activeModal, setActiveModal] = useState(null); // 'ORDER' | 'BOM' | 'PO' | 'GRN' | 'PICKUP' | 'GDN' | 'RETURN' | 'PRINT'
+      const [printPreviewData, setPrintPreviewData] = useState(null);
+      const [toast, setToast] = useState(null);
+
+      // Sync dark mode class with root html
+      useEffect(() => {
+        document.documentElement.classList.toggle('dark', darkMode);
+        localStorage.setItem('mevn_theme', darkMode ? 'dark' : 'light');
+      }, [darkMode]);
+
+      // Sync sidebar state
+      useEffect(() => {
+        localStorage.setItem('mevn_sidebar_collapsed', sidebarCollapsed ? 'true' : 'false');
+      }, [sidebarCollapsed]);
+
+      const showToast = useCallback((msg, type = 'success') => {
+        setToast({ msg, type });
+        setTimeout(() => setToast(null), 4000);
+      }, []);
+
+      // Fetch Full System State from Supabase
+      const fetchState = useCallback(async () => {
+        try {
+          const res = await fetch('/api/state');
+          const json = await res.json();
+          if (json.success) {
+            setData(json.data);
+            // Refresh currentUser profile if still authenticated
+            setCurrentUser(prevUser => {
+              if (prevUser && json.data.users) {
+                const refreshed = json.data.users.find(u => u.id === prevUser.id || u.username === prevUser.username);
+                if (refreshed) {
+                  localStorage.setItem('mevn_auth_user', JSON.stringify(refreshed));
+                  return refreshed;
+                }
+              }
+              return prevUser;
+            });
+          } else {
+            showToast(json.message || 'Lỗi nạp dữ liệu từ máy chủ', 'error');
+          }
+        } catch (err) {
+          console.error('[API Fetch Error]:', err);
+          showToast('Không thể kết nối đến máy chủ WMS!', 'error');
+        } finally {
+          setLoading(false);
+        }
+      }, [showToast]);
+
+      useEffect(() => {
+        fetchState();
+      }, [fetchState]);
+
+      // Global Shortcut (Ctrl+K / Cmd+K)
+      useEffect(() => {
+        const handleKeyDown = (e) => {
+          if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            setCommandPaletteOpen(prev => !prev);
+          }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+      }, []);
+
+      // Auth & Role Handlers
+      const handleLoginSuccess = (user) => {
+        setCurrentUser(user);
+        try {
+          localStorage.setItem('mevn_auth_user', JSON.stringify(user));
+        } catch (e) {}
+        showToast(`Chào mừng ${user.fullName} (${user.role}) đăng nhập thành công!`);
+        const { isTabAllowed, getRoleConfig } = window.WMS_CONSTANTS || {};
+        if (isTabAllowed && !isTabAllowed(user, activeTab)) {
+          const cfg = getRoleConfig ? getRoleConfig(user.role) : null;
+          const firstTab = cfg?.allowedTabs?.[0] || 'dashboard';
+          setActiveTab(firstTab);
+        }
+      };
+
+      const handleLogout = async () => {
+        try {
+          await fetch('/api/auth/logout', { method: 'POST' });
+        } catch (e) {}
+        localStorage.removeItem('mevn_auth_user');
+        setCurrentUser(null);
+        showToast('Đã đăng xuất an toàn khỏi hệ thống!');
+      };
+
+      const handleSwitchUser = (user) => {
+        setCurrentUser(user);
+        if (user) {
+          try {
+            localStorage.setItem('mevn_auth_user', JSON.stringify(user));
+          } catch (e) {}
+          const { isTabAllowed, getRoleConfig } = window.WMS_CONSTANTS || {};
+          if (isTabAllowed && !isTabAllowed(user, activeTab)) {
+            const cfg = getRoleConfig ? getRoleConfig(user.role) : null;
+            const firstTab = cfg?.allowedTabs?.[0] || 'dashboard';
+            setActiveTab(firstTab);
+          }
+          showToast(`Đã chuyển sang tài khoản: ${user.fullName} (${user.role})`);
+        }
+      };
+
+      // Role Permission Guard
+      const checkPerm = useCallback((perm, actionName) => {
+        const { hasPermission } = window.WMS_CONSTANTS || {};
+        if (hasPermission && !hasPermission(currentUser, perm)) {
+          showToast(`Tài khoản (${currentUser?.role || 'Khách'}) không có quyền ${actionName}!`, 'error');
+          return false;
+        }
+        return true;
+      }, [currentUser, showToast]);
+
+      // API Handlers
+      const handleCreateOrder = async (payload) => {
+        try {
+          const res = await fetch('/api/orders', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast('Đã tạo thành công Đơn Hàng mới!');
+            setActiveModal(null);
+            fetchState();
+          } else {
+            showToast(json.message || 'Lỗi tạo đơn hàng', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      const handleCreateBom = async (payload) => {
+        try {
+          const res = await fetch(`/api/orders/${payload.orderId}/boms`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast('Đã nạp và phát hành BOM thành công!');
+            setActiveModal(null);
+            fetchState();
+          } else {
+            showToast(json.message || 'Lỗi nạp BOM', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      const handleVerifyBom = async (bomId) => {
+        try {
+          const res = await fetch(`/api/boms/${bomId}/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ verifiedById: currentUser?.id })
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast('Đã đối chiếu tồn & tự động khóa giữ chỗ vật tư thành công!');
+            fetchState();
+          } else {
+            showToast(json.message || 'Lỗi đối chiếu BOM', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      const handleCreatePo = async (payload) => {
+        try {
+          const res = await fetch('/api/pos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast('Đã phát hành Đơn Mua Hàng PO thành công!');
+            setActiveModal(null);
+            fetchState();
+          } else {
+            showToast(json.message || 'Lỗi tạo PO', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      const handleCreateGrn = async (payload) => {
+        try {
+          const res = await fetch('/api/grns', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast('Đã tạo Phiếu Nhập Kho GRN & Tự động giữ chỗ thành công!');
+            setActiveModal(null);
+            fetchState();
+          } else {
+            showToast(json.message || 'Lỗi tạo GRN', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      const handleCreatePickup = async (payload) => {
+        try {
+          const res = await fetch('/api/pickup-registrations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast('Đã gửi Đăng Ký Ca Lấy Vật Tư Mẫu 1!');
+            setActiveModal(null);
+            fetchState();
+          } else {
+            showToast(json.message || 'Lỗi gửi đăng ký ca', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      const handleCreateGdn = async (payload) => {
+        try {
+          const res = await fetch('/api/gdns', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast('Đã lập Phiếu Xuất Kho PXK-BOM-01 thành công!');
+            setActiveModal(null);
+            fetchState();
+          } else {
+            showToast(json.message || 'Lỗi lập GDN', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      const handleApproveGdn = async (gdnId) => {
+        try {
+          const res = await fetch(`/api/gdns/${gdnId}/approve`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ approvedById: currentUser?.id })
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast('Đã duyệt Phiếu Xuất Kho GDN!');
+            fetchState();
+          } else {
+            showToast(json.message || 'Lỗi duyệt GDN', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      const handleDispatchGdn = async (gdnId) => {
+        try {
+          const res = await fetch(`/api/gdns/${gdnId}/dispatch`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({})
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast('Thực xuất kho thành công! Đã trừ tồn và ghi Sổ cái bất biến.');
+            fetchState();
+          } else {
+            showToast(json.message || 'Lỗi thực xuất kho', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      const handleCreateReturn = async (payload) => {
+        try {
+          const res = await fetch('/api/returns', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const json = await res.json();
+          if (json.success) {
+            showToast('Đã tạo Phiếu Nhập Trả / Thu hồi phế phẩm thành công!');
+            setActiveModal(null);
+            fetchState();
+          } else {
+            showToast(json.message || 'Lỗi tạo phiếu nhập trả', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      const handleResetSeed = async () => {
+        if (!confirm('Bạn có chắc muốn khôi phục dữ liệu mẫu chuẩn MEVN vào Supabase PostgreSQL?')) return;
+        try {
+          const res = await fetch('/api/reset-seed', { method: 'POST' });
+          const json = await res.json();
+          if (json.success) {
+            setData(json.data);
+            showToast(json.message);
+          } else {
+            showToast(json.message || 'Lỗi khôi phục mẫu', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
+      const handleOpenPrintPreview = (type, doc) => {
+        setPrintPreviewData({ type, doc });
+        setActiveModal('PRINT');
+      };
+
+      const handleSelectOrder = (order) => {
+        setSelectedOrder(order);
+        setOrderDrawerOpen(true);
+      };
+
+      // Handler bundle with Role-Based Permission Guards
+      const handlers = useMemo(() => ({
+        onOpenOrderModal: () => {
+          if (checkPerm('CREATE_ORDER', 'Tạo Đơn Hàng mới')) setActiveModal('ORDER');
+        },
+        onOpenBomModal: (order) => {
+          if (checkPerm('SUBMIT_BOM', 'Nạp Bản Vẽ & Định Mức BOM')) {
+            if (order) setSelectedOrder(order);
+            setActiveModal('BOM');
+          }
+        },
+        onOpenPoModal: (order) => {
+          if (checkPerm('CREATE_PO', 'Phát Hành Đơn Mua Hàng PO')) {
+            if (order) setSelectedOrder(order);
+            setActiveModal('PO');
+          }
+        },
+        onOpenGrnModal: (po) => {
+          if (checkPerm('RECEIVE_GRN', 'Nhập Kho Hàng Về GRN')) setActiveModal('GRN');
+        },
+        onOpenPickupModal: (order) => {
+          if (checkPerm('REGISTER_PICKUP', 'Đăng Ký Ca Lấy Vật Tư')) {
+            if (order) setSelectedOrder(order);
+            setActiveModal('PICKUP');
+          }
+        },
+        onOpenGdnModal: (order) => {
+          if (checkPerm('APPROVE_GDN', 'Lập Phiếu Xuất Kho')) {
+            if (order) setSelectedOrder(order);
+            setActiveModal('GDN');
+          }
+        },
+        onOpenReturnModal: (order) => {
+          if (checkPerm('CREATE_RETURN', 'Nhập Trả / Phế Phẩm')) {
+            if (order) setSelectedOrder(order);
+            setActiveModal('RETURN');
+          }
+        },
+        onVerifyBom: (bomId) => {
+          if (checkPerm('VERIFY_BOM', 'Đối Chiếu & Khóa Giữ Chỗ BOM')) handleVerifyBom(bomId);
+        },
+        onApproveGdn: (gdnId) => {
+          if (checkPerm('APPROVE_GDN', 'Phê Duyệt Phiếu Xuất Kho GDN')) handleApproveGdn(gdnId);
+        },
+        onDispatchGdn: (gdnId) => {
+          if (checkPerm('DISPATCH_GDN', 'Thực Xuất Kho & Ký Nhận')) handleDispatchGdn(gdnId);
+        },
+      }), [checkPerm, handleVerifyBom, handleApproveGdn, handleDispatchGdn]);
+
+      // Real-time Badge Counts for Sidebar
+      const counts = useMemo(() => {
+        if (!data) return {};
+        const readyOrders = (data.orders || []).filter(o => o.status === 'SAN_SANG_XUAT').length;
+        const pendingPo = (data.orders || []).filter(o => o.status === 'CHO_MUA').length;
+        const pendingBom = (data.orders || []).filter(o => o.status === 'CHO_BOM' || o.status === 'MOI_NHAN').length;
+        return {
+          orders: (data.orders || []).length,
+          pos: pendingPo,
+          dispatch: readyOrders,
+          boms: pendingBom,
+          grns: (data.purchaseOrders || []).filter(p => p.status === 'CONFIRMED' || p.status === 'ORDERED').length,
+        };
+      }, [data]);
+
+      // Safe component resolution from window.WMS_COMPONENTS
+      const {
+        LoginScreen,
+        Header,
+        Sidebar,
+        MobileBottomDock,
+        CommandPalette,
+        OrderDrawer,
+        DashboardTab,
+        OrdersTab,
+        InventoryTab,
+        BomsTab,
+        PosTab,
+        GrnsTab,
+        DispatchTab,
+        ReturnsTab,
+        KpiTab,
+        LedgerTab,
+        Modals
+      } = window.WMS_COMPONENTS || {};
+
+      if (loading || !data) {
+        return (
+          <div className="flex flex-col items-center justify-center min-h-screen bg-slate-900 text-white">
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center font-black text-2xl shadow-xl shadow-blue-500/30 text-white mb-4 animate-pulse">
+              ME
+            </div>
+            <div className="flex items-center gap-2 text-sm font-bold text-slate-300">
+              <i className="fa-solid fa-spinner fa-spin text-blue-400"></i>
+              <span>Đang kết nối Supabase & Khởi động MEVN WMS Enterprise...</span>
+            </div>
+          </div>
+        );
+      }
+
+      // If user is not authenticated, render iOS 26 Liquid Glass Login Screen
+      if (!currentUser) {
+        return (
+          <div className="min-h-screen bg-slate-900">
+            {toast && (
+              <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-2xl text-white font-bold text-xs flex items-center gap-3 animate-fade-in transition-all border ${
+                toast.type === 'error'
+                  ? 'bg-red-600 border-red-500 shadow-red-500/20'
+                  : 'bg-emerald-600 border-emerald-500 shadow-emerald-500/20'
+              }`}>
+                <i className={`fa-solid ${toast.type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-check'} text-sm`}></i>
+                <span>{toast.msg}</span>
+              </div>
+            )}
+            {LoginScreen ? (
+              <LoginScreen
+                onLoginSuccess={handleLoginSuccess}
+                darkMode={darkMode}
+                setDarkMode={setDarkMode}
+              />
+            ) : (
+              <div className="flex items-center justify-center min-h-screen text-white font-bold">
+                Đang nạp module Đăng Nhập...
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+          {/* Toast Notification */}
+          {toast && (
+            <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-2xl text-white font-bold text-xs flex items-center gap-3 animate-fade-in transition-all border ${
+              toast.type === 'error'
+                ? 'bg-red-600 border-red-500 shadow-red-500/20'
+                : 'bg-emerald-600 border-emerald-500 shadow-emerald-500/20'
+            }`}>
+              <i className={`fa-solid ${toast.type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-check'} text-sm`}></i>
+              <span>{toast.msg}</span>
+            </div>
+          )}
+
+          {/* Top Enterprise Header */}
+          {Header && (
+            <Header
+              currentUser={currentUser}
+              setCurrentUser={handleSwitchUser}
+              users={data.users || []}
+              darkMode={darkMode}
+              setDarkMode={setDarkMode}
+              onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+              onResetSeed={handleResetSeed}
+              onLogout={handleLogout}
+              sidebarCollapsed={sidebarCollapsed}
+              setSidebarCollapsed={setSidebarCollapsed}
+              mobileDrawerOpen={mobileDrawerOpen}
+              setMobileDrawerOpen={setMobileDrawerOpen}
+            />
+          )}
+
+          {/* Workspace Body */}
+          <div className="flex-1 flex overflow-hidden">
+            {/* Multi-tier Collapsible Sidebar & Mobile Slide-Over Drawer */}
+            {Sidebar && (
+              <Sidebar
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                collapsed={sidebarCollapsed}
+                counts={counts}
+                mobileDrawerOpen={mobileDrawerOpen}
+                setMobileDrawerOpen={setMobileDrawerOpen}
+                currentUser={currentUser}
+                setCurrentUser={handleSwitchUser}
+                users={data.users || []}
+                darkMode={darkMode}
+                setDarkMode={setDarkMode}
+                onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+                onLogout={handleLogout}
+              />
+            )}
+
+            {/* Main Content Viewport */}
+            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 md:pb-8">
+              <div className="max-w-7xl mx-auto">
+                {activeTab === 'dashboard' && DashboardTab && (
+                  <DashboardTab
+                    data={data}
+                    currentUser={currentUser}
+                    handlers={handlers}
+                    onNavigateTab={setActiveTab}
+                    onSelectOrder={handleSelectOrder}
+                  />
+                )}
+
+                {activeTab === 'orders' && OrdersTab && (
+                  <OrdersTab
+                    data={data}
+                    currentUser={currentUser}
+                    handlers={handlers}
+                    onSelectOrder={handleSelectOrder}
+                    onOpenPrintPreview={handleOpenPrintPreview}
+                  />
+                )}
+
+                {activeTab === 'inventory' && InventoryTab && (
+                  <InventoryTab
+                    data={data}
+                    currentUser={currentUser}
+                  />
+                )}
+
+                {activeTab === 'boms' && BomsTab && (
+                  <BomsTab
+                    data={data}
+                    currentUser={currentUser}
+                    handlers={handlers}
+                    onSelectOrder={handleSelectOrder}
+                    onOpenPrintPreview={handleOpenPrintPreview}
+                  />
+                )}
+
+                {activeTab === 'pos' && PosTab && (
+                  <PosTab
+                    data={data}
+                    currentUser={currentUser}
+                    handlers={handlers}
+                    onOpenPrintPreview={handleOpenPrintPreview}
+                  />
+                )}
+
+                {activeTab === 'grns' && GrnsTab && (
+                  <GrnsTab
+                    data={data}
+                    currentUser={currentUser}
+                    handlers={handlers}
+                    onOpenPrintPreview={handleOpenPrintPreview}
+                  />
+                )}
+
+                {activeTab === 'dispatch' && DispatchTab && (
+                  <DispatchTab
+                    data={data}
+                    currentUser={currentUser}
+                    handlers={handlers}
+                    onOpenPrintPreview={handleOpenPrintPreview}
+                  />
+                )}
+
+                {activeTab === 'returns' && ReturnsTab && (
+                  <ReturnsTab
+                    data={data}
+                    currentUser={currentUser}
+                    handlers={handlers}
+                    onOpenPrintPreview={handleOpenPrintPreview}
+                  />
+                )}
+
+                {activeTab === 'kpi' && KpiTab && (
+                  <KpiTab
+                    data={data}
+                  />
+                )}
+
+                {activeTab === 'ledger' && LedgerTab && (
+                  <LedgerTab
+                    data={data}
+                    currentUser={currentUser}
+                  />
+                )}
+              </div>
+            </main>
+          </div>
+
+          {/* Universal Command Palette (Ctrl+K) */}
+          {CommandPalette && (
+            <CommandPalette
+              isOpen={commandPaletteOpen}
+              onClose={() => setCommandPaletteOpen(false)}
+              data={data}
+              onSelectOrder={handleSelectOrder}
+              onNavigateTab={setActiveTab}
+            />
+          )}
+
+          {/* iOS 26 Floating Liquid Bottom Dock for iPhone & Android */}
+          {MobileBottomDock && (
+            <MobileBottomDock
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              counts={counts}
+              data={data}
+              currentUser={currentUser}
+              onOpenCommandPalette={() => setCommandPaletteOpen(true)}
+            />
+          )}
+
+          {/* Slide-over Deep Order Inspector Drawer */}
+          {OrderDrawer && (
+            <OrderDrawer
+              isOpen={orderDrawerOpen}
+              onClose={() => setOrderDrawerOpen(false)}
+              order={selectedOrder}
+              data={data}
+              currentUser={currentUser}
+              handlers={handlers}
+              onOpenPrintPreview={handleOpenPrintPreview}
+            />
+          )}
+
+          {/* Modal Suite & ISO Print Engine */}
+          {Modals && (
+            <Modals
+              data={data}
+              currentUser={currentUser}
+              activeModal={activeModal}
+              onClose={() => setActiveModal(null)}
+              onSubmitOrder={handleCreateOrder}
+              onSubmitBom={handleCreateBom}
+              onSubmitPo={handleCreatePo}
+              onSubmitGrn={handleCreateGrn}
+              onSubmitPickup={handleCreatePickup}
+              onSubmitGdn={handleCreateGdn}
+              onSubmitReturn={handleCreateReturn}
+              printPreviewData={printPreviewData}
+            />
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

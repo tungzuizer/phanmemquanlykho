@@ -1,0 +1,29 @@
+{
+  "name": "mevn-warehouse-management",
+  "version": "1.0.0",
+  "description": "Hệ thống Quản lý Kho & Phối hợp Cung ứng Sản xuất Tủ điện - MAX ELECTRIC VIỆT NAM",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test_e2e_supabase.js"
+  },
+  "keywords": [
+    "warehouse",
+    "inventory",
+    "bom",
+    "switchboard",
+    "manufacturing",
+    "mevn"
+  ],
+  "author": "MAX ELECTRIC VIETNAM",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^7.10.0",
+    "dotenv": "^17.4.2",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "prisma": "^8.0.0-rc.13"
+  }
+}

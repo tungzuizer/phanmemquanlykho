@@ -1,0 +1,231 @@
+/*
+1. Importers/Callers: public/index.html via <link rel="stylesheet" href="/css/custom.css">
+2. Affected API: Global CSS styling, iOS 26 Liquid Glass design tokens, Mobile Safe Area insets, Bottom Sheet & Floating Dock animations.
+3. Data schemas: CSS variables, frosted glass classes, specular borders, squircle radii.
+4. User's verbatim instruction: "cải thiện cả giao diện trên iphone và adroi và thiết kế theo phong cách Giao Diện Ios 26 Liquid Glass" / "theo khuyến nghị của bạn"
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+:root {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* iOS Safe Area Tokens */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+
+  /* Light Liquid Glass Tokens */
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.55);
+  --glass-border: rgba(255, 255, 255, 0.85);
+  --glass-border-subtle: rgba(226, 232, 240, 0.8);
+  --glass-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+  --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.dark {
+  /* Dark Cosmic Liquid Glass Tokens */
+  --glass-bg: rgba(15, 23, 42, 0.78);
+  --glass-bg-subtle: rgba(30, 41, 59, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-border-subtle: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08) inset;
+  --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: var(--font-sans);
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Ambient Liquid Gradient Mesh Backgrounds */
+body {
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(at 10% 10%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+    radial-gradient(at 90% 15%, rgba(99, 102, 241, 0.07) 0px, transparent 50%),
+    radial-gradient(at 50% 95%, rgba(14, 165, 233, 0.06) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+.dark body, body.dark {
+  background-color: #030712;
+  background-image:
+    radial-gradient(at 5% 5%, rgba(30, 58, 138, 0.25) 0px, transparent 50%),
+    radial-gradient(at 95% 10%, rgba(88, 28, 135, 0.22) 0px, transparent 50%),
+    radial-gradient(at 50% 90%, rgba(14, 116, 144, 0.20) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Liquid Glass Cards & Panels */
+.liquid-glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.liquid-glass-subtle {
+  background: var(--glass-bg-subtle);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--glass-border-subtle);
+}
+
+.liquid-specular {
+  box-shadow: var(--glass-specular);
+}
+
+/* Floating Bottom Navigation Dock */
+.liquid-bottom-dock {
+  position: fixed;
+  bottom: calc(12px + var(--sab));
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 24px);
+  max-width: 480px;
+  z-index: 40;
+  background: var(--glass-bg);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.22), var(--glass-specular);
+  border-radius: 9999px;
+  padding: 6px 10px;
+}
+
+/* iOS Bottom Action Sheet */
+.liquid-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.liquid-sheet-content {
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(32px) saturate(200%);
+  -webkit-backdrop-filter: blur(32px) saturate(200%);
+  border-top: 1px solid var(--glass-border);
+  border-left: 1px solid var(--glass-border);
+  border-right: 1px solid var(--glass-border);
+  box-shadow: 0 -20px 50px -15px rgba(0, 0, 0, 0.35), var(--glass-specular);
+  padding-bottom: max(16px, var(--sab));
+  animation: slideUpSheet 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  overflow-y: auto;
+}
+
+.liquid-sheet-handle {
+  width: 36px;
+  height: 5px;
+  background: rgba(148, 163, 184, 0.5);
+  border-radius: 9999px;
+  margin: 10px auto 4px auto;
+}
+
+/* Interactive Elastic Feedback */
+.liquid-touch {
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease, opacity 0.15s ease;
+}
+.liquid-touch:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.4);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+}
+
+/* Animations */
+@keyframes slideUpSheet {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes slideInLeft {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+.animate-slide-in-left {
+  animation: slideInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-slide-in {
+  animation: slideInRight 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Print Styling for ISO Documents */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 11pt;
+  }
+  .no-print, header, aside, .liquid-bottom-dock, .toast-container, .command-palette {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .print-page {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 15mm !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+  table {
+    page-break-inside: auto;
+  }
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+}
