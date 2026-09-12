@@ -21,11 +21,11 @@
   "author": "MAX ELECTRIC VIETNAM",
   "license": "ISC",
   "dependencies": {
-    "@prisma/client": "^7.10.0",
+    "@prisma/client": "^6.4.1",
     "dotenv": "^17.4.2",
     "pg": "^8.23.0"
   },
   "devDependencies": {
-    "prisma": "^8.0.0-rc.13"
+    "prisma": "^6.4.1"
   }
 }
