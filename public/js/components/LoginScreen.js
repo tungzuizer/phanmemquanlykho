@@ -1,8 +1,9 @@
 /*
-1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/LoginScreen.js"></script>
-2. Affected API: Enterprise Industrial CAD Blueprint & 1-Click RBAC Authentication Terminal (window.WMS_COMPONENTS.LoginScreen).
-3. Data schemas: User credentials { usernameOrEmail, password }, 8 Demo roles partitioned in 4 factory divisions, live electrical & server telemetry.
-4. User's verbatim instruction: "trang đăng nhập quá xuất cần cải thiện lại cho chuyên nghiệp và xịn xò không thể 1 web do ai tạo lên được" / "theo khuyến nghị của bạn"
+Fact-Forcing Gate Info:
+1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/LoginScreen.js?v=2026.09.12"></script>
+2. Affected API: High-End Enterprise Split-Screen Authentication Portal (window.WMS_COMPONENTS.LoginScreen)
+3. Data schemas: User credentials { usernameOrEmail, password }, rememberMe, session telemetry
+4. User's verbatim instruction: "giao diện đnăg nhập phèn vậy và sao đăng nhập lại hiện mẫu đnăg nhập vậy phần đăng nhập chỉ có mục đnăg nhập thôi" / "theo khuyến nghị của bạn"
 */
 
 function LoginScreen({ onLoginSuccess, darkMode, setDarkMode }) {
@@ -11,24 +12,21 @@ function LoginScreen({ onLoginSuccess, darkMode, setDarkMode }) {
   const [showPassword, setShowPassword] = React.useState(false);
   const [rememberMe, setRememberMe] = React.useState(true);
   const [isLoading, setIsLoading] = React.useState(false);
-  const [quickLoginRole, setQuickLoginRole] = React.useState(null);
   const [errorMsg, setErrorMsg] = React.useState('');
-  const [selectedDivision, setSelectedDivision] = React.useState('ALL');
-  const [isDetailModalOpen, setIsDetailModalOpen] = React.useState(false);
+  const [showDemoDrawer, setShowDemoDrawer] = React.useState(false);
+  const [showHelpModal, setShowHelpModal] = React.useState(false);
 
-  // Industrial Control Room Live Telemetry
+  // Live Node Telemetry
   const [telemetry, setTelemetry] = React.useState({
     latency: 18,
     status: 'OPTIMAL',
-    voltage: '398.6',
+    voltage: '398.5',
     frequency: '50.02',
-    cosPhi: '0.98',
-    region: 'ap-northeast-1 (Tokyo)',
     ssl: 'TLS 1.3 / AES-256-GCM',
     engine: 'Prisma 6 + Supabase Pooler'
   });
 
-  // Polling telemetry
+  // Polling server health
   React.useEffect(() => {
     let isMounted = true;
     const checkTelemetry = async () => {
@@ -42,152 +40,36 @@ function LoginScreen({ onLoginSuccess, darkMode, setDarkMode }) {
             ...prev,
             latency: Math.max(dur, 12),
             status: json.status === 'healthy' ? 'OPTIMAL' : 'ONLINE',
-            voltage: (398 + (Math.random() * 1.5 - 0.75)).toFixed(1),
-            frequency: (50 + (Math.random() * 0.06 - 0.03)).toFixed(2)
+            voltage: (398 + (Math.random() * 1.2 - 0.6)).toFixed(1),
+            frequency: (50 + (Math.random() * 0.04 - 0.02)).toFixed(2)
           }));
         }
       } catch (e) {
         if (isMounted) {
-          setTelemetry(prev => ({ ...prev, status: 'CONNECTED', latency: 45 }));
+          setTelemetry(prev => ({ ...prev, status: 'ONLINE', latency: 35 }));
         }
       }
     };
     checkTelemetry();
-    const interval = setInterval(checkTelemetry, 10000);
+    const interval = setInterval(checkTelemetry, 15000);
     return () => { isMounted = false; clearInterval(interval); };
   }, []);
 
-  // 8 Enterprise Roles across 4 Factory Divisions
-  const DIVISIONS = [
-    {
-      id: 'EXEC',
-      name: 'Khối Điều Hành & Quản Trị',
-      code: 'DIV-01',
-      icon: 'fa-building-shield',
-      accentColor: 'from-amber-500 to-orange-600',
-      badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-      accounts: [
-        {
-          roleKey: 'ADMIN',
-          username: 'admin',
-          fullName: 'Ban Giám Đốc MEVN',
-          title: 'Hội Đồng Quản Trị & Ban Giám Đốc',
-          tag: 'Toàn Thẩm Quyền',
-          icon: 'fa-crown',
-          color: 'text-amber-400',
-          desc: 'Toàn quyền điều hành tối cao, phê duyệt vượt cấp, giám sát 10 phân hệ & 3 chỉ số ISO 9001.'
-        },
-        {
-          roleKey: 'SALE_ADMIN',
-          username: 'sale_admin',
-          fullName: 'Đỗ Thị Huệ',
-          title: 'Phòng QLDA & Kinh Doanh B2B',
-          tag: 'Quản Lý Dự Án',
-          icon: 'fa-briefcase',
-          color: 'text-sky-400',
-          desc: 'Khởi tạo hợp đồng dự án tủ điện, theo dõi tiến độ sản xuất và điều phối bàn giao khách hàng.'
-        }
-      ]
-    },
-    {
-      id: 'WAREHOUSE',
-      name: 'Khối Kho Vận & Vật Tư',
-      code: 'DIV-02',
-      icon: 'fa-warehouse',
-      accentColor: 'from-blue-500 to-cyan-600',
-      badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-      accounts: [
-        {
-          roleKey: 'THU_KHO',
-          username: 'thukho_dien',
-          fullName: 'Nguyễn Văn Khoa',
-          title: 'Kho Thiết Bị Điện (Tầng 1 - Khu A)',
-          tag: 'Thủ Kho Thiết Bị',
-          icon: 'fa-bolt',
-          color: 'text-cyan-400',
-          desc: 'Đối chiếu BOM, khóa giữ chỗ vật tư, nhập kho GRN, xuất kho PXK-01 và nhập trả phế phẩm.'
-        },
-        {
-          roleKey: 'THU_KHO',
-          username: 'thukho_dong',
-          fullName: 'Trần Văn Đồng',
-          title: 'Kho Đồng Thanh Cái (Xưởng B)',
-          tag: 'Thủ Kho Đồng & Cơ Khí',
-          icon: 'fa-cubes-stacked',
-          color: 'text-orange-400',
-          desc: 'Kiểm soát thanh cái đồng đỏ/đồng mạ, quy đổi Cây/Kg/Mét, cấp phát theo định mức BOM tủ.'
-        }
-      ]
-    },
-    {
-      id: 'TECH_SUPPLY',
-      name: 'Khối Kỹ Thuật & Cung Ứng',
-      code: 'DIV-03',
-      icon: 'fa-microchip',
-      accentColor: 'from-indigo-500 to-purple-600',
-      badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-      accounts: [
-        {
-          roleKey: 'KY_THUAT',
-          username: 'kythuat_bom',
-          fullName: 'Lê Minh Kỹ',
-          title: 'Phòng Thiết Kế & Bóc Tách Bản Vẽ',
-          tag: 'Kỹ Sư BOM',
-          icon: 'fa-ruler-combined',
-          color: 'text-indigo-400',
-          desc: 'Bóc tách sơ đồ nguyên lý CAD, nạp định mức BOM vật tư cho từng tủ và tính delta thiếu hụt.'
-        },
-        {
-          roleKey: 'MUA_HANG',
-          username: 'muahang_po',
-          fullName: 'Phạm Thị Mua',
-          title: 'Phòng Mua Hàng & Chuỗi Cung Ứng',
-          tag: 'Chuyên Viên PO',
-          icon: 'fa-cart-shopping',
-          color: 'text-rose-400',
-          desc: 'Phát hành đơn đặt mua PO theo delta thiếu hụt của BOM và đánh giá nhà cung cấp ISO.'
-        }
-      ]
-    },
-    {
-      id: 'MFG_AUDIT',
-      name: 'Khối Sản Xuất & Kiểm Toán',
-      code: 'DIV-04',
-      icon: 'fa-industry',
-      accentColor: 'from-emerald-500 to-teal-600',
-      badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-      accounts: [
-        {
-          roleKey: 'SAN_XUAT',
-          username: 'sanxuat_to1',
-          fullName: 'Hoàng Văn Ráp',
-          title: 'Xưởng Lắp Ráp Tủ Bảng Điện',
-          tag: 'Tổ Trưởng Lắp Ráp',
-          icon: 'fa-helmet-safety',
-          color: 'text-emerald-400',
-          desc: 'Gửi đăng ký lấy hàng theo ca (Mẫu 1), ký nhận điện tử GDN và hoàn trả vật tư thừa/hỏng.'
-        },
-        {
-          roleKey: 'KE_TOAN',
-          username: 'ketoan_kho',
-          fullName: 'Vũ Thị Toán',
-          title: 'Phòng Tài Chính & Kiểm Soát Nội Bộ',
-          tag: 'Kế Toán Kiểm Toán',
-          icon: 'fa-calculator',
-          color: 'text-violet-400',
-          desc: 'Kiểm toán Sổ cái giao dịch kho bất biến (Immutable Ledger) và giám sát 3 KPI ISO 9001.'
-        }
-      ]
-    }
+  // Demo accounts for quick helper drawer
+  const demoAccounts = [
+    { role: 'Ban Giám Đốc (Admin)', user: 'admin', desc: 'Toàn quyền điều hành và phê duyệt', icon: 'fa-shield-halved', color: 'text-amber-400' },
+    { role: 'Thủ Kho Điện', user: 'thukho_dien', desc: 'Đối chiếu BOM, xuất nhập kho khí cụ', icon: 'fa-bolt', color: 'text-blue-400' },
+    { role: 'Thủ Kho Đồng', user: 'thukho_dong', desc: 'Kiểm soát thanh cái đồng & phôi cơ khí', icon: 'fa-cubes-stacked', color: 'text-orange-400' },
+    { role: 'Kỹ Sư BOM', user: 'kythuat_bom', desc: 'Bóc tách bản vẽ CAD & định mức BOM', icon: 'fa-compass-drafting', color: 'text-cyan-400' },
+    { role: 'Chuyên Viên PO', user: 'muahang_po', desc: 'Phát hành đơn đặt mua vật tư thiếu', icon: 'fa-cart-shopping', color: 'text-emerald-400' },
+    { role: 'Tổ Trưởng Lắp Ráp', user: 'sanxuat_to1', desc: 'Đăng ký ca lấy hàng & ký nhận GDN', icon: 'fa-industry', color: 'text-teal-400' },
+    { role: 'Sale Admin Dự Án', user: 'sale_admin', desc: 'Khởi tạo đơn hàng hợp đồng tủ điện', icon: 'fa-briefcase', color: 'text-indigo-400' },
+    { role: 'Kế Toán Kiểm Toán', user: 'ketoan_kho', desc: 'Kiểm soát sổ cái & 3 chỉ số ISO 9001', icon: 'fa-calculator', color: 'text-violet-400' },
   ];
 
   // Perform Authentication Request
-  const executeLogin = async (username, pwd, isQuick = false) => {
-    if (isQuick) {
-      setQuickLoginRole(username);
-    } else {
-      setIsLoading(true);
-    }
+  const executeLogin = async (username, pwd) => {
+    setIsLoading(true);
     setErrorMsg('');
 
     try {
@@ -220,12 +102,10 @@ function LoginScreen({ onLoginSuccess, darkMode, setDarkMode }) {
       setErrorMsg('Không thể kết nối đến máy chủ xác thực WMS.');
     } finally {
       setIsLoading(false);
-      setQuickLoginRole(null);
     }
   };
 
-  // Form Submit Handler
-  const handleFormSubmit = (e) => {
+  const handleSubmit = (e) => {
     if (e) e.preventDefault();
     if (!usernameOrEmail.trim()) {
       setErrorMsg('Vui lòng nhập tên đăng nhập hoặc email.');
@@ -235,433 +115,376 @@ function LoginScreen({ onLoginSuccess, darkMode, setDarkMode }) {
       setErrorMsg('Vui lòng nhập mật khẩu xác thực.');
       return;
     }
-    executeLogin(usernameOrEmail, password, false);
+    executeLogin(usernameOrEmail, password);
   };
 
-  // 1-Click Instant Login from Role Card
-  const handleQuickLogin = (acc) => {
-    setUsernameOrEmail(acc.username);
+  const handleSelectDemo = (u) => {
+    setUsernameOrEmail(u);
     setPassword('mevn@2026');
-    executeLogin(acc.username, 'mevn@2026', true);
+    setShowDemoDrawer(false);
+    executeLogin(u, 'mevn@2026');
   };
-
-  // Filter accounts by division tab
-  const filteredDivisions = selectedDivision === 'ALL'
-    ? DIVISIONS
-    : DIVISIONS.filter(d => d.id === selectedDivision);
 
   return (
-    <div className="min-h-screen w-full bg-slate-950 text-slate-100 relative flex flex-col justify-between overflow-x-hidden select-none bg-industrial-grid">
-      {/* Background CAD Circuit & Gradient Atmosphere */}
-      <div className="absolute top-0 left-1/3 w-[45rem] h-[45rem] bg-blue-600/10 rounded-full blur-[140px] pointer-events-none -translate-y-1/2"></div>
-      <div className="absolute bottom-0 right-10 w-[35rem] h-[35rem] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none translate-y-1/3"></div>
-      <div className="absolute top-1/2 left-0 w-80 h-80 bg-cyan-500/5 rounded-full blur-[100px] pointer-events-none"></div>
+    <div className="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 relative overflow-hidden font-sans select-none">
+      {/* Background CAD Ambient Effects */}
+      <div className="absolute inset-0 bg-industrial-grid opacity-30 pointer-events-none"></div>
+      <div className="absolute -top-40 -left-40 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none"></div>
 
-      {/* Top Enterprise Control Bar */}
-      <header className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between relative z-10 border-b border-slate-800/60">
-        <div className="flex items-center gap-3.5">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-500 via-indigo-600 to-cyan-500 flex items-center justify-center font-black text-xl text-white shadow-xl shadow-blue-500/25 border border-white/20 relative group">
-            <span className="tracking-tighter">ME</span>
-            <div className="absolute inset-0 rounded-2xl bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+      {/* Top Header Bar */}
+      <header className="relative z-20 px-6 py-4 flex items-center justify-between border-b border-white/5 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 flex items-center justify-center font-black text-white text-base shadow-lg shadow-blue-500/20 border border-white/20 font-mono">
+            ME
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-black tracking-tight text-white font-mono">
-                MAX ELECTRIC VIETNAM
-              </span>
-              <span className="text-[10px] uppercase font-mono font-bold tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30 px-2 py-0.5 rounded-full">
-                WMS ENTERPRISE 2026
+              <span className="font-mono font-black text-sm tracking-tight text-white">MAX ELECTRIC VIETNAM</span>
+              <span className="text-[9px] uppercase font-mono font-bold bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded border border-blue-500/30">
+                WMS ENTERPRISE
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
-              Hệ Thống Quản Trị Kho & Chuỗi Cung Ứng Sản Xuất Tủ Điện Công Nghiệp
-            </p>
+            <p className="text-[11px] text-slate-400 font-mono">Hệ Thống Quản Trị Kho & Sản Xuất Tủ Điện Chuẩn ISO 9001</p>
           </div>
         </div>
 
-        {/* Header Telemetry Pill Widgets */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          <div className="hidden lg:flex items-center gap-3 px-3.5 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] font-mono text-slate-300">
-            <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span className="text-slate-400">LƯỚI ĐIỆN 3 PHA:</span>
-              <span className="text-amber-400 font-bold">{telemetry.voltage} V</span>
-              <span className="text-slate-500">|</span>
-              <span className="text-cyan-400 font-bold">{telemetry.frequency} Hz</span>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-[11px] font-mono text-slate-300">
-            <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
-            <span className="text-slate-400 hidden sm:inline">Node:</span>
+        <div className="flex items-center gap-3">
+          {/* Live Node Telemetry Pill */}
+          <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs font-mono">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span className="text-slate-400">TOKYO NODE</span>
             <span className="text-emerald-400 font-bold">{telemetry.latency}ms</span>
           </div>
 
-          <button
-            type="button"
-            onClick={() => setDarkMode(!darkMode)}
-            className="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white flex items-center justify-center text-xs transition"
-            title="Chuyển chế độ sáng/tối"
-          >
-            <i className={`fa-solid ${darkMode ? 'fa-moon' : 'fa-sun'}`}></i>
-          </button>
+          {/* Theme Switcher */}
+          {setDarkMode && (
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition liquid-touch"
+              title="Chuyển chế độ sáng/tối"
+            >
+              <i className={`fa-solid ${darkMode ? 'fa-sun text-amber-400' : 'fa-moon text-blue-400'} text-xs`}></i>
+            </button>
+          )}
         </div>
       </header>
 
-      {/* Main Control Room Layout (55/45 Asymmetric Grid) */}
-      <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 my-auto grid grid-cols-1 lg:grid-cols-12 gap-8 items-start relative z-10">
+      {/* Main Split-Screen Container */}
+      <main className="relative z-10 flex-1 flex items-center justify-center p-4 sm:p-6 lg:p-12">
+        <div className="w-full max-w-5xl grid grid-cols-1 lg:grid-cols-12 bg-slate-900/90 border border-white/10 rounded-3xl shadow-2xl overflow-hidden backdrop-blur-2xl">
 
-        {/* Left Section: Industrial Plant Overview & Direct 1-Click RBAC Grid (55% / 7 cols) */}
-        <div className="lg:col-span-7 space-y-6 text-left">
+          {/* Left Hero Column: Brand & Technology Showcase */}
+          <div className="lg:col-span-6 p-8 lg:p-10 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-white/5 bg-gradient-to-br from-slate-900 via-blue-950/40 to-slate-900 relative">
+            <div className="space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-mono font-bold">
+                <i className="fa-solid fa-microchip"></i>
+                <span>TIÊU CHUẨN IEC 61439 & ISO 9001:2015</span>
+              </div>
 
-          {/* Plant Hero Header */}
-          <div className="space-y-3">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono font-semibold">
-              <span className="relative flex h-2 w-2">
-                <span className="radar-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-              </span>
-              <span>TIÊU CHUẨN IEC 61439 & ISO 9001:2015</span>
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight font-mono leading-tight">
+                  Quản Trị Kho Số Hóa & Cung Ứng Sản Xuất
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-400 mt-2 leading-relaxed">
+                  Kiểm soát quy trình kho cơ điện tử chuẩn hóa: Bóc tách BOM tủ đa cấp độ, đối chiếu tồn kho tức thời, tự động hóa cấp phát vật tư và kiểm toán sổ cái giao dịch bất biến.
+                </p>
+              </div>
+
+              {/* Feature Bullet Points */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-start gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/5">
+                  <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center text-xs shrink-0 border border-blue-500/20">
+                    <i className="fa-solid fa-layer-group"></i>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white font-mono">BOM Tủ Điện Đa Cấp</div>
+                    <div className="text-[11px] text-slate-400 leading-snug">Tự động bóc tách định mức CAD và tính toán delta thiếu hụt vật tư.</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/5">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs shrink-0 border border-emerald-500/20">
+                    <i className="fa-solid fa-lock"></i>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white font-mono">Khóa Giữ Chỗ ACID</div>
+                    <div className="text-[11px] text-slate-400 leading-snug">Ngăn chặn tuyệt đối xung đột cấp phát giữa các dự án tủ song song.</div>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3 p-3 rounded-2xl bg-white/[0.03] border border-white/5">
+                  <div className="w-8 h-8 rounded-lg bg-violet-500/10 text-violet-400 flex items-center justify-center text-xs shrink-0 border border-violet-500/20">
+                    <i className="fa-solid fa-receipt"></i>
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-white font-mono">Sổ Cái Bất Biến (Immutable Ledger)</div>
+                    <div className="text-[11px] text-slate-400 leading-snug">Lưu vết 100% giao dịch xuất nhập tồn phục vụ kiểm toán nội bộ.</div>
+                  </div>
+                </div>
+              </div>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
-              Trung Tâm Vận Hành Kho Bất Biến & Sản Xuất Tủ Điện
-            </h1>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
-              Kiểm soát quy trình kho cơ điện tử chuẩn hóa: Bóc tách BOM tủ đa cấp độ, đối chiếu tồn kho tức thời, tự động hóa cấp phát vật tư và kiểm toán sổ cái giao dịch bất biến.
-            </p>
+            {/* Bottom Left System Specs */}
+            <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-slate-500">
+              <span className="flex items-center gap-1.5">
+                <i className="fa-solid fa-shield-halved text-blue-500"></i>
+                <span>MÃ HÓA TLS 1.3</span>
+              </span>
+              <span>LƯỚI ĐIỆN: 398.5V / 50Hz</span>
+            </div>
           </div>
 
-          {/* Direct 1-Click Multi-Role RBAC Selector Panel */}
-          <div className="bg-slate-900/75 backdrop-blur-xl border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 hairline-border">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center text-xs">
-                  <i className="fa-solid fa-users-gear"></i>
-                </div>
+          {/* Right Column: Clean & Secure Enterprise Login Terminal */}
+          <div className="lg:col-span-6 p-8 lg:p-10 flex flex-col justify-between bg-slate-900/60">
+            <div>
+              {/* Terminal Title & Ready Status */}
+              <div className="flex items-center justify-between mb-6">
                 <div>
-                  <h3 className="text-sm font-black text-white tracking-tight">
-                    Ma Trận Phân Quyền 8 Vai Trò Nhà Máy
-                  </h3>
-                  <p className="text-[11px] text-slate-400">
-                    Bấm nút <span className="text-emerald-400 font-bold">1-Click Đăng Nhập</span> để vào thẳng phân hệ tương ứng
-                  </p>
+                  <h2 className="text-xl font-black text-white font-mono tracking-tight flex items-center gap-2">
+                    <i className="fa-solid fa-arrow-right-to-bracket text-blue-500"></i>
+                    <span>CỔNG ĐĂNG NHẬP</span>
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-0.5">Xác thực tài khoản doanh nghiệp MEVN</p>
+                </div>
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>SYSTEM READY</span>
                 </div>
               </div>
 
-              {/* Division Filter Pills */}
-              <div className="flex items-center gap-1 overflow-x-auto pb-1 max-w-full">
+              {/* Error Message Notification */}
+              {errorMsg && (
+                <div className="p-3.5 mb-5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2.5 animate-shake font-medium">
+                  <i className="fa-solid fa-triangle-exclamation text-rose-400 text-sm shrink-0"></i>
+                  <span>{errorMsg}</span>
+                </div>
+              )}
+
+              {/* Login Form */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Username / Email Field */}
+                <div>
+                  <label className="block text-xs font-mono font-bold text-slate-300 mb-1.5 uppercase tracking-wider">
+                    Tên Đăng Nhập / Mã Nhân Viên
+                  </label>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition">
+                      <i className="fa-solid fa-user text-xs"></i>
+                    </div>
+                    <input
+                      type="text"
+                      value={usernameOrEmail}
+                      onChange={(e) => setUsernameOrEmail(e.target.value)}
+                      placeholder="VD: admin, thukho_dien, kythuat_bom..."
+                      disabled={isLoading}
+                      required
+                      className="w-full pl-9 pr-4 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition font-mono font-bold"
+                    />
+                  </div>
+                </div>
+
+                {/* Password Field */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-mono font-bold text-slate-300 uppercase tracking-wider">
+                      Mật Khẩu Xác Thực
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setShowHelpModal(true)}
+                      className="text-[11px] text-blue-400 hover:text-blue-300 hover:underline font-mono"
+                    >
+                      Trợ giúp IT?
+                    </button>
+                  </div>
+                  <div className="relative group">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500 group-focus-within:text-blue-400 transition">
+                      <i className="fa-solid fa-lock-keyhole text-xs"></i>
+                    </div>
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Nhập mật khẩu của bạn..."
+                      disabled={isLoading}
+                      required
+                      className="w-full pl-9 pr-10 py-3 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-600 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition font-mono font-bold"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition"
+                      tabIndex="-1"
+                    >
+                      <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'} text-xs`}></i>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Remember Me Checkbox */}
+                <div className="flex items-center justify-between pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="w-4 h-4 rounded bg-slate-950 border-slate-800 text-blue-600 focus:ring-0 focus:ring-offset-0 cursor-pointer"
+                    />
+                    <span className="text-xs text-slate-400">Lưu phiên đăng nhập an toàn</span>
+                  </label>
+                  <span className="text-[10px] font-mono text-slate-500">ISO 9001 Encrypted</span>
+                </div>
+
+                {/* Submit Button */}
                 <button
-                  type="button"
-                  onClick={() => setSelectedDivision('ALL')}
-                  className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition whitespace-nowrap ${
-                    selectedDivision === 'ALL'
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
-                      : 'bg-slate-800/80 text-slate-400 hover:text-slate-200'
-                  }`}
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-500 hover:from-blue-500 hover:to-indigo-500 text-white font-mono font-bold text-xs rounded-xl shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2 transition-all duration-200 liquid-touch disabled:opacity-50 cursor-pointer mt-2"
                 >
-                  TẤT CẢ (8)
+                  {isLoading ? (
+                    <>
+                      <i className="fa-solid fa-circle-notch fa-spin text-sm"></i>
+                      <span>ĐANG XÁC THỰC DANH TÍNH...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>ĐĂNG NHẬP VÀO HỆ THỐNG</span>
+                      <i className="fa-solid fa-arrow-right text-xs"></i>
+                    </>
+                  )}
                 </button>
-                {DIVISIONS.map(div => (
-                  <button
-                    key={div.id}
-                    type="button"
-                    onClick={() => setSelectedDivision(div.id)}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-mono font-bold transition whitespace-nowrap flex items-center gap-1.5 ${
-                      selectedDivision === div.id
-                        ? 'bg-blue-600 text-white shadow-md shadow-blue-500/30'
-                        : 'bg-slate-800/80 text-slate-400 hover:text-slate-200'
-                    }`}
+              </form>
+            </div>
+
+            {/* Bottom Footer Action: Quick Demo Switch Drawer Button */}
+            <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between text-xs">
+              <span className="text-slate-500 font-mono text-[11px]">Mật khẩu mặc định: <code className="text-slate-300 bg-white/5 px-1.5 py-0.5 rounded">mevn@2026</code></span>
+              <button
+                onClick={() => setShowDemoDrawer(true)}
+                className="text-[11px] font-mono font-bold text-cyan-400 hover:text-cyan-300 hover:underline flex items-center gap-1.5"
+              >
+                <i className="fa-solid fa-list-check"></i>
+                <span>Tài khoản mẫu thử nghiệm</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Global Footer */}
+      <footer className="relative z-10 px-6 py-4 border-t border-white/5 text-center text-xs text-slate-500 font-mono flex flex-wrap items-center justify-between gap-2 max-w-5xl mx-auto w-full">
+        <div className="flex items-center gap-2">
+          <i className="fa-solid fa-building text-slate-600"></i>
+          <span>CÔNG TY CỔ PHẦN MAX ELECTRIC VIỆT NAM (MEVN JSC)</span>
+        </div>
+        <div className="flex items-center gap-3 text-[11px]">
+          <span className="text-emerald-500 font-bold">ISO 9001:2015 & IEC 61439</span>
+          <span>•</span>
+          <span>v2.6 Enterprise Edition</span>
+        </div>
+      </footer>
+
+      {/* Slide-Over Demo Accounts Drawer */}
+      {showDemoDrawer && (
+        <div className="fixed inset-0 z-50 flex justify-end animate-fade-in">
+          <div
+            onClick={() => setShowDemoDrawer(false)}
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm"
+          ></div>
+          <div className="relative w-full max-w-md h-full bg-slate-900 border-l border-slate-800 shadow-2xl p-6 overflow-y-auto flex flex-col justify-between z-10 animate-slide-in">
+            <div>
+              <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+                <div className="flex items-center gap-2">
+                  <i className="fa-solid fa-id-card-clip text-blue-400"></i>
+                  <h3 className="font-mono font-black text-sm text-white">DANH SÁCH TÀI KHOẢN MẪU</h3>
+                </div>
+                <button
+                  onClick={() => setShowDemoDrawer(false)}
+                  className="w-8 h-8 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"
+                >
+                  <i className="fa-solid fa-xmark text-xs"></i>
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-400 mt-3 mb-4">
+                Bấm vào một vai trò dưới đây để tự động điền thông tin và đăng nhập thử nghiệm:
+              </p>
+
+              <div className="space-y-2.5">
+                {demoAccounts.map(acc => (
+                  <div
+                    key={acc.user}
+                    onClick={() => handleSelectDemo(acc.user)}
+                    className="p-3 bg-slate-950/80 hover:bg-blue-600/10 border border-slate-800 hover:border-blue-500/50 rounded-2xl cursor-pointer transition liquid-touch group"
                   >
-                    <i className={`fa-solid ${div.icon} text-[9px]`}></i>
-                    <span>{div.code}</span>
-                  </button>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-8 h-8 rounded-lg bg-slate-900 flex items-center justify-center text-sm ${acc.color} border border-slate-800 group-hover:scale-105 transition`}>
+                          <i className={`fa-solid ${acc.icon}`}></i>
+                        </div>
+                        <div>
+                          <div className="text-xs font-bold text-white font-mono">{acc.role}</div>
+                          <div className="text-[10px] text-blue-400 font-mono">@{acc.user}</div>
+                        </div>
+                      </div>
+                      <i className="fa-solid fa-arrow-right text-slate-600 group-hover:text-blue-400 group-hover:translate-x-1 transition text-xs"></i>
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-2 pl-10 leading-snug">{acc.desc}</p>
+                  </div>
                 ))}
               </div>
             </div>
 
-            {/* Division Sections with 1-Click Cards */}
-            <div className="space-y-4 max-h-[380px] overflow-y-auto pr-1">
-              {filteredDivisions.map(div => (
-                <div key={div.id} className="space-y-2">
-                  <div className="flex items-center justify-between text-[11px] font-mono font-bold text-slate-400 px-1">
-                    <span className="flex items-center gap-2">
-                      <i className={`fa-solid ${div.icon} text-blue-400`}></i>
-                      <span className="text-slate-200">{div.name.toUpperCase()}</span>
-                    </span>
-                    <span className="text-[10px] text-slate-500">{div.code}</span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    {div.accounts.map(acc => {
-                      const isThisLoading = quickLoginRole === acc.username;
-                      return (
-                        <div
-                          key={acc.username}
-                          className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/90 hover:border-blue-500/40 transition flex flex-col justify-between group relative"
-                        >
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <div className="flex items-center gap-2.5">
-                              <div className={`w-8 h-8 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-xs ${acc.color} group-hover:scale-110 transition`}>
-                                <i className={`fa-solid ${acc.icon}`}></i>
-                              </div>
-                              <div>
-                                <h4 className="text-xs font-bold text-white leading-tight">
-                                  {acc.fullName}
-                                </h4>
-                                <span className="text-[10px] font-mono text-blue-400 font-semibold">
-                                  @{acc.username}
-                                </span>
-                              </div>
-                            </div>
-                            <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 border border-slate-800 shrink-0">
-                              {acc.tag}
-                            </span>
-                          </div>
-
-                          <p className="text-[10px] text-slate-400 line-clamp-2 leading-relaxed mb-3">
-                            {acc.desc}
-                          </p>
-
-                          <button
-                            type="button"
-                            disabled={isLoading || isThisLoading}
-                            onClick={() => handleQuickLogin(acc)}
-                            className="w-full py-1.5 px-2.5 rounded-xl bg-gradient-to-r from-blue-600/30 to-indigo-600/30 hover:from-blue-600 hover:to-indigo-600 border border-blue-500/30 hover:border-blue-400 text-blue-300 hover:text-white text-[11px] font-bold font-mono flex items-center justify-center gap-2 transition liquid-touch disabled:opacity-50 cursor-pointer"
-                          >
-                            {isThisLoading ? (
-                              <>
-                                <i className="fa-solid fa-circle-notch fa-spin text-xs"></i>
-                                <span>Đang kết nối...</span>
-                              </>
-                            ) : (
-                              <>
-                                <i className="fa-solid fa-bolt text-[10px] text-amber-400"></i>
-                                <span>1-Click Đăng Nhập</span>
-                                <i className="fa-solid fa-arrow-right text-[9px] opacity-70"></i>
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Quick Demo Credentials Footer Note */}
-            <div className="pt-2 border-t border-slate-800 flex items-center justify-between text-[11px] font-mono text-slate-500">
-              <span>Mật khẩu mặc định cho toàn bộ tài khoản:</span>
-              <span className="text-blue-400 font-bold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
-                mevn@2026
-              </span>
+            <div className="pt-4 mt-6 border-t border-slate-800 text-center text-xs text-slate-500 font-mono">
+              Mật khẩu dùng chung: <span className="text-white font-bold">mevn@2026</span>
             </div>
           </div>
-
-          {/* 3 Core Industrial Bento Features */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800/80">
-              <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20 flex items-center justify-center text-xs mb-2">
-                <i className="fa-solid fa-layer-group"></i>
-              </div>
-              <h5 className="text-xs font-bold text-white mb-0.5">BOM Tủ Đa Cấp</h5>
-              <p className="text-[10px] text-slate-400 leading-relaxed">
-                Tự động bóc tách định mức CAD và tính toán delta thiếu hụt.
-              </p>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800/80">
-              <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xs mb-2">
-                <i className="fa-solid fa-lock"></i>
-              </div>
-              <h5 className="text-xs font-bold text-white mb-0.5">Khóa Giữ Chỗ ACID</h5>
-              <p className="text-[10px] text-slate-400 leading-relaxed">
-                Chống xung đột cấp phát vật tư giữa các dự án tủ song song.
-              </p>
-            </div>
-
-            <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800/80">
-              <div className="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center text-xs mb-2">
-                <i className="fa-solid fa-book-journal-whills"></i>
-              </div>
-              <h5 className="text-xs font-bold text-white mb-0.5">Sổ Cái Bất Biến</h5>
-              <p className="text-[10px] text-slate-400 leading-relaxed">
-                Dấu vết kiểm toán xuất nhập tồn 100% tuân thủ ISO 9001.
-              </p>
-            </div>
-          </div>
-
         </div>
+      )}
 
-        {/* Right Section: Auth Terminal Form (45% / 5 cols) */}
-        <div className="lg:col-span-5">
-          <div className="w-full bg-slate-900/85 backdrop-blur-2xl border border-slate-700/70 rounded-3xl p-6 sm:p-7 shadow-2xl shadow-black/80 relative space-y-5 hairline-border">
-
-            {/* Auth Terminal Header */}
-            <div className="space-y-1 border-b border-slate-800 pb-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
-                  <i className="fa-solid fa-fingerprint text-blue-500 text-base"></i>
-                  <span>Cổng Đăng Nhập Bảo Mật</span>
-                </h2>
-                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  SYSTEM READY
-                </span>
+      {/* IT Help Modal */}
+      {showHelpModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in">
+          <div
+            onClick={() => setShowHelpModal(false)}
+            className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm"
+          ></div>
+          <div className="relative w-full max-w-sm bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl z-10 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-blue-400">
+                <i className="fa-solid fa-circle-question text-lg"></i>
+                <h3 className="font-mono font-bold text-sm text-white">HỖ TRỢ ĐĂNG NHẬP IT</h3>
               </div>
-              <p className="text-xs text-slate-400">
-                Nhập tài khoản doanh nghiệp hoặc chọn vai trò nhanh ở cột bên trái.
-              </p>
-            </div>
-
-            {/* Error Notification Alert */}
-            {errorMsg && (
-              <div className="p-3 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs font-semibold flex items-center gap-2.5 animate-fade-in">
-                <i className="fa-solid fa-circle-exclamation text-rose-400 text-sm shrink-0"></i>
-                <span className="flex-1">{errorMsg}</span>
-              </div>
-            )}
-
-            {/* Form */}
-            <form onSubmit={handleFormSubmit} className="space-y-4">
-
-              {/* Username Input */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
-                  <span>Tên Tài Khoản / Email Doanh Nghiệp</span>
-                  <span className="text-[10px] font-mono text-slate-500">Mã NV / User ID</span>
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors">
-                    <i className="fa-solid fa-user-shield text-xs"></i>
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    value={usernameOrEmail}
-                    onChange={e => {
-                      setUsernameOrEmail(e.target.value);
-                      if (errorMsg) setErrorMsg('');
-                    }}
-                    placeholder="VD: admin, thukho_dien, kythuat_bom..."
-                    className="w-full pl-10 pr-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-xs font-bold text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition font-mono"
-                  />
-                </div>
-              </div>
-
-              {/* Password Input */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
-                  <span>Mật Khẩu Xác Thực</span>
-                  <span className="text-[10px] font-mono text-slate-500">Mặc định: mevn@2026</span>
-                </label>
-                <div className="relative group">
-                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-400 transition-colors">
-                    <i className="fa-solid fa-key text-xs"></i>
-                  </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={e => {
-                      setPassword(e.target.value);
-                      if (errorMsg) setErrorMsg('');
-                    }}
-                    placeholder="Nhập mật khẩu xác thực..."
-                    className="w-full pl-10 pr-10 py-2.5 bg-slate-950/80 border border-slate-800 rounded-2xl text-xs font-bold text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition font-mono"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-1 text-xs"
-                    title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-                  >
-                    <i className={`fa-solid ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
-                  </button>
-                </div>
-              </div>
-
-              {/* Remember Session & ISO Audit Check */}
-              <div className="flex items-center justify-between pt-0.5 text-xs">
-                <label className="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-200 transition">
-                  <input
-                    type="checkbox"
-                    checked={rememberMe}
-                    onChange={e => setRememberMe(e.target.checked)}
-                    className="rounded border-slate-700 bg-slate-950 text-blue-500 focus:ring-blue-500/20 w-3.5 h-3.5 cursor-pointer"
-                  />
-                  <span className="text-[11px] font-medium">Lưu phiên đăng nhập an toàn</span>
-                </label>
-
-                <span className="text-[10px] font-mono text-emerald-400 flex items-center gap-1">
-                  <i className="fa-solid fa-shield-halved"></i>
-                  <span>ISO 9001 Encrypted</span>
-                </span>
-              </div>
-
-              {/* Submit Button */}
               <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-xl shadow-blue-600/30 flex items-center justify-center gap-2 transition liquid-touch disabled:opacity-50 border border-blue-400/30 cursor-pointer"
+                onClick={() => setShowHelpModal(false)}
+                className="text-slate-500 hover:text-white"
               >
-                {isLoading ? (
-                  <>
-                    <i className="fa-solid fa-circle-notch fa-spin text-sm"></i>
-                    <span>Đang Xác Thực Thông Tin...</span>
-                  </>
-                ) : (
-                  <>
-                    <i className="fa-solid fa-right-to-bracket text-sm"></i>
-                    <span>Đăng Nhập Vào MEVN WMS</span>
-                  </>
-                )}
+                <i className="fa-solid fa-xmark"></i>
               </button>
-            </form>
-
-            {/* Industrial Plant Specs Mini Badge */}
-            <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 space-y-2 text-[10px] font-mono">
-              <div className="flex items-center justify-between text-slate-400">
-                <span>GIAO THỨC BẢO MẬT:</span>
-                <span className="text-slate-200 font-bold">{telemetry.ssl}</span>
-              </div>
-              <div className="flex items-center justify-between text-slate-400">
-                <span>CƠ SỞ DỮ LIỆU:</span>
-                <span className="text-slate-200 font-bold">{telemetry.engine}</span>
-              </div>
-              <div className="flex items-center justify-between text-slate-400">
-                <span>TRẠNG THÁI HỆ THỐNG:</span>
-                <span className="text-emerald-400 font-bold flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                  {telemetry.status} (READY)
-                </span>
-              </div>
             </div>
-
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Nếu bạn quên mật khẩu hoặc chưa được cấp tài khoản WMS, vui lòng liên hệ Ban Giám Đốc hoặc Quản trị viên IT Nhà máy MEVN:
+            </p>
+            <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-mono space-y-1">
+              <div><span className="text-slate-500">Hotline IT:</span> <span className="text-white font-bold">024 3999 xxxx</span></div>
+              <div><span className="text-slate-500">Email:</span> <span className="text-cyan-400 font-bold">it@maxelectric.vn</span></div>
+            </div>
+            <button
+              onClick={() => setShowHelpModal(false)}
+              className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-mono font-bold text-xs rounded-xl transition"
+            >
+              ĐÃ HIỂU
+            </button>
           </div>
         </div>
-
-      </main>
-
-      {/* Enterprise Industrial Footer */}
-      <footer className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-wrap items-center justify-between gap-3 text-[11px] font-mono text-slate-500 border-t border-slate-800/60 relative z-10">
-        <div className="flex items-center gap-2">
-          <i className="fa-solid fa-industry text-slate-400"></i>
-          <span>CÔNG TY CỔ PHẦN MAX ELECTRIC VIỆT NAM (MEVN JSC)</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="flex items-center gap-1 text-emerald-400 font-semibold">
-            <i className="fa-solid fa-circle-check text-[9px]"></i>
-            ISO 9001:2015 & IEC 61439 Certified
-          </span>
-          <span>Database: Supabase PostgreSQL (Tokyo Node)</span>
-          <span className="font-bold text-slate-400">v2.6 Enterprise</span>
-        </div>
-      </footer>
+      )}
     </div>
   );
 }
 
-// Attach to window.WMS_COMPONENTS namespace
 window.WMS_COMPONENTS = window.WMS_COMPONENTS || {};
 window.WMS_COMPONENTS.LoginScreen = LoginScreen;
