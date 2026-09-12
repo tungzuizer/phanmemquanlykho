@@ -92,7 +92,7 @@ class WmsService {
       stocktakes,
       kpiLogs,
       stockTransactions,
-    ] = await prisma.$transaction([
+    ] = await Promise.all([
       prisma.user.findMany({ orderBy: { createdAt: 'asc' } }),
       prisma.warehouse.findMany({ orderBy: { code: 'asc' } }),
       prisma.uom.findMany({ orderBy: { code: 'asc' } }),
@@ -275,33 +275,69 @@ class WmsService {
   }
 
   /**
-   * 1. Tạo đơn hàng mới + các tủ điện trong dự án
+   * 1. Tạo đơn hàng mới + các tủ điện trong dự án (Zero-overhead creation with auto-panel generation)
    */
   async createOrder(payload) {
-    const saleAdmin = await prisma.user.findFirst({
-      where: { role: 'SALE_ADMIN' },
-    });
-    const saleAdminId = payload.saleAdminId || (saleAdmin ? saleAdmin.id : (await prisma.user.findFirst()).id);
+    let saleAdminId = payload.saleAdminId || payload.createdById;
+    if (!saleAdminId) {
+      const saleAdmin = await prisma.user.findFirst({
+        where: { role: 'SALE_ADMIN' },
+      });
+      saleAdminId = saleAdmin ? saleAdmin.id : (await prisma.user.findFirst()).id;
+    }
+
     const orderCode = payload.code || `DH-2026-${Math.floor(100 + Math.random() * 900)}`;
+    const title = payload.title || 'Dự án Tủ Điện Mới';
+    const customerName = payload.customerName || payload.customer || 'Khách Hàng MEVN';
+    const rawDeliveryDate = payload.targetDeliveryDate || payload.deliveryDate;
+    const targetDeliveryDate = rawDeliveryDate ? new Date(rawDeliveryDate) : new Date(Date.now() + 14 * 86400000);
+    const cabinetType = payload.cabinetType || 'MSB';
+    const note = payload.note || (payload.priority ? `Độ ưu tiên: ${payload.priority}` : '');
+
+    // Tạo mảng panels tự động hoặc dùng mảng truyền vào
+    let panelsData = [];
+    if (Array.isArray(payload.panels) && payload.panels.length > 0) {
+      panelsData = payload.panels.map(p => ({
+        code: p.code || `TU-${cabinetType}-01`,
+        name: p.name || `Tủ ${cabinetType} - ${title}`,
+        panelType: p.panelType || cabinetType,
+        description: p.description || '',
+      }));
+    } else {
+      panelsData = [
+        {
+          code: `TU-${cabinetType}-01`,
+          name: `Tủ ${cabinetType} - ${title}`,
+          panelType: cabinetType,
+          description: `Tủ điện chủng loại ${cabinetType} theo đơn hàng ${orderCode}`,
+        },
+      ];
+    }
 
     const newOrder = await prisma.order.create({
       data: {
         code: orderCode,
-        title: payload.title || 'Dự án Tủ Điện Mới',
-        customerName: payload.customerName || 'Khách Hàng MEVN',
+        title: title,
+        customerName: customerName,
         saleAdminId: saleAdminId,
         status: 'CHO_BOM',
-        targetDeliveryDate: payload.targetDeliveryDate ? new Date(payload.targetDeliveryDate) : new Date(Date.now() + 14 * 86400000),
-        note: payload.note || '',
+        targetDeliveryDate: targetDeliveryDate,
+        note: note,
         panels: {
-          create: (payload.panels || [{ code: 'TU-MSB-01', name: 'Tủ Phân Phối Tổng MSB', panelType: 'MSB' }]).map(p => ({
-            code: p.code,
-            name: p.name,
-            panelType: p.panelType || 'MSB',
-          })),
+          create: panelsData,
         },
       },
-      include: { panels: true },
+      include: {
+        panels: true,
+        saleAdmin: true,
+        boms: {
+          include: {
+            items: { include: { sku: { include: { baseUom: true } } } },
+            submittedBy: true,
+            verifiedBy: true,
+          },
+        },
+      },
     });
 
     this.invalidateCache();

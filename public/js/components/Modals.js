@@ -24,6 +24,8 @@ function Modals({
 }) {
   if ((!activeModal && !deleteConfirmTarget) || !data) return null;
 
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+
   const { formatMoney, formatNumber, formatDate } = window.WMS_CONSTANTS || {
     formatMoney: n => n,
     formatNumber: n => n,
@@ -155,17 +157,26 @@ function Modals({
         iconColor="text-blue-600"
       >
         <form
-          onSubmit={e => {
+          onSubmit={async e => {
             e.preventDefault();
+            if (isSubmitting) return;
+            setIsSubmitting(true);
             const fd = new FormData(e.target);
-            onSubmitOrder({
-              code: fd.get('code'),
-              title: fd.get('title'),
-              customer: fd.get('customer'),
-              deliveryDate: fd.get('deliveryDate'),
-              cabinetType: fd.get('cabinetType'),
-              priority: fd.get('priority'),
-            });
+            try {
+              await onSubmitOrder({
+                code: fd.get('code'),
+                title: fd.get('title'),
+                customer: fd.get('customer'),
+                customerName: fd.get('customer'),
+                deliveryDate: fd.get('deliveryDate'),
+                targetDeliveryDate: fd.get('deliveryDate'),
+                cabinetType: fd.get('cabinetType'),
+                priority: fd.get('priority'),
+                note: fd.get('note'),
+              });
+            } finally {
+              setIsSubmitting(false);
+            }
           }}
           className="space-y-3 text-xs"
         >
@@ -192,7 +203,7 @@ function Modals({
               <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Khách Hàng / Chủ Đầu Tư</label>
               <input
                 name="customer"
-                placeholder="Tập đoàn Vingroup"
+                placeholder="Tập đoàn Vingroup / Sun Group / MEVN"
                 required
                 className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white"
               />
@@ -210,43 +221,66 @@ function Modals({
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Chủng Loại Tủ</label>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Chủng Loại Tủ Điện</label>
               <select
                 name="cabinetType"
                 className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-900 dark:text-white"
               >
-                <option value="MSB">Tủ Tổng MSB</option>
-                <option value="DB">Tủ Phân Phối DB</option>
-                <option value="MCC">Tủ Điều Khiển Động Cơ MCC</option>
-                <option value="ATS">Tủ Chuyển Nguồn ATS</option>
+                <option value="MSB">Tủ Tổng MSB (Main Switchboard)</option>
+                <option value="DB">Tủ Phân Phối DB (Distribution Board)</option>
+                <option value="MCC">Tủ Động Cơ MCC (Motor Control Center)</option>
+                <option value="ATS">Tủ Chuyển Nguồn Tự Động ATS</option>
+                <option value="PCCC">Tủ Phòng Cháy Chữa Cháy PCCC</option>
+                <option value="CAPACITOR">Tủ Tụ Bù Công Suất Phản Kháng</option>
               </select>
             </div>
             <div>
-              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Độ Ưu Tiên</label>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Độ Ưu Tiên Tiến Độ</label>
               <select
                 name="priority"
                 className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-amber-600 dark:text-amber-400"
               >
-                <option value="NORMAL">Bình Thường (Normal)</option>
-                <option value="HIGH">Cao (High)</option>
-                <option value="URGENT">Khẩn Cấp (Urgent)</option>
+                <option value="NORMAL">Bình Thường (Normal - 14 ngày)</option>
+                <option value="HIGH">Ưu Tiên Cao (High - 7 ngày)</option>
+                <option value="URGENT">Khẩn Cấp Gấp (Urgent - 3 ngày)</option>
               </select>
             </div>
+          </div>
+          <div>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Ghi Chú / Yêu Cầu Kỹ Thuật Dự Án</label>
+            <textarea
+              name="note"
+              rows="2"
+              placeholder="Yêu cầu kiểm tra IP, tiêu chuẩn Form 3B/4B, xuất xưởng kèm CO/CQ..."
+              className="w-full px-3.5 py-2 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white resize-none"
+            ></textarea>
           </div>
 
           <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-200/80 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl font-bold liquid-touch"
+              disabled={isSubmitting}
+              className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl font-bold liquid-touch disabled:opacity-50"
             >
               Hủy
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold shadow-md shadow-blue-500/20 liquid-touch"
+              disabled={isSubmitting}
+              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold shadow-md shadow-blue-500/20 liquid-touch flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
             >
-              Tạo Đơn Hàng
+              {isSubmitting ? (
+                <>
+                  <i className="fa-solid fa-spinner fa-spin"></i>
+                  <span>Đang Khởi Tạo...</span>
+                </>
+              ) : (
+                <>
+                  <i className="fa-solid fa-plus"></i>
+                  <span>Tạo Đơn Hàng</span>
+                </>
+              )}
             </button>
           </div>
         </form>

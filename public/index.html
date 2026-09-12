@@ -261,15 +261,26 @@
       // API Handlers
       const handleCreateOrder = async (payload) => {
         try {
+          const bodyPayload = {
+            ...payload,
+            saleAdminId: currentUser?.id,
+            createdById: currentUser?.id
+          };
           const res = await fetch('/api/orders', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(bodyPayload)
           });
           const json = await res.json();
           if (json.success) {
-            showToast('Đã tạo thành công Đơn Hàng mới!');
+            showToast(`Đã tạo thành công Đơn Hàng [${json.data?.code || payload.code || ''}]!`);
             setActiveModal(null);
+            if (json.data) {
+              setData(prev => prev ? {
+                ...prev,
+                orders: [json.data, ...(prev.orders || [])]
+              } : prev);
+            }
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi tạo đơn hàng', 'error');
