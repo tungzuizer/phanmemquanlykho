@@ -258,7 +258,7 @@
         return true;
       }, [currentUser, showToast]);
 
-      // API Handlers
+      // API Handlers (Optimistic UI & Zero-Latency Local Updates)
       const handleCreateOrder = async (payload) => {
         try {
           const bodyPayload = {
@@ -266,6 +266,10 @@
             saleAdminId: currentUser?.id,
             createdById: currentUser?.id
           };
+          // Đóng modal ngay lập tức để người dùng tiếp tục làm việc (0ms UI latency)
+          setActiveModal(null);
+          showToast(`Đang tạo đơn hàng [${payload.code || ''}]...`);
+
           const res = await fetch('/api/orders', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -274,24 +278,27 @@
           const json = await res.json();
           if (json.success) {
             showToast(`Đã tạo thành công Đơn Hàng [${json.data?.code || payload.code || ''}]!`);
-            setActiveModal(null);
             if (json.data) {
               setData(prev => prev ? {
                 ...prev,
-                orders: [json.data, ...(prev.orders || [])]
+                orders: [json.data, ...(prev.orders || []).filter(o => o.id !== json.data.id)]
               } : prev);
             }
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi tạo đơn hàng', 'error');
+            fetchState(true);
           }
         } catch (err) {
           showToast(err.message, 'error');
+          fetchState(true);
         }
       };
 
       const handleCreateBom = async (payload) => {
         try {
+          setActiveModal(null);
+          showToast('Đang nạp và đối chiếu BOM...');
           const res = await fetch(`/api/orders/${payload.orderId}/boms`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -300,18 +307,33 @@
           const json = await res.json();
           if (json.success) {
             showToast('Đã nạp và phát hành BOM thành công!');
-            setActiveModal(null);
+            if (json.data) {
+              setData(prev => prev ? {
+                ...prev,
+                boms: [json.data, ...(prev.boms || []).filter(b => b.id !== json.data.id)]
+              } : prev);
+            }
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi nạp BOM', 'error');
+            fetchState(true);
           }
         } catch (err) {
           showToast(err.message, 'error');
+          fetchState(true);
         }
       };
 
       const handleVerifyBom = async (bomId) => {
         try {
+          setData(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              boms: (prev.boms || []).map(b => b.id === bomId ? { ...b, status: 'VERIFIED' } : b)
+            };
+          });
+          showToast('Đang đối chiếu và khóa giữ chỗ vật tư...');
           const res = await fetch(`/api/boms/${bomId}/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -323,14 +345,18 @@
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi đối chiếu BOM', 'error');
+            fetchState(true);
           }
         } catch (err) {
           showToast(err.message, 'error');
+          fetchState(true);
         }
       };
 
       const handleCreatePo = async (payload) => {
         try {
+          setActiveModal(null);
+          showToast('Đang phát hành Đơn Mua Hàng PO...');
           const res = await fetch('/api/pos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -339,18 +365,27 @@
           const json = await res.json();
           if (json.success) {
             showToast('Đã phát hành Đơn Mua Hàng PO thành công!');
-            setActiveModal(null);
+            if (json.data) {
+              setData(prev => prev ? {
+                ...prev,
+                purchaseOrders: [json.data, ...(prev.purchaseOrders || []).filter(p => p.id !== json.data.id)]
+              } : prev);
+            }
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi tạo PO', 'error');
+            fetchState(true);
           }
         } catch (err) {
           showToast(err.message, 'error');
+          fetchState(true);
         }
       };
 
       const handleCreateGrn = async (payload) => {
         try {
+          setActiveModal(null);
+          showToast('Đang tạo Phiếu Nhập Kho GRN...');
           const res = await fetch('/api/grns', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -359,18 +394,27 @@
           const json = await res.json();
           if (json.success) {
             showToast('Đã tạo Phiếu Nhập Kho GRN & Tự động giữ chỗ thành công!');
-            setActiveModal(null);
+            if (json.data) {
+              setData(prev => prev ? {
+                ...prev,
+                goodsReceiptNotes: [json.data, ...(prev.goodsReceiptNotes || []).filter(g => g.id !== json.data.id)]
+              } : prev);
+            }
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi tạo GRN', 'error');
+            fetchState(true);
           }
         } catch (err) {
           showToast(err.message, 'error');
+          fetchState(true);
         }
       };
 
       const handleCreatePickup = async (payload) => {
         try {
+          setActiveModal(null);
+          showToast('Đang gửi Đăng Ký Ca Lấy Vật Tư...');
           const res = await fetch('/api/pickup-registrations', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -379,18 +423,27 @@
           const json = await res.json();
           if (json.success) {
             showToast('Đã gửi Đăng Ký Ca Lấy Vật Tư Mẫu 1!');
-            setActiveModal(null);
+            if (json.data) {
+              setData(prev => prev ? {
+                ...prev,
+                pickupRegistrations: [json.data, ...(prev.pickupRegistrations || []).filter(p => p.id !== json.data.id)]
+              } : prev);
+            }
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi gửi đăng ký ca', 'error');
+            fetchState(true);
           }
         } catch (err) {
           showToast(err.message, 'error');
+          fetchState(true);
         }
       };
 
       const handleCreateGdn = async (payload) => {
         try {
+          setActiveModal(null);
+          showToast('Đang lập Phiếu Xuất Kho PXK-BOM-01...');
           const res = await fetch('/api/gdns', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -399,18 +452,33 @@
           const json = await res.json();
           if (json.success) {
             showToast('Đã lập Phiếu Xuất Kho PXK-BOM-01 thành công!');
-            setActiveModal(null);
+            if (json.data) {
+              setData(prev => prev ? {
+                ...prev,
+                goodsDispatchNotes: [json.data, ...(prev.goodsDispatchNotes || []).filter(g => g.id !== json.data.id)]
+              } : prev);
+            }
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi lập GDN', 'error');
+            fetchState(true);
           }
         } catch (err) {
           showToast(err.message, 'error');
+          fetchState(true);
         }
       };
 
       const handleApproveGdn = async (gdnId) => {
         try {
+          setData(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              goodsDispatchNotes: (prev.goodsDispatchNotes || []).map(g => g.id === gdnId ? { ...g, status: 'APPROVED' } : g)
+            };
+          });
+          showToast('Đang duyệt Phiếu Xuất Kho GDN...');
           const res = await fetch(`/api/gdns/${gdnId}/approve`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -422,14 +490,24 @@
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi duyệt GDN', 'error');
+            fetchState(true);
           }
         } catch (err) {
           showToast(err.message, 'error');
+          fetchState(true);
         }
       };
 
       const handleDispatchGdn = async (gdnId) => {
         try {
+          setData(prev => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              goodsDispatchNotes: (prev.goodsDispatchNotes || []).map(g => g.id === gdnId ? { ...g, status: 'DISPATCHED' } : g)
+            };
+          });
+          showToast('Đang thực xuất kho và cập nhật Sổ Cái...');
           const res = await fetch(`/api/gdns/${gdnId}/dispatch`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -441,14 +519,18 @@
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi thực xuất kho', 'error');
+            fetchState(true);
           }
         } catch (err) {
           showToast(err.message, 'error');
+          fetchState(true);
         }
       };
 
       const handleCreateReturn = async (payload) => {
         try {
+          setActiveModal(null);
+          showToast('Đang tạo Phiếu Nhập Trả...');
           const res = await fetch('/api/returns', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -457,13 +539,20 @@
           const json = await res.json();
           if (json.success) {
             showToast('Đã tạo Phiếu Nhập Trả / Thu hồi phế phẩm thành công!');
-            setActiveModal(null);
+            if (json.data) {
+              setData(prev => prev ? {
+                ...prev,
+                stockReturnNotes: [json.data, ...(prev.stockReturnNotes || []).filter(r => r.id !== json.data.id)]
+              } : prev);
+            }
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi tạo phiếu nhập trả', 'error');
+            fetchState(true);
           }
         } catch (err) {
           showToast(err.message, 'error');
+          fetchState(true);
         }
       };
 
@@ -483,21 +572,45 @@
             return;
           }
 
+          // Optimistic UI: Đóng modal và xóa trực tiếp khỏi state để giao diện phản hồi 0ms
+          setDeleteConfirmTarget(null);
+          if (selectedOrder && (selectedOrder.id === target.id || target.type === 'ORDER')) {
+            setOrderDrawerOpen(false);
+            setSelectedOrder(null);
+          }
+
+          setData(prev => {
+            if (!prev) return prev;
+            const updated = { ...prev };
+            if (target.type === 'ORDER') {
+              updated.orders = (prev.orders || []).filter(o => o.id !== target.id);
+            } else if (target.type === 'PO') {
+              updated.purchaseOrders = (prev.purchaseOrders || []).filter(p => p.id !== target.id);
+            } else if (target.type === 'GDN') {
+              updated.goodsDispatchNotes = (prev.goodsDispatchNotes || []).filter(g => g.id !== target.id);
+            } else if (target.type === 'GRN') {
+              updated.goodsReceiptNotes = (prev.goodsReceiptNotes || []).filter(g => g.id !== target.id);
+            } else if (target.type === 'PICKUP') {
+              updated.pickupRegistrations = (prev.pickupRegistrations || []).filter(p => p.id !== target.id);
+            } else if (target.type === 'RETURN') {
+              updated.stockReturnNotes = (prev.stockReturnNotes || []).filter(r => r.id !== target.id);
+            }
+            return updated;
+          });
+
+          showToast('Đang tiến hành xóa chứng từ và giải phóng giữ chỗ...');
           const res = await fetch(endpoint, { method: 'DELETE' });
           const json = await res.json();
           if (json.success) {
             showToast(json.message || 'Đã xóa chứng từ và giải phóng giữ chỗ thành công!');
-            setDeleteConfirmTarget(null);
-            if (selectedOrder && (selectedOrder.id === target.id || target.type === 'ORDER')) {
-              setOrderDrawerOpen(false);
-              setSelectedOrder(null);
-            }
             fetchState(true);
           } else {
             showToast(json.message || 'Lỗi khi xóa chứng từ', 'error');
+            fetchState(true);
           }
         } catch (err) {
           showToast(err.message, 'error');
+          fetchState(true);
         }
       };
 

@@ -20,13 +20,16 @@ class WmsService {
    * Duy trì kết nối TCP/TLS liên tục tới Supabase PostgreSQL để tránh cold-start
    */
   startKeepAlive() {
-    setInterval(async () => {
+    const timer = setInterval(async () => {
       try {
         await prisma.$queryRaw`SELECT 1;`;
       } catch (e) {
         // Silent keep-alive heartbeat
       }
     }, 150000); // 2.5 phút một lần
+    if (timer && timer.unref) {
+      timer.unref();
+    }
   }
 
   /**
@@ -41,6 +44,24 @@ class WmsService {
    */
   hasCachedState() {
     return !!this.stateCache && (Date.now() - this.stateCacheTime < this.CACHE_TTL_MS);
+  }
+
+  /**
+   * Cập nhật tức thì bộ nhớ đệm RAM mà không cần quét lại 16 bảng từ Cloud Supabase
+   */
+  updateCacheIncrementally(updaterFn) {
+    if (this.stateCache) {
+      try {
+        updaterFn(this.stateCache);
+        this.stateCacheTime = Date.now();
+        this.stateVersion++;
+      } catch (err) {
+        console.warn('[Cache Incremental Mutation Warning]:', err.message);
+        this.invalidateCache();
+      }
+    } else {
+      this.invalidateCache();
+    }
   }
 
   /**
@@ -280,10 +301,15 @@ class WmsService {
   async createOrder(payload) {
     let saleAdminId = payload.saleAdminId || payload.createdById;
     if (!saleAdminId) {
-      const saleAdmin = await prisma.user.findFirst({
-        where: { role: 'SALE_ADMIN' },
-      });
-      saleAdminId = saleAdmin ? saleAdmin.id : (await prisma.user.findFirst()).id;
+      if (this.stateCache && this.stateCache.users && this.stateCache.users.length > 0) {
+        const saleAdmin = this.stateCache.users.find(u => u.role === 'SALE_ADMIN') || this.stateCache.users[0];
+        saleAdminId = saleAdmin.id;
+      } else {
+        const saleAdmin = await prisma.user.findFirst({
+          where: { role: 'SALE_ADMIN' },
+        });
+        saleAdminId = saleAdmin ? saleAdmin.id : (await prisma.user.findFirst()).id;
+      }
     }
 
     const orderCode = payload.code || `DH-2026-${Math.floor(100 + Math.random() * 900)}`;
@@ -340,8 +366,11 @@ class WmsService {
       },
     });
 
-    this.invalidateCache();
-    return newOrder;
+    const normalized = DataNormalizer.normalizeOrder(newOrder);
+    this.updateCacheIncrementally(cache => {
+      cache.orders = [normalized, ...(cache.orders || [])];
+    });
+    return normalized;
   }
 
   /**
@@ -676,8 +705,15 @@ class WmsService {
       return newPo;
     }, { maxWait: 20000, timeout: 60000 });
 
-    this.invalidateCache();
-    return newPo;
+    const normalized = DataNormalizer.normalizePurchaseOrder(newPo);
+    this.updateCacheIncrementally(cache => {
+      cache.purchaseOrders = [normalized, ...(cache.purchaseOrders || [])];
+      if (payload.orderId) {
+        const o = (cache.orders || []).find(ord => ord.id === payload.orderId);
+        if (o) o.status = 'CHO_MUA';
+      }
+    });
+    return normalized;
   }
 
   /**
@@ -935,8 +971,11 @@ class WmsService {
       return createdReg;
     }, { maxWait: 20000, timeout: 60000 });
 
-    this.invalidateCache();
-    return reg;
+    const normalized = DataNormalizer.normalizePickupRegistration(reg);
+    this.updateCacheIncrementally(cache => {
+      cache.pickupRegistrations = [normalized, ...(cache.pickupRegistrations || [])];
+    });
+    return normalized;
   }
 
   /**
@@ -992,8 +1031,27 @@ class WmsService {
       return createdGdn;
     }, { maxWait: 20000, timeout: 60000 });
 
-    this.invalidateCache();
-    return gdn;
+    const fullGdn = await prisma.goodsDispatchNote.findUnique({
+      where: { id: gdn.id },
+      include: {
+        order: true,
+        panel: true,
+        warehouse: true,
+        createdBy: true,
+        approvedBy: true,
+        items: {
+          include: {
+            sku: { include: { baseUom: true } },
+          },
+        },
+      },
+    });
+
+    const normalized = fullGdn ? DataNormalizer.normalizeGoodsDispatchNote(fullGdn) : gdn;
+    this.updateCacheIncrementally(cache => {
+      cache.goodsDispatchNotes = [normalized, ...(cache.goodsDispatchNotes || [])];
+    });
+    return normalized;
   }
 
   /**
@@ -1255,8 +1313,26 @@ class WmsService {
       return returnNote;
     }, { maxWait: 20000, timeout: 60000 });
 
-    this.invalidateCache();
-    return returnNote;
+    const fullReturn = await prisma.stockReturnNote.findUnique({
+      where: { id: returnNote.id },
+      include: {
+        order: true,
+        panel: true,
+        warehouse: true,
+        createdBy: true,
+        items: {
+          include: {
+            sku: { include: { baseUom: true } },
+          },
+        },
+      },
+    });
+
+    const normalized = fullReturn ? DataNormalizer.normalizeStockReturnNote(fullReturn) : returnNote;
+    this.updateCacheIncrementally((cache) => {
+      cache.stockReturnNotes = [normalized, ...(cache.stockReturnNotes || [])];
+    });
+    return normalized;
   }
 
   /**
@@ -1560,7 +1636,14 @@ class WmsService {
       };
     }, { maxWait: 20000, timeout: 60000 });
 
-    this.invalidateCache();
+    this.updateCacheIncrementally((cache) => {
+      cache.orders = (cache.orders || []).filter(o => o.id !== orderId);
+      cache.boms = (cache.boms || []).filter(b => b.orderId !== orderId);
+      cache.purchaseOrders = (cache.purchaseOrders || []).filter(p => p.orderId !== orderId);
+      cache.goodsDispatchNotes = (cache.goodsDispatchNotes || []).filter(g => g.orderId !== orderId);
+      cache.stockReturnNotes = (cache.stockReturnNotes || []).filter(r => r.orderId !== orderId);
+      cache.pickupRegistrations = (cache.pickupRegistrations || []).filter(p => p.orderId !== orderId);
+    });
     return result;
   }
 
@@ -1591,7 +1674,10 @@ class WmsService {
       };
     }, { maxWait: 20000, timeout: 60000 });
 
-    this.invalidateCache();
+    this.updateCacheIncrementally((cache) => {
+      cache.purchaseOrders = (cache.purchaseOrders || []).filter(p => p.id !== poId);
+      cache.goodsReceiptNotes = (cache.goodsReceiptNotes || []).filter(g => g.poId !== poId);
+    });
     return result;
   }
 
@@ -1633,7 +1719,9 @@ class WmsService {
       };
     }, { maxWait: 20000, timeout: 60000 });
 
-    this.invalidateCache();
+    this.updateCacheIncrementally((cache) => {
+      cache.goodsDispatchNotes = (cache.goodsDispatchNotes || []).filter(g => g.id !== gdnId);
+    });
     return result;
   }
 
@@ -1675,7 +1763,9 @@ class WmsService {
       };
     }, { maxWait: 20000, timeout: 60000 });
 
-    this.invalidateCache();
+    this.updateCacheIncrementally((cache) => {
+      cache.goodsReceiptNotes = (cache.goodsReceiptNotes || []).filter(g => g.id !== grnId);
+    });
     return result;
   }
 
@@ -1697,7 +1787,9 @@ class WmsService {
       };
     }, { maxWait: 20000, timeout: 60000 });
 
-    this.invalidateCache();
+    this.updateCacheIncrementally((cache) => {
+      cache.pickupRegistrations = (cache.pickupRegistrations || []).filter(p => p.id !== regId);
+    });
     return result;
   }
 
@@ -1722,7 +1814,9 @@ class WmsService {
       };
     }, { maxWait: 20000, timeout: 60000 });
 
-    this.invalidateCache();
+    this.updateCacheIncrementally((cache) => {
+      cache.stockReturnNotes = (cache.stockReturnNotes || []).filter(r => r.id !== returnId);
+    });
     return result;
   }
 }
