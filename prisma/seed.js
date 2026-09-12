@@ -17,14 +17,14 @@ async function main() {
       IF NOT EXISTS (
         SELECT 1 FROM pg_constraint WHERE conname = 'chk_stock_balance_positive'
       ) THEN
-        ALTER TABLE "mevn_wms"."stock_balances"
+        ALTER TABLE "stock_balances"
         ADD CONSTRAINT chk_stock_balance_positive CHECK (quantity_physical >= 0);
       END IF;
 
       IF NOT EXISTS (
         SELECT 1 FROM pg_constraint WHERE conname = 'chk_stock_balance_reserved_valid'
       ) THEN
-        ALTER TABLE "mevn_wms"."stock_balances"
+        ALTER TABLE "stock_balances"
         ADD CONSTRAINT chk_stock_balance_reserved_valid CHECK (quantity_physical >= quantity_reserved AND quantity_reserved >= 0);
       END IF;
     END $$;
