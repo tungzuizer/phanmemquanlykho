@@ -750,27 +750,115 @@ function Modals({
     );
   }
 
-  // 7. PRINT PREVIEW MODAL (ISO 9001:2015 PRINT ENGINE)
+  // 7. PRINT PREVIEW & INVOICE EXPORT MODAL (ISO 9001:2015 PRINT ENGINE)
   if (activeModal === 'PRINT' && printPreviewData) {
-    const { docType, entity } = printPreviewData;
+    const docType = printPreviewData.docType || printPreviewData.type || 'GDN';
+    const entity = printPreviewData.entity || printPreviewData.doc || printPreviewData;
+
+    // Resolve Form Code & Title
+    const formConfig = {
+      GDN: {
+        code: 'BM-WMS-PXK-01',
+        title: 'PHIẾU XUẤT KHO VẬT TƯ SẢN XUẤT (PXK-BOM-01)',
+        subTitle: 'Căn cứ theo định mức kỹ thuật BOM & Đăng ký lấy hàng ca sản xuất'
+      },
+      PO: {
+        code: 'BM-WMS-PO-01',
+        title: 'ĐƠN ĐẶT HÀNG NHÀ CUNG CẤP / HÓA ĐƠN MUA HÀNG (PURCHASE ORDER)',
+        subTitle: 'Mua bù vật tư thiếu hụt theo Delta âm đối chiếu tồn BOM đơn hàng'
+      },
+      GRN: {
+        code: 'BM-WMS-PNK-01',
+        title: 'PHIẾU NHẬP KHO VẬT TƯ & THIẾT BỊ (GOODS RECEIPT NOTE)',
+        subTitle: 'Tiếp nhận hàng hóa, vật tư thiết bị điện theo đơn mua hàng PO'
+      },
+      RETURN: {
+        code: 'BM-WMS-NTK-01',
+        title: 'PHIẾU NHẬP TRẢ & THU HỒI PHẾ LIỆU ĐỒNG / ĐIỆN',
+        subTitle: 'Thu hồi đầu mẩu thừa và vật tư sau công đoạn lắp ráp về Kho Cách Ly'
+      },
+      BOM: {
+        code: 'BM-WMS-BOM-01',
+        title: 'BẢNG ĐỊNH MỨC KỸ THUẬT BÓC TÁCH VẬT TƯ (BOM SPECIFICATION)',
+        subTitle: 'Định mức tiêu hao vật tư cho từng tủ điện theo hồ sơ thiết kế MEVN'
+      },
+      ORDER: {
+        code: 'BM-WMS-LSX-01',
+        title: 'LỆNH SẢN XUẤT & CHẾ TẠO VỎ TỦ ĐIỆN (MANUFACTURING WORK ORDER)',
+        subTitle: 'Lệnh sản xuất chế tạo vỏ tủ và lắp ráp thiết bị điện công nghiệp'
+      },
+      PICKUP: {
+        code: 'BM-WMS-CA-01',
+        title: 'PHIẾU ĐĂNG KÝ CA LẤY VẬT TƯ (MẪU 1 - THEO CA SẢN XUẤT)',
+        subTitle: 'Tuân thủ quy chuẩn lấy hàng theo ca và hạn chót đăng ký KPI'
+      }
+    };
+
+    const currentDoc = formConfig[docType] || formConfig.GDN;
+    const rawItems = entity?.items || entity?.panels || (Array.isArray(entity) ? entity : [entity]);
+
+    // Calculate Financial and Quantity Totals
+    let totalItemsCount = 0;
+    let grandTotalAmount = 0;
+
+    const normalizedItems = rawItems.map((it, idx) => {
+      const sku = (data.skus || []).find(s => s.id === (it.skuId || it.id || it.sku?.id));
+      const uom = (data.uoms || []).find(u => u.id === (sku?.baseUomId || it.uomId || it.purchasingUomId || it.sku?.baseUomId));
+      const wh = (data.warehouses || []).find(w => w.id === (it.warehouseId || sku?.warehouseId));
+
+      const skuCode = it.skuCode || it.sku?.code || sku?.code || it.code || `SKU-MEVN-${idx + 1}`;
+      const skuName = it.skuName || it.sku?.name || sku?.name || it.name || it.panelName || 'Vật tư chuẩn dự án MEVN';
+      const uomName = it.uomName || it.purchasingUomName || uom?.name || 'Cái';
+      const whName = wh?.name || it.warehouseName || 'Kho Điện';
+
+      const qtyBom = Number(it.quantityBom || it.quantityRequired || it.quantity || 1);
+      const qtyReal = Number(it.quantityReal || it.quantityReceived || it.quantityPurchased || it.quantityDispatched || it.quantity || 1);
+      const unitCost = Number(it.unitCost || it.unitPrice || it.baseUnitCost || sku?.unitCost || 0);
+      const lineTotal = Number(it.lineTotal || (unitCost * qtyReal) || 0);
+
+      totalItemsCount += qtyReal;
+      grandTotalAmount += lineTotal;
+
+      return {
+        idx: idx + 1,
+        skuCode,
+        skuName,
+        uomName,
+        whName,
+        qtyBom,
+        qtyReal,
+        unitCost,
+        lineTotal,
+        binCode: it.binCode || it.location || 'Vị trí chuẩn',
+        note: it.note || it.defectReason || it.reusableStatus || '',
+        panelName: it.name || it.panelName || '',
+        panelCode: it.code || it.panelCode || '',
+        panelQty: it.quantity || 1,
+      };
+    });
 
     return (
       <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4 animate-fade-in print:p-0 print:bg-white">
-        <div className="bg-white text-slate-900 rounded-t-3xl md:rounded-3xl max-w-3xl w-full p-5 sm:p-8 shadow-2xl border-t md:border border-slate-200 max-h-[92vh] flex flex-col print:shadow-none print:border-none print:max-h-full print:p-0 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:pb-8">
+        <div className="bg-white text-slate-900 rounded-t-3xl md:rounded-3xl max-w-4xl w-full p-5 sm:p-8 shadow-2xl border-t md:border border-slate-200 max-h-[92vh] flex flex-col print:shadow-none print:border-none print:max-h-full print:p-0 pb-[max(1.25rem,env(safe-area-inset-bottom))] md:pb-8">
           {/* Header Controls (Hidden on print) */}
           <div className="flex items-center justify-between pb-4 border-b border-slate-200 print:hidden">
             <div className="flex items-center gap-2">
-              <i className="fa-solid fa-print text-blue-600"></i>
-              <span className="font-extrabold text-xs sm:text-sm">Biểu Mẫu Chuẩn ISO 9001:2015</span>
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">
+                <i className="fa-solid fa-file-invoice"></i>
+              </div>
+              <div>
+                <span className="font-extrabold text-xs sm:text-sm text-slate-900 block">Xuất Biểu Mẫu & Hóa Đơn Chuẩn ISO 9001:2015</span>
+                <span className="text-[10px] text-slate-500 font-mono">Định dạng A4 Landscape / Portrait tự động</span>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <button
                 onClick={() => window.print()}
-                className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5 liquid-touch"
+                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/25 flex items-center gap-1.5 liquid-touch"
               >
-                <i className="fa-solid fa-print"></i> In Ngay
+                <i className="fa-solid fa-print"></i> In Chứng Từ / Xuất PDF
               </button>
-              <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center liquid-touch">
+              <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center liquid-touch">
                 <i className="fa-solid fa-xmark text-sm"></i>
               </button>
             </div>
@@ -779,107 +867,186 @@ function Modals({
           {/* Printable Document Container */}
           <div className="printable-doc my-4 space-y-6 flex-1 overflow-y-auto print:overflow-visible pr-1">
             {/* Factory Header */}
-            <div className="flex items-start justify-between border-b-2 border-slate-900 pb-3 gap-2">
-              <div>
-                <h1 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900">
-                  CÔNG TY CỔ PHẦN MAX ELECTRIC VIỆT NAM (MEVN)
-                </h1>
-                <p className="text-[10px] text-slate-600">
-                  Nhà máy sản xuất tủ bảng điện công nghiệp & Hệ thống phân phối
-                </p>
-                <p className="text-[10px] text-slate-500 font-mono">
-                  ISO 9001:2015 Quality Management System
-                </p>
+            <div className="flex items-start justify-between border-b-2 border-slate-900 pb-3 gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-lg">
+                  MEVN
+                </div>
+                <div>
+                  <h1 className="text-xs sm:text-sm font-black uppercase tracking-wider text-slate-900">
+                    CÔNG TY CỔ PHẦN MAX ELECTRIC VIỆT NAM (MEVN)
+                  </h1>
+                  <p className="text-[10px] text-slate-600">
+                    Nhà máy sản xuất tủ bảng điện công nghiệp & Trạm biến áp hợp bộ
+                  </p>
+                  <p className="text-[10px] text-slate-500 font-mono">
+                    Hệ thống Quản lý Chất lượng đạt chuẩn Quốc tế ISO 9001:2015
+                  </p>
+                </div>
               </div>
               <div className="text-right text-[10px] font-mono whitespace-nowrap">
-                <div className="font-bold">Mã biểu mẫu: {docType === 'GDN' ? 'BM-WMS-PXK-01' : docType === 'PICKUP' ? 'BM-WMS-CA-01' : 'BM-WMS-GEN'}</div>
-                <div>Ngày in: {new Date().toLocaleDateString('vi-VN')}</div>
+                <div className="font-bold text-slate-900">Mã biểu mẫu: {currentDoc.code}</div>
+                <div className="text-slate-600">Ngày in: {new Date().toLocaleDateString('vi-VN')} {new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+                <div className="text-slate-500">Người in: {currentUser?.fullName || currentUser?.name || 'Hệ thống WMS'}</div>
               </div>
             </div>
 
             {/* Document Title */}
             <div className="text-center space-y-1">
-              <h2 className="text-base sm:text-lg font-black uppercase tracking-wider">
-                {docType === 'GDN' && 'PHIẾU XUẤT KHO VẬT TƯ SẢN XUẤT (PXK-BOM-01)'}
-                {docType === 'PICKUP' && 'PHIẾU ĐĂNG KÝ CA LẤY VẬT TƯ (MẪU 1)'}
-                {docType === 'PO' && 'ĐƠN ĐẶT HÀNG BÙ THIẾU VẬT TƯ (PURCHASE ORDER)'}
-                {docType === 'GRN' && 'PHIẾU NHẬP KHO TIẾP NHẬN HÀNG (GRN)'}
-                {docType === 'RETURN' && 'PHIẾU NHẬP TRẢ & THU HỒI PHẾ LIỆU ĐỒNG/ĐIỆN'}
-                {docType === 'BOM' && 'BẢNG ĐỊNH MỨC KỸ THUẬT VẬT TƯ (BOM SPECIFICATION)'}
+              <h2 className="text-base sm:text-xl font-black uppercase tracking-wider text-slate-900">
+                {currentDoc.title}
               </h2>
-              <div className="font-mono text-xs font-bold text-slate-700">
-                Mã chứng từ: {entity?.code || entity?.id || 'N/A'}
+              <p className="text-xs text-slate-600 italic">
+                {currentDoc.subTitle}
+              </p>
+              <div className="inline-block font-mono text-xs font-black text-blue-700 bg-blue-50 px-3 py-0.5 rounded-md border border-blue-200 mt-1">
+                Số chứng từ: {entity?.code || entity?.id || 'N/A'}
               </div>
             </div>
 
-            {/* Meta info box */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4 text-xs bg-slate-50 p-3 rounded-2xl border border-slate-200">
+            {/* Metadata Info Box */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 text-xs bg-slate-50 p-3.5 rounded-2xl border border-slate-200 font-medium">
               <div>
-                <strong>Người lập/Đại diện:</strong> {entity?.receiverName || entity?.teamLeaderName || entity?.returnedByName || entity?.supplierName || currentUser?.name || 'Thủ kho'}
+                <span className="text-slate-500">Đơn hàng / Dự án:</span>{' '}
+                <strong className="text-slate-900">{entity?.orderCode || entity?.order?.code || entity?.title || entity?.project || 'DH-2026-MEVN-01 (Tòa Nhà Landmark Core)'}</strong>
               </div>
               <div>
-                <strong>Ngày chứng từ:</strong> {formatDate(entity?.createdAt || entity?.pickupDate || entity?.returnDate)}
+                <span className="text-slate-500">Tủ điện / Panel:</span>{' '}
+                <strong className="text-slate-900">{entity?.panelName || entity?.panel?.name || entity?.panelCode || 'Tủ MSB 2500A Main Switchboard'}</strong>
               </div>
               <div>
-                <strong>Trạng thái:</strong> {entity?.status || 'ĐÃ PHÊ DUYỆT'}
+                <span className="text-slate-500">Ngày lập / Ngày xuất:</span>{' '}
+                <strong className="text-slate-900">{formatDate(entity?.dispatchedAt || entity?.receivedAt || entity?.createdAt || entity?.pickupDate || entity?.orderDate)}</strong>
               </div>
               <div>
-                <strong>Bộ phận liên quan:</strong> Xưởng Lắp Ráp & Kho Vận MEVN
+                <span className="text-slate-500">Kho thực hiện:</span>{' '}
+                <strong className="text-slate-900">{entity?.warehouseName || entity?.warehouse?.name || 'Kho Điện & Kho Đồng MEVN'}</strong>
               </div>
+              <div>
+                <span className="text-slate-500">Đại diện nhận / NCC:</span>{' '}
+                <strong className="text-slate-900">{entity?.receiverName || entity?.supplierName || entity?.customerName || entity?.customer || entity?.registeredByName || 'Đội Lắp Ráp Sản Xuất MEVN'}</strong>
+              </div>
+              <div>
+                <span className="text-slate-500">Trạng thái phê duyệt:</span>{' '}
+                <strong className="text-emerald-700 font-bold">{entity?.status === 'DISPATCHED' ? 'ĐÃ XUẤT KHO & KÝ NHẬN' : entity?.status === 'COMPLETED' ? 'HOÀN TẤT 100%' : entity?.status === 'APPROVED' ? 'ĐÃ DUYỆT XUẤT' : (entity?.status || 'ĐÃ DUYỆT')}</strong>
+              </div>
+              {entity?.note && (
+                <div className="col-span-full border-t border-slate-200 pt-1.5 text-slate-600 italic">
+                  <span className="font-bold text-slate-700 not-italic">Ghi chú:</span> {entity.note}
+                </div>
+              )}
             </div>
 
             {/* Table of items */}
             <div className="border border-slate-900 rounded-xl overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-900 font-black border-b border-slate-900">
-                    <th className="py-2 px-3">STT</th>
-                    <th className="py-2 px-3">Mã SKU</th>
-                    <th className="py-2 px-3">Tên Vật Tư / Thông Số</th>
-                    <th className="py-2 px-2 text-right">Số Lượng</th>
-                    <th className="py-2 px-3 text-center">Vị Trí</th>
+                  <tr className="bg-slate-100 text-slate-900 font-black border-b border-slate-900 text-[11px]">
+                    <th className="py-2.5 px-3 w-10 text-center">STT</th>
+                    <th className="py-2.5 px-3 w-32">Mã SKU / Mã Tủ</th>
+                    <th className="py-2.5 px-3">Tên Vật Tư / Quy Cách Kỹ Thuật</th>
+                    <th className="py-2.5 px-2 text-center w-16">ĐVT</th>
+                    {docType === 'GDN' && <th className="py-2.5 px-2 text-right w-20">Định Mức</th>}
+                    <th className="py-2.5 px-2 text-right w-20">
+                      {docType === 'GDN' ? 'Thực Xuất' : docType === 'PO' ? 'Số Lượng Mua' : docType === 'GRN' ? 'Nhập Kho' : docType === 'RETURN' ? 'Thu Hồi' : 'Số Lượng'}
+                    </th>
+                    {(docType === 'GDN' || docType === 'PO' || docType === 'GRN' || docType === 'RETURN') && (
+                      <>
+                        <th className="py-2.5 px-3 text-right w-28">Đơn Giá (đ)</th>
+                        <th className="py-2.5 px-3 text-right w-32">Thành Tiền (đ)</th>
+                      </>
+                    )}
+                    <th className="py-2.5 px-3 text-center w-24">Vị Trí / Ghi Chú</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-300">
-                  {((entity?.items) || [entity]).map((it, idx) => {
-                    const sku = (data.skus || []).find(s => s.id === (it.skuId || it.id));
-                    const uom = (data.uoms || []).find(u => u.id === (sku?.baseUomId || it.uomId));
-
-                    return (
-                      <tr key={idx}>
-                        <td className="py-2 px-3 font-mono">{idx + 1}</td>
-                        <td className="py-2 px-3 font-mono font-bold">{sku?.code || it.code || 'SKU-MEVN'}</td>
-                        <td className="py-2 px-3">{sku?.name || it.name || 'Vật tư chuẩn dự án'}</td>
-                        <td className="py-2 px-2 text-right font-mono font-bold">
-                          {it.quantityDispatched || it.quantityReceived || it.quantityRequired || it.quantity || 1} {uom?.name || 'Cái'}
-                        </td>
-                        <td className="py-2 px-3 text-center font-mono text-[11px] text-slate-600">
-                          {it.binCode || it.gateNumber || 'Khu vực chính'}
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {normalizedItems.map(it => (
+                    <tr key={it.idx} className="hover:bg-slate-50">
+                      <td className="py-2 px-3 font-mono text-center">{it.idx}</td>
+                      <td className="py-2 px-3 font-mono font-bold text-slate-900">{it.skuCode}</td>
+                      <td className="py-2 px-3 font-medium">{it.skuName}</td>
+                      <td className="py-2 px-2 text-center font-semibold text-slate-600">{it.uomName}</td>
+                      {docType === 'GDN' && <td className="py-2 px-2 text-right font-mono text-slate-500">{it.qtyBom}</td>}
+                      <td className="py-2 px-2 text-right font-mono font-black text-slate-900">{it.qtyReal}</td>
+                      {(docType === 'GDN' || docType === 'PO' || docType === 'GRN' || docType === 'RETURN') && (
+                        <>
+                          <td className="py-2 px-3 text-right font-mono text-slate-700">{formatMoney(it.unitCost)}</td>
+                          <td className="py-2 px-3 text-right font-mono font-black text-slate-900">{formatMoney(it.lineTotal)}</td>
+                        </>
+                      )}
+                      <td className="py-2 px-3 text-center font-mono text-[11px] text-slate-600">
+                        {it.binCode || it.whName}
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
+                {/* Financial Summary Footer */}
+                {(docType === 'GDN' || docType === 'PO' || docType === 'GRN' || docType === 'RETURN') && (
+                  <tfoot>
+                    <tr className="bg-slate-100 border-t-2 border-slate-900 font-black text-slate-900">
+                      <td colSpan={docType === 'GDN' ? 5 : 4} className="py-2.5 px-3 text-right uppercase tracking-wider text-[11px]">
+                        Tổng Cộng Giá Trị:
+                      </td>
+                      <td className="py-2.5 px-2 text-right font-mono font-black text-blue-700">
+                        {totalItemsCount}
+                      </td>
+                      <td></td>
+                      <td className="py-2.5 px-3 text-right font-mono font-black text-sm text-blue-700">
+                        {formatMoney(grandTotalAmount)}
+                      </td>
+                      <td></td>
+                    </tr>
+                  </tfoot>
+                )}
               </table>
             </div>
 
-            {/* Signature Blocks */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center pt-6 text-xs">
-              <div className="space-y-8">
-                <div className="font-bold">Người Lập Phiếu</div>
-                <div className="text-slate-400 italic text-[11px]">(Ký, họ tên)</div>
+            {/* In-Words Text Box */}
+            {(docType === 'GDN' || docType === 'PO' || docType === 'GRN' || docType === 'RETURN') && grandTotalAmount > 0 && (
+              <div className="text-xs text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                <strong>Số tiền bằng số:</strong> <span className="font-mono font-bold text-slate-900">{formatMoney(grandTotalAmount)} VNĐ</span>
+                <br />
+                <strong>Chứng từ kèm theo:</strong> Bảng đối chiếu định mức kỹ thuật BOM & Phiếu đăng ký ca lấy hàng hợp lệ.
               </div>
-              <div className="space-y-8">
-                <div className="font-bold">Người Nhận Hàng</div>
-                <div className="text-slate-400 italic text-[11px]">(Ký, họ tên)</div>
+            )}
+
+            {/* ISO 9001:2015 4-Signature Block */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center pt-6 text-xs text-slate-900">
+              <div className="space-y-12">
+                <div>
+                  <div className="font-black uppercase">Người Lập Biểu</div>
+                  <div className="text-slate-500 italic text-[11px]">(Ký, ghi rõ họ tên)</div>
+                </div>
+                <div className="font-bold text-slate-800 pt-4 border-t border-dotted border-slate-300 mx-4">
+                  {currentUser?.fullName || currentUser?.name || 'Nhân viên lập'}
+                </div>
               </div>
-              <div className="space-y-8">
-                <div className="font-bold">Thủ Kho Bàn Giao</div>
-                <div className="text-slate-400 italic text-[11px]">(Ký, họ tên)</div>
+              <div className="space-y-12">
+                <div>
+                  <div className="font-black uppercase">Người Nhận Hàng</div>
+                  <div className="text-slate-500 italic text-[11px]">(Ký, ghi rõ họ tên)</div>
+                </div>
+                <div className="font-bold text-slate-800 pt-4 border-t border-dotted border-slate-300 mx-4">
+                  {entity?.receiverName || 'Tổ Trưởng Sản Xuất'}
+                </div>
               </div>
-              <div className="space-y-8">
-                <div className="font-bold">Giám Đốc / Kế Toán</div>
-                <div className="text-slate-400 italic text-[11px]">(Ký, đóng dấu)</div>
+              <div className="space-y-12">
+                <div>
+                  <div className="font-black uppercase">Thủ Kho Bàn Giao</div>
+                  <div className="text-slate-500 italic text-[11px]">(Ký, ghi rõ họ tên)</div>
+                </div>
+                <div className="font-bold text-slate-800 pt-4 border-t border-dotted border-slate-300 mx-4">
+                  {entity?.warehouseName?.includes('Đồng') ? 'Thủ Kho Đồng' : 'Thủ Kho Điện'}
+                </div>
+              </div>
+              <div className="space-y-12">
+                <div>
+                  <div className="font-black uppercase">Ban Giám Đốc / Kế Toán</div>
+                  <div className="text-slate-500 italic text-[11px]">(Ký, đóng dấu duyệt)</div>
+                </div>
+                <div className="font-bold text-slate-800 pt-4 border-t border-dotted border-slate-300 mx-4">
+                  MEVN Phê Duyệt
+                </div>
               </div>
             </div>
           </div>

@@ -212,12 +212,23 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                   className="px-4 sm:px-5 py-3 bg-slate-50/70 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2"
                   onClick={e => e.stopPropagation()}
                 >
-                  <button
-                    onClick={() => onSelectOrder(order)}
-                    className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
-                  >
-                    Xem chi tiết <i className="fa-solid fa-chevron-right text-[9px]"></i>
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onSelectOrder(order)}
+                      className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                    >
+                      Chi tiết <i className="fa-solid fa-chevron-right text-[9px]"></i>
+                    </button>
+                    {onOpenPrintPreview && (
+                      <button
+                        onClick={() => onOpenPrintPreview('ORDER', order)}
+                        className="px-2 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 font-bold text-[10px] rounded-lg flex items-center gap-1 liquid-touch"
+                        title="In Lệnh Sản Xuất ISO 9001:2015"
+                      >
+                        <i className="fa-solid fa-print"></i> In LSX
+                      </button>
+                    )}
+                  </div>
 
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {!alloc.hasBom && (
@@ -348,12 +359,23 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                         {formatDate(order.targetDeliveryDate)}
                       </td>
                       <td className="py-3.5 px-4 text-right" onClick={e => e.stopPropagation()}>
-                        <button
-                          onClick={() => onSelectOrder(order)}
-                          className="px-3 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold liquid-touch"
-                        >
-                          Chi tiết
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          {onOpenPrintPreview && (
+                            <button
+                              onClick={() => onOpenPrintPreview('ORDER', order)}
+                              className="px-2.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold liquid-touch"
+                              title="In Lệnh Sản Xuất ISO 9001:2015"
+                            >
+                              <i className="fa-solid fa-print mr-1"></i> In LSX
+                            </button>
+                          )}
+                          <button
+                            onClick={() => onSelectOrder(order)}
+                            className="px-3 py-1.5 bg-blue-50 dark:bg-blue-950/60 hover:bg-blue-100 text-blue-600 dark:text-blue-400 rounded-xl text-xs font-bold liquid-touch"
+                          >
+                            Chi tiết
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

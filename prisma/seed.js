@@ -10,7 +10,33 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('⚡ [MEVN SEED] Đang kết nối Supabase PostgreSQL và nạp dữ liệu chuẩn...');
 
-  // 0. Tạo SQL CHECK constraints cho bảng StockBalance để bảo vệ bất biến dữ liệu ở tầng Engine DB
+  // 0. Dọn dẹp sạch sẽ các dữ liệu kiểm thử cũ trước khi nạp baseline
+  console.log('🧹 [MEVN SEED] Đang dọn dẹp sạch sẽ các dữ liệu kiểm thử cũ...');
+  try {
+    await prisma.kpiLog.deleteMany();
+    await prisma.stockTransaction.deleteMany();
+    await prisma.stocktakeItem.deleteMany();
+    await prisma.stocktake.deleteMany();
+    await prisma.stockReturnItem.deleteMany();
+    await prisma.stockReturnNote.deleteMany();
+    await prisma.goodsDispatchItem.deleteMany();
+    await prisma.goodsDispatchNote.deleteMany();
+    await prisma.pickupRegistration.deleteMany();
+    await prisma.goodsReceiptItem.deleteMany();
+    await prisma.goodsReceiptNote.deleteMany();
+    await prisma.purchaseOrderItem.deleteMany();
+    await prisma.purchaseOrder.deleteMany();
+    await prisma.stockReservation.deleteMany();
+    await prisma.bomItem.deleteMany();
+    await prisma.bom.deleteMany();
+    await prisma.orderPanel.deleteMany();
+    await prisma.order.deleteMany();
+    console.log('✅ [MEVN SEED] Đã dọn sạch các bảng giao dịch cũ.');
+  } catch (err) {
+    console.warn('⚠️ [MEVN SEED] Cảnh báo dọn dẹp (tiếp tục nạp):', err.message);
+  }
+
+  // 0.1 Tạo SQL CHECK constraints cho bảng StockBalance để bảo vệ bất biến dữ liệu ở tầng Engine DB
   await prisma.$executeRawUnsafe(`
     DO $$
     BEGIN
@@ -367,6 +393,8 @@ async function main() {
     { skuCode: 'SKU-COS-DONG-SC50', whCode: 'KHO_DIEN', req: 48, res: 48, disp: 0, po: 0, status: 'RESERVED' },
   ];
 
+  const bomItemMap = {};
+
   for (const bi of bomItemsData) {
     const existing = await prisma.bomItem.findFirst({
       where: { bomId: bom1.id, skuId: skuMap[bi.skuCode].id },
@@ -398,6 +426,8 @@ async function main() {
       });
     }
 
+    bomItemMap[bi.skuCode] = item.id;
+
     // Ghi nhận StockReservation
     const existingRes = await prisma.stockReservation.findFirst({
       where: { bomItemId: item.id },
@@ -417,59 +447,213 @@ async function main() {
     }
   }
 
-  // 9. SEED PO & GRN (Mô phỏng 1 PO đã về kho cho SKU thiếu)
-  await prisma.purchaseOrder.upsert({
-    where: { code: 'PO-2026-MEVN-001' },
-    update: {
-      supplierId: supMap['NCC-CADIVI'].id,
-      orderId: order1.id,
-      createdById: userMap['muahang_po'].id,
-      status: 'COMPLETED',
-      totalAmount: 13500000,
-      note: 'Mua bổ sung 1 cuộn cáp Cadivi CV-50mm2 phục vụ Tủ MSB Landmark',
-      actualDeliveryDate: new Date(),
-    },
-    create: {
+  // 9. SEED PO & GRN
+  const po1 = await prisma.purchaseOrder.create({
+    data: {
       code: 'PO-2026-MEVN-001',
       supplierId: supMap['NCC-CADIVI'].id,
       orderId: order1.id,
       createdById: userMap['muahang_po'].id,
       status: 'COMPLETED',
       totalAmount: 13500000,
+      expectedDeliveryDate: new Date('2026-09-18T00:00:00Z'),
+      actualDeliveryDate: new Date('2026-09-18T10:00:00Z'),
       note: 'Mua bổ sung 1 cuộn cáp Cadivi CV-50mm2 phục vụ Tủ MSB Landmark',
-      actualDeliveryDate: new Date(),
+      items: {
+        create: [
+          {
+            skuId: skuMap['SKU-CAP-CDV-1X50'].id,
+            purchasingUomId: uomMap['CUON'].id,
+            quantityPurchased: 1,
+            baseQuantityExpected: 100,
+            baseQuantityReceived: 100,
+            unitPrice: 13500000,
+            lineTotal: 13500000,
+          },
+        ],
+      },
+    },
+    include: { items: true },
+  });
+
+  const grn1 = await prisma.goodsReceiptNote.create({
+    data: {
+      code: 'GRN-2026-001',
+      grnType: 'PO_RECEIPT',
+      poId: po1.id,
+      warehouseId: whMap['KHO_DIEN'].id,
+      createdById: userMap['thukho_dien'].id,
+      receivedAt: new Date('2026-09-18T10:30:00Z'),
+      documentRef: 'HĐ GTGT số 0048291 Cadivi',
+      note: 'Hàng về nguyên niêm phong, kiểm đếm đủ 1 cuộn 100m, đạt chuẩn nghiệm thu.',
+      items: {
+        create: [
+          {
+            skuId: skuMap['SKU-CAP-CDV-1X50'].id,
+            purchasingUomId: uomMap['CUON'].id,
+            quantity: 1,
+            conversionRate: 100,
+            baseQuantity: 100,
+            unitPrice: 13500000,
+            baseUnitCost: 135000,
+            lineTotal: 13500000,
+          },
+        ],
+      },
+    },
+    include: { items: true },
+  });
+
+  // 10. SEED PICKUP REGISTRATION (Mẫu 1)
+  const pickup1 = await prisma.pickupRegistration.create({
+    data: {
+      code: 'DKLH-2026-001',
+      orderId: order1.id,
+      panelId: panel1_1.id,
+      shiftType: 'CA_SANG',
+      pickupDate: new Date('2026-09-20T00:00:00Z'),
+      registeredById: userMap['sanxuat_to1'].id,
+      status: 'DISPATCHED',
+      isComplyKpi: true,
+      registeredAt: new Date('2026-09-19T14:00:00Z'),
+      note: 'Đăng ký nhận vật tư Tủ MSB 2500A phục vụ đấu nối khung vỏ ca sáng',
     },
   });
 
-  // 10. SEED KPI LOGS
-  const countKpi = await prisma.kpiLog.count();
-  if (countKpi === 0) {
-    await prisma.kpiLog.createMany({
-      data: [
-        {
-          metricCode: 'KPI_BOM_RESPONSE_TIME',
-          referenceCode: 'BOM-DH-2026-MEVN-01',
-          isCompliant: true,
-          deviationMinutes: -65, // Nhanh hơn SLA 65 phút
-          details: 'Kho Điện đối chiếu tồn và xác nhận giữ chỗ sau 1 giờ 15 phút (Quy định <= 2-4h).',
-        },
-        {
-          metricCode: 'KPI_PICKUP_ON_TIME',
-          referenceCode: 'DKLH-2026-001',
-          isCompliant: true,
-          deviationMinutes: -90,
-          details: 'Sản xuất gửi đăng ký lấy hàng lúc 14:00 chiều hôm trước (Hạn chót 15:30) cho Ca sáng hôm sau.',
-        },
-        {
-          metricCode: 'KPI_DISPATCH_ACCURACY',
-          referenceCode: 'PXK-BOM-2026-001',
-          isCompliant: true,
-          deviationMinutes: 0,
-          details: 'Soạn hàng đúng 100% chủng loại mã SKU và quy cách theo BOM.',
-        },
-      ],
-    });
-  }
+  // 11. SEED GDN (Phiếu xuất kho PXK-BOM-01)
+  const gdn1 = await prisma.goodsDispatchNote.create({
+    data: {
+      code: 'PXK-BOM-01-001',
+      orderId: order1.id,
+      panelId: panel1_1.id,
+      pickupRegistrationId: pickup1.id,
+      warehouseId: whMap['KHO_DIEN'].id,
+      shiftType: 'CA_SANG',
+      isOutOfShift: false,
+      isEmergency: false,
+      createdById: userMap['thukho_dien'].id,
+      approvedById: userMap['admin'].id,
+      approvedAt: new Date('2026-09-20T07:45:00Z'),
+      dispatchedAt: new Date('2026-09-20T08:15:00Z'),
+      receiverName: 'Hoàng Văn Ráp (Tổ Trưởng Lắp Ráp Tủ 1)',
+      receiverRole: 'Đội Lắp Ráp Tủ Điện MEVN',
+      status: 'DISPATCHED',
+      note: 'Xuất cấp vật tư cho Dự án Tòa Nhà Landmark Core theo BOM chuẩn.',
+      items: {
+        create: [
+          {
+            bomItemId: bomItemMap['SKU-MCCB-LS-100A'],
+            skuId: skuMap['SKU-MCCB-LS-100A'].id,
+            quantityBom: 6,
+            quantityReal: 6,
+            unitCost: 1250000,
+          },
+          {
+            bomItemId: bomItemMap['SKU-COS-DONG-SC50'],
+            skuId: skuMap['SKU-COS-DONG-SC50'].id,
+            quantityBom: 48,
+            quantityReal: 48,
+            unitCost: 12000,
+          },
+        ],
+      },
+    },
+  });
+
+  // 12. SEED RETURN NOTE (Phiếu nhập trả phế liệu / đầu mẩu)
+  const return1 = await prisma.stockReturnNote.create({
+    data: {
+      code: 'NTK-2026-001',
+      orderId: order1.id,
+      panelId: panel1_1.id,
+      warehouseId: whMap['KHO_CACH_LY'].id,
+      isDefective: true,
+      defectReason: 'Đầu mẩu thanh cái đồng dư thừa sau khi đột dập uốn tại Xưởng A',
+      createdById: userMap['sanxuat_to1'].id,
+      returnedAt: new Date('2026-09-20T16:30:00Z'),
+      note: 'Thu hồi 15kg phế liệu đồng về Kho Cách Ly để quản lý thu hồi',
+      items: {
+        create: [
+          {
+            skuId: skuMap['SKU-DONG-TC-60X8'].id,
+            quantity: 15,
+            unitCost: 270000,
+            isReusable: false,
+          },
+        ],
+      },
+    },
+  });
+
+  // 13. SEED STOCK TRANSACTIONS (Sổ cái giao dịch kho)
+  await prisma.stockTransaction.createMany({
+    data: [
+      {
+        skuId: skuMap['SKU-CAP-CDV-1X50'].id,
+        warehouseId: whMap['KHO_DIEN'].id,
+        transactionType: 'INBOUND_PO',
+        quantityChange: 100,
+        quantityBefore: 1100,
+        quantityAfter: 1200,
+        unitCost: 135000,
+        grnId: grn1.id,
+      },
+      {
+        skuId: skuMap['SKU-MCCB-LS-100A'].id,
+        warehouseId: whMap['KHO_DIEN'].id,
+        transactionType: 'OUTBOUND_BOM',
+        quantityChange: -6,
+        quantityBefore: 86,
+        quantityAfter: 80,
+        unitCost: 1250000,
+        gdnId: gdn1.id,
+      },
+      {
+        skuId: skuMap['SKU-DONG-TC-60X8'].id,
+        warehouseId: whMap['KHO_CACH_LY'].id,
+        transactionType: 'INBOUND_RETURN',
+        quantityChange: 15,
+        quantityBefore: 0,
+        quantityAfter: 15,
+        unitCost: 270000,
+        returnNoteId: return1.id,
+      },
+    ],
+  });
+
+  // 14. SEED KPI LOGS
+  await prisma.kpiLog.createMany({
+    data: [
+      {
+        metricCode: 'KPI_BOM_RESPONSE_TIME',
+        referenceCode: 'BOM-DH-2026-MEVN-01',
+        isCompliant: true,
+        deviationMinutes: -65, // Nhanh hơn SLA 65 phút
+        details: 'Kho Điện đối chiếu tồn và xác nhận giữ chỗ sau 1 giờ 15 phút (Quy định <= 2-4h).',
+      },
+      {
+        metricCode: 'KPI_PICKUP_ON_TIME',
+        referenceCode: 'DKLH-2026-001',
+        isCompliant: true,
+        deviationMinutes: -90,
+        details: 'Sản xuất gửi đăng ký lấy hàng lúc 14:00 chiều hôm trước (Hạn chót 15:30) cho Ca sáng hôm sau.',
+      },
+      {
+        metricCode: 'KPI_DISPATCH_ACCURACY',
+        referenceCode: 'PXK-BOM-01-001',
+        isCompliant: true,
+        deviationMinutes: 0,
+        details: 'Soạn hàng đúng 100% chủng loại mã SKU và quy cách theo BOM.',
+      },
+      {
+        metricCode: 'KPI_SCRAP_RECOVERY',
+        referenceCode: 'NTK-2026-001',
+        isCompliant: true,
+        deviationMinutes: 0,
+        details: 'Thu hồi 100% đầu mẩu đồng phế liệu về Kho Cách Ly ngay trong ngày.',
+      },
+    ],
+  });
 
   console.log('🎉 [MEVN SEED] Hoàn tất nạp dữ liệu chuẩn 100% vào Supabase PostgreSQL!');
   return true;
