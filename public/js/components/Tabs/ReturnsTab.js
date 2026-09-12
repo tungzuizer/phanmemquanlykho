@@ -1,8 +1,8 @@
 /*
 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/ReturnsTab.js"></script>
-2. Affected API: iOS 26 Liquid Glass Scrap & Material Return Voucher Tab (window.WMS_COMPONENTS.ReturnsTab).
-3. Data schemas: Uses data.returnVouchers, data.orders, data.skus, data.uoms, currentUser.
-4. User's verbatim instruction: "cải thiện cả giao diện trên iphone và adroi và thiết kế theo phong cách Giao Diện Ios 26 Liquid Glass" / "theo khuyến nghị của bạn"
+2. Affected API: iOS 26 Liquid Glass Scrap & Material Return Voucher Tab (window.WMS_COMPONENTS.ReturnsTab), DELETE /api/returns/:id, handlers.onRequestDelete.
+3. Data schemas: Uses data.returnVouchers, data.orders, data.skus, data.uoms, currentUser, { id, type: 'RETURN', code, title, details }.
+4. User's verbatim instruction: "Ban Giám Đốc MEVN (ADMIN) và tôi cần chức năng xóa" / "theo khuyến nghị của bạn"
 */
 
 function ReturnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
@@ -71,7 +71,7 @@ function ReturnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3 justify-between sm:justify-end">
+                  <div className="flex items-center gap-2 justify-between sm:justify-end flex-wrap">
                     <span className="text-xs text-slate-400">
                       Ngày lập: {formatDate(ret.returnDate || ret.createdAt)}
                     </span>
@@ -81,6 +81,21 @@ function ReturnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                     >
                       <i className="fa-solid fa-print text-purple-500"></i> In Phiếu Trả
                     </button>
+                    {handlers?.onRequestDelete && (currentUser?.role === 'ADMIN' || currentUser?.role === 'GD') && (
+                      <button
+                        onClick={() => handlers.onRequestDelete({
+                          id: ret.id,
+                          type: 'RETURN',
+                          code: ret.code,
+                          title: `Phiếu trả ${ret.code} - ${ret.returnedByName}`,
+                          details: 'Hệ thống sẽ xóa phiếu nhập trả / thu hồi phế phẩm này và các dòng chi tiết liên quan.'
+                        })}
+                        className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 font-bold text-xs rounded-xl border border-red-200 dark:border-red-900 flex items-center gap-1 liquid-touch"
+                        title="Xóa Phiếu Nhập Trả"
+                      >
+                        <i className="fa-solid fa-trash-can"></i> Xóa
+                      </button>
+                    )}
                   </div>
                 </div>
 

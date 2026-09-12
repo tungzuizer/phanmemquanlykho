@@ -1,8 +1,8 @@
 /*
 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/PosTab.js"></script>
-2. Affected API: iOS 26 Liquid Glass Purchase Order (PO) Management Tab (window.WMS_COMPONENTS.PosTab).
-3. Data schemas: Uses data.purchaseOrders, data.orders, data.skus, data.uoms, currentUser.
-4. User's verbatim instruction: "cải thiện cả giao diện trên iphone và adroi và thiết kế theo phong cách Giao Diện Ios 26 Liquid Glass" / "theo khuyến nghị của bạn"
+2. Affected API: iOS 26 Liquid Glass Purchase Order (PO) Management Tab (window.WMS_COMPONENTS.PosTab), DELETE /api/pos/:id, handlers.onRequestDelete.
+3. Data schemas: Uses data.purchaseOrders, data.orders, data.skus, data.uoms, currentUser, { id, type: 'PO', code, title, details }.
+4. User's verbatim instruction: "Ban Giám Đốc MEVN (ADMIN) và tôi cần chức năng xóa" / "theo khuyến nghị của bạn"
 */
 
 function PosTab({ data, currentUser, handlers, onOpenPrintPreview }) {
@@ -93,12 +93,29 @@ function PosTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                 </div>
 
                 <div className="px-4 sm:px-5 py-3 bg-slate-50/70 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
-                  <button
-                    onClick={() => onOpenPrintPreview('PO', po)}
-                    className="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 flex items-center gap-1.5"
-                  >
-                    <i className="fa-solid fa-print text-blue-500"></i> In PO
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => onOpenPrintPreview('PO', po)}
+                      className="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-blue-600 flex items-center gap-1.5"
+                    >
+                      <i className="fa-solid fa-print text-blue-500"></i> In PO
+                    </button>
+                    {handlers?.onRequestDelete && (currentUser?.role === 'ADMIN' || currentUser?.role === 'GD') && (
+                      <button
+                        onClick={() => handlers.onRequestDelete({
+                          id: po.id,
+                          type: 'PO',
+                          code: po.code,
+                          title: `PO ${po.code} - ${po.supplierName || 'NCC'}`,
+                          details: 'Hệ thống sẽ xóa đơn mua hàng PO này và các dòng chi tiết vật tư mua kèm.'
+                        })}
+                        className="px-2 py-1 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 font-bold text-[10px] rounded-lg flex items-center gap-1 liquid-touch"
+                        title="Xóa Đơn Mua Hàng PO"
+                      >
+                        <i className="fa-solid fa-trash-can"></i> Xóa
+                      </button>
+                    )}
+                  </div>
 
                   {!isReceived && (
                     <button

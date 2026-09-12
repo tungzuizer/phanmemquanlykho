@@ -1,8 +1,8 @@
 /*
 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/DispatchTab.js"></script>
-2. Affected API: iOS 26 Liquid Glass Shift Registration & GDN Dispatch Tab (window.WMS_COMPONENTS.DispatchTab).
-3. Data schemas: Uses data.pickupRegistrations, data.goodsDispatchNotes, data.orders, data.skus, data.uoms, currentUser.
-4. User's verbatim instruction: "cải thiện cả giao diện trên iphone và adroi và thiết kế theo phong cách Giao Diện Ios 26 Liquid Glass" / "theo khuyến nghị của bạn"
+2. Affected API: iOS 26 Liquid Glass Shift Registration & GDN Dispatch Tab (window.WMS_COMPONENTS.DispatchTab), DELETE /api/gdns/:id, DELETE /api/pickup-registrations/:id, handlers.onRequestDelete.
+3. Data schemas: Uses data.pickupRegistrations, data.goodsDispatchNotes, data.orders, data.skus, data.uoms, currentUser, { id, type: 'GDN'|'PICKUP', code, title, details }.
+4. User's verbatim instruction: "Ban Giám Đốc MEVN (ADMIN) và tôi cần chức năng xóa" / "theo khuyến nghị của bạn"
 */
 
 function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
@@ -119,6 +119,22 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                       >
                         <i className="fa-solid fa-print text-blue-500"></i> In PXK-BOM-01
                       </button>
+
+                      {handlers?.onRequestDelete && (currentUser?.role === 'ADMIN' || currentUser?.role === 'GD') && (
+                        <button
+                          onClick={() => handlers.onRequestDelete({
+                            id: gdn.id,
+                            type: 'GDN',
+                            code: gdn.code,
+                            title: `Phiếu xuất ${gdn.code} - ${gdn.receiverName || 'Người nhận'}`,
+                            details: 'Hệ thống sẽ xóa phiếu xuất kho này và các dòng chi tiết xuất vật tư liên quan.'
+                          })}
+                          className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 font-bold text-xs rounded-xl border border-red-200 dark:border-red-900 flex items-center gap-1 liquid-touch"
+                          title="Xóa Phiếu Xuất Kho"
+                        >
+                          <i className="fa-solid fa-trash-can"></i> Xóa
+                        </button>
+                      )}
 
                       {isDraft && (
                         <button
@@ -250,13 +266,28 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                     </div>
                   </div>
 
-                  <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                  <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2">
                     <button
                       onClick={() => onOpenPrintPreview('PICKUP', pk)}
                       className="px-3.5 py-1.5 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 liquid-touch"
                     >
                       <i className="fa-solid fa-print text-emerald-500"></i> In Đăng Ký Ca (Mẫu 1)
                     </button>
+                    {handlers?.onRequestDelete && (currentUser?.role === 'ADMIN' || currentUser?.role === 'GD') && (
+                      <button
+                        onClick={() => handlers.onRequestDelete({
+                          id: pk.id,
+                          type: 'PICKUP',
+                          code: `CA-${pk.shift}-${formatDate(pk.pickupDate)}`,
+                          title: `Đăng ký ca lấy: ${pk.teamLeaderName} (${order?.code || 'Đơn hàng'})`,
+                          details: 'Hệ thống sẽ xóa phiếu đăng ký ca lấy vật tư này.'
+                        })}
+                        className="p-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 rounded-xl text-xs font-bold liquid-touch"
+                        title="Xóa Đăng Ký Ca Lấy"
+                      >
+                        <i className="fa-solid fa-trash-can"></i>
+                      </button>
+                    )}
                   </div>
                 </div>
               );

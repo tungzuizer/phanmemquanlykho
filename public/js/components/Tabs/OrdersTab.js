@@ -1,8 +1,8 @@
 /*
 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/OrdersTab.js"></script>
-2. Affected API: iOS 26 Liquid Glass Order Lifecycle & Pipeline Management Tab (window.WMS_COMPONENTS.OrdersTab).
-3. Data schemas: Uses data.orders, data.boms, data.stockBalances, data.skus, data.uoms, currentUser.
-4. User's verbatim instruction: "cải thiện cả giao diện trên iphone và adroi và thiết kế theo phong cách Giao Diện Ios 26 Liquid Glass" / "theo khuyến nghị của bạn"
+2. Affected API: iOS 26 Liquid Glass Order Lifecycle & Pipeline Management Tab (window.WMS_COMPONENTS.OrdersTab), DELETE /api/orders/:id, handlers.onRequestDelete.
+3. Data schemas: Uses data.orders, data.boms, data.stockBalances, data.skus, data.uoms, currentUser, { id, type: 'ORDER', code, title, details }.
+4. User's verbatim instruction: "Ban Giám Đốc MEVN (ADMIN) và tôi cần chức năng xóa" / "theo khuyến nghị của bạn"
 */
 
 function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPreview }) {
@@ -228,6 +228,21 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                         <i className="fa-solid fa-print"></i> In LSX
                       </button>
                     )}
+                    {handlers.onRequestDelete && (currentUser?.role === 'ADMIN' || currentUser?.role === 'GD') && (
+                      <button
+                        onClick={() => handlers.onRequestDelete({
+                          id: order.id,
+                          type: 'ORDER',
+                          code: order.code,
+                          title: `${order.title} (${order.customerName})`,
+                          details: 'Hệ thống sẽ giải phóng toàn bộ số lượng giữ chỗ (Reserved) của BOM đơn hàng này về tồn kho tự do, và xóa toàn bộ chứng từ liên kết.'
+                        })}
+                        className="px-2 py-1 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 font-bold text-[10px] rounded-lg flex items-center gap-1 transition liquid-touch"
+                        title="Xóa Đơn Hàng & Giải Phóng Giữ Chỗ (Chỉ Dành Cho Ban Giám Đốc ADMIN)"
+                      >
+                        <i className="fa-solid fa-trash-can"></i> Xóa
+                      </button>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-1.5 flex-wrap">
@@ -375,6 +390,21 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                           >
                             Chi tiết
                           </button>
+                          {handlers.onRequestDelete && (currentUser?.role === 'ADMIN' || currentUser?.role === 'GD') && (
+                            <button
+                              onClick={() => handlers.onRequestDelete({
+                                id: order.id,
+                                type: 'ORDER',
+                                code: order.code,
+                                title: `${order.title} (${order.customerName})`,
+                                details: 'Hệ thống sẽ giải phóng toàn bộ số lượng giữ chỗ (Reserved) của BOM đơn hàng này về tồn kho tự do, và xóa toàn bộ chứng từ liên kết.'
+                              })}
+                              className="p-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 rounded-xl text-xs font-bold liquid-touch"
+                              title="Xóa Đơn Hàng"
+                            >
+                              <i className="fa-solid fa-trash-can"></i>
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

@@ -18,8 +18,11 @@ function Modals({
   onSubmitGdn,
   onSubmitReturn,
   printPreviewData,
+  deleteConfirmTarget,
+  onConfirmDelete,
+  onCancelDelete,
 }) {
-  if (!activeModal || !data) return null;
+  if ((!activeModal && !deleteConfirmTarget) || !data) return null;
 
   const { formatMoney, formatNumber, formatDate } = window.WMS_CONSTANTS || {
     formatMoney: n => n,
@@ -58,6 +61,90 @@ function Modals({
       </div>
     </div>
   );
+
+  // 0. CONFIRM DELETE MODAL (ISO AUDIT TRAIL & ACID ROLLBACK)
+  if (deleteConfirmTarget) {
+    const typeNames = {
+      ORDER: 'Đơn Hàng & Toàn Bộ BOM Liên Quan',
+      PO: 'Đơn Mua Hàng (PO)',
+      GDN: 'Phiếu Xuất Kho (GDN)',
+      GRN: 'Phiếu Nhập Kho (GRN)',
+      PICKUP: 'Đăng Ký Ca Lấy Vật Tư (Mẫu 1)',
+      RETURN: 'Phiếu Nhập Trả / Phế Liệu',
+    };
+
+    const typeTitle = typeNames[deleteConfirmTarget.type] || deleteConfirmTarget.type;
+
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 animate-fade-in">
+        <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-red-200 dark:border-red-900/50 space-y-4 liquid-specular">
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-red-100 dark:bg-red-950/80 text-red-600 dark:text-red-400 flex items-center justify-center text-xl shrink-0 shadow-inner">
+              <i className="fa-solid fa-triangle-exclamation animate-bounce"></i>
+            </div>
+            <div>
+              <h3 className="text-base font-black text-red-600 dark:text-red-400 font-mono tracking-tight">
+                XÁC NHẬN XÓA CHỨNG TỪ
+              </h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Thao tác dành riêng cho Ban Giám Đốc (ADMIN)
+              </p>
+            </div>
+          </div>
+
+          {/* Details Box */}
+          <div className="p-4 bg-red-50/70 dark:bg-red-950/30 rounded-2xl border border-red-200/80 dark:border-red-900/40 space-y-2 text-xs">
+            <div className="flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400 font-medium">Loại chứng từ:</span>
+              <strong className="text-slate-900 dark:text-white font-bold">{typeTitle}</strong>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-600 dark:text-slate-400 font-medium">Mã số:</span>
+              <span className="font-mono font-black text-red-600 dark:text-red-400 bg-white dark:bg-slate-800 px-2.5 py-0.5 rounded-lg border border-red-200 dark:border-red-900">
+                {deleteConfirmTarget.code || deleteConfirmTarget.id}
+              </span>
+            </div>
+            {deleteConfirmTarget.title && (
+              <div className="flex justify-between items-start pt-1 border-t border-red-200/60 dark:border-red-900/40">
+                <span className="text-slate-600 dark:text-slate-400 font-medium">Tiêu đề / Đối tượng:</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200 text-right max-w-[240px] truncate">
+                  {deleteConfirmTarget.title}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {/* Impact Warning */}
+          <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-200 dark:border-amber-800 text-[11px] text-amber-800 dark:text-amber-300 flex items-start gap-2.5 leading-relaxed">
+            <i className="fa-solid fa-shield-halved text-amber-600 mt-0.5 shrink-0"></i>
+            <div>
+              <strong className="block font-bold">Cơ chế bảo toàn tồn kho (ACID Rollback):</strong>
+              {deleteConfirmTarget.details || 'Hệ thống sẽ tự động hoàn trả toàn bộ số lượng giữ chỗ (Reserved Stock) của BOM về lại Tồn kho khả dụng (Available Stock), giúp mở khóa vật tư cho các đơn hàng khác mà không làm sai lệch số dư vật lý.'}
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onCancelDelete}
+              className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl font-bold text-xs liquid-touch"
+            >
+              Hủy Bỏ
+            </button>
+            <button
+              type="button"
+              onClick={() => onConfirmDelete(deleteConfirmTarget)}
+              className="px-5 py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-2xl shadow-lg shadow-red-500/30 flex items-center gap-2 liquid-touch"
+            >
+              <i className="fa-solid fa-trash-can"></i> Xác Nhận Xóa Vĩnh Viễn
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // 1. ORDER MODAL
   if (activeModal === 'ORDER') {
@@ -317,11 +404,14 @@ function Modals({
             onSubmitPo({
               code: fd.get('code'),
               orderId: fd.get('orderId'),
-              supplierName: fd.get('supplierName'),
-              expectedDate: fd.get('expectedDate'),
-              skuId: fd.get('skuId'),
-              quantity: Number(fd.get('quantity')),
-              unitPrice: Number(fd.get('unitPrice')),
+              supplierId: fd.get('supplierId') || undefined,
+              expectedDeliveryDate: fd.get('expectedDate') ? new Date(fd.get('expectedDate')).toISOString() : new Date(Date.now() + 5 * 86400000).toISOString(),
+              note: fd.get('note') || 'PO mua bổ sung vật tư thiếu hụt theo BOM',
+              items: [{
+                skuId: fd.get('skuId'),
+                quantityPurchased: Number(fd.get('quantity') || 1),
+                unitPrice: Number(fd.get('unitPrice') || 100000),
+              }]
             });
           }}
           className="space-y-3 text-xs"
@@ -341,7 +431,7 @@ function Modals({
               name="orderId"
               className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-900 dark:text-white"
             >
-              {data.orders.map(o => (
+              {(data.orders || []).map(o => (
                 <option key={o.id} value={o.id}>
                   {o.code} - {o.title}
                 </option>
@@ -349,13 +439,20 @@ function Modals({
             </select>
           </div>
           <div>
-            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Nhà Cung Cấp</label>
-            <input
-              name="supplierName"
-              defaultValue="Schneider Electric VN / Cadivi"
-              required
-              className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white"
-            />
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Nhà Cung Cấp Thiết Bị</label>
+            <select
+              name="supplierId"
+              className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-900 dark:text-white"
+            >
+              {(data.suppliers || []).map(s => (
+                <option key={s.id} value={s.id}>
+                  {s.name} ({s.code})
+                </option>
+              ))}
+              {(!data.suppliers || data.suppliers.length === 0) && (
+                <option value="">-- Mặc định: Schneider Electric / MEVN Supply --</option>
+              )}
+            </select>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
@@ -364,7 +461,7 @@ function Modals({
                 name="skuId"
                 className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-mono text-[11px] text-slate-900 dark:text-white"
               >
-                {data.skus.map(s => (
+                {(data.skus || []).map(s => (
                   <option key={s.id} value={s.id}>
                     {s.code} - {s.name}
                   </option>
@@ -405,6 +502,14 @@ function Modals({
                 className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-mono text-slate-900 dark:text-white"
               />
             </div>
+          </div>
+          <div>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Ghi Chú Đơn Hàng PO</label>
+            <input
+              name="note"
+              defaultValue="PO mua bổ sung vật tư thiếu hụt theo BOM"
+              className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white"
+            />
           </div>
 
           <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-200/80 dark:border-slate-800">

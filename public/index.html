@@ -112,7 +112,8 @@
       const [selectedOrder, setSelectedOrder] = useState(null);
       const [orderDrawerOpen, setOrderDrawerOpen] = useState(false);
       const [commandPaletteOpen, setCommandPaletteOpen] = useState(false);
-      const [activeModal, setActiveModal] = useState(null); // 'ORDER' | 'BOM' | 'PO' | 'GRN' | 'PICKUP' | 'GDN' | 'RETURN' | 'PRINT'
+      const [activeModal, setActiveModal] = useState(null); // 'ORDER' | 'BOM' | 'PO' | 'GRN' | 'PICKUP' | 'GDN' | 'RETURN' | 'PRINT' | 'CONFIRM_DELETE'
+      const [deleteConfirmTarget, setDeleteConfirmTarget] = useState(null);
       const [printPreviewData, setPrintPreviewData] = useState(null);
       const [toast, setToast] = useState(null);
 
@@ -455,6 +456,40 @@
         }
       };
 
+      const handleDeleteEntity = async (target) => {
+        if (!target || !target.id) return;
+        try {
+          let endpoint = '';
+          if (target.type === 'ORDER') endpoint = `/api/orders/${target.id}`;
+          else if (target.type === 'PO') endpoint = `/api/pos/${target.id}`;
+          else if (target.type === 'GDN') endpoint = `/api/gdns/${target.id}`;
+          else if (target.type === 'GRN') endpoint = `/api/grns/${target.id}`;
+          else if (target.type === 'PICKUP') endpoint = `/api/pickup-registrations/${target.id}`;
+          else if (target.type === 'RETURN') endpoint = `/api/returns/${target.id}`;
+
+          if (!endpoint) {
+            showToast('Loại chứng từ không hợp lệ để xóa', 'error');
+            return;
+          }
+
+          const res = await fetch(endpoint, { method: 'DELETE' });
+          const json = await res.json();
+          if (json.success) {
+            showToast(json.message || 'Đã xóa chứng từ và giải phóng giữ chỗ thành công!');
+            setDeleteConfirmTarget(null);
+            if (selectedOrder && (selectedOrder.id === target.id || target.type === 'ORDER')) {
+              setOrderDrawerOpen(false);
+              setSelectedOrder(null);
+            }
+            fetchState(true);
+          } else {
+            showToast(json.message || 'Lỗi khi xóa chứng từ', 'error');
+          }
+        } catch (err) {
+          showToast(err.message, 'error');
+        }
+      };
+
       const handleResetSeed = async () => {
         if (!confirm('Bạn có chắc muốn khôi phục dữ liệu mẫu chuẩn MEVN vào Supabase PostgreSQL?')) return;
         try {
@@ -527,6 +562,11 @@
         },
         onDispatchGdn: (gdnId) => {
           if (checkPerm('DISPATCH_GDN', 'Thực Xuất Kho & Ký Nhận')) handleDispatchGdn(gdnId);
+        },
+        onRequestDelete: (target) => {
+          if (checkPerm('DELETE_DOCUMENT', 'Xóa chứng từ & Giải phóng giữ chỗ')) {
+            setDeleteConfirmTarget(target);
+          }
         },
       }), [checkPerm, handleVerifyBom, handleApproveGdn, handleDispatchGdn]);
 
@@ -824,7 +864,7 @@
             />
           )}
 
-          {/* Modal Suite & ISO Print Engine */}
+          {/* Modal Suite & ISO Print Engine & Delete Confirmation */}
           {Modals && (
             <Modals
               data={data}
@@ -839,6 +879,9 @@
               onSubmitGdn={handleCreateGdn}
               onSubmitReturn={handleCreateReturn}
               printPreviewData={printPreviewData}
+              deleteConfirmTarget={deleteConfirmTarget}
+              onConfirmDelete={handleDeleteEntity}
+              onCancelDelete={() => setDeleteConfirmTarget(null)}
             />
           )}
         </div>

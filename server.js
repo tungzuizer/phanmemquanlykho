@@ -204,6 +204,57 @@ async function handleApiRequest(req, res, pathname, query) {
         return res.end(JSON.stringify({ success: true, data: freshData, message: 'Đã đồng bộ và khôi phục dữ liệu chuẩn MEVN trên Supabase PostgreSQL thành công!' }));
       }
 
+      // =========================================================================
+      // CÁC ENDPOINT XÓA CHỨNG TỪ (DELETE APIS WITH INTEGRITY ROLLBACK)
+      // =========================================================================
+      // Xóa Đơn hàng & giải phóng giữ chỗ
+      if (req.method === 'DELETE' && pathname.match(/^\/api\/orders\/([^\/]+)$/)) {
+        const orderId = pathname.split('/')[3];
+        const result = await wmsService.deleteOrder(orderId);
+        res.writeHead(200);
+        return res.end(JSON.stringify({ success: true, message: result.message, data: result }));
+      }
+
+      // Xóa Đơn mua hàng (PO)
+      if (req.method === 'DELETE' && pathname.match(/^\/api\/pos\/([^\/]+)$/)) {
+        const poId = pathname.split('/')[3];
+        const result = await wmsService.deletePo(poId);
+        res.writeHead(200);
+        return res.end(JSON.stringify({ success: true, message: result.message, data: result }));
+      }
+
+      // Xóa Phiếu xuất kho (GDN)
+      if (req.method === 'DELETE' && pathname.match(/^\/api\/gdns\/([^\/]+)$/)) {
+        const gdnId = pathname.split('/')[3];
+        const result = await wmsService.deleteGdn(gdnId);
+        res.writeHead(200);
+        return res.end(JSON.stringify({ success: true, message: result.message, data: result }));
+      }
+
+      // Xóa Phiếu nhập kho (GRN)
+      if (req.method === 'DELETE' && pathname.match(/^\/api\/grns\/([^\/]+)$/)) {
+        const grnId = pathname.split('/')[3];
+        const result = await wmsService.deleteGrn(grnId);
+        res.writeHead(200);
+        return res.end(JSON.stringify({ success: true, message: result.message, data: result }));
+      }
+
+      // Xóa Đăng ký lấy hàng (Pickup Registration)
+      if (req.method === 'DELETE' && pathname.match(/^\/api\/pickup-registrations\/([^\/]+)$/)) {
+        const regId = pathname.split('/')[3];
+        const result = await wmsService.deletePickupRegistration(regId);
+        res.writeHead(200);
+        return res.end(JSON.stringify({ success: true, message: result.message, data: result }));
+      }
+
+      // Xóa Phiếu nhập trả hàng (Return Note)
+      if (req.method === 'DELETE' && pathname.match(/^\/api\/returns\/([^\/]+)$/)) {
+        const returnId = pathname.split('/')[3];
+        const result = await wmsService.deleteReturn(returnId);
+        res.writeHead(200);
+        return res.end(JSON.stringify({ success: true, message: result.message, data: result }));
+      }
+
       // 404 Endpoint
       res.writeHead(404);
       res.end(JSON.stringify({ success: false, message: `Endpoint ${pathname} not found` }));

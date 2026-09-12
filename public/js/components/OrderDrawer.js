@@ -1,11 +1,11 @@
 /*
 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/OrderDrawer.js"></script>
-2. Affected API: Client-side Order Detail Adaptive iOS Bottom Sheet & Desktop Slide-over Drawer (window.WMS_COMPONENTS.OrderDrawer).
-3. Data schemas: Uses order, data.boms, data.stockBalances, data.skus, data.uoms, data.goodsDispatchNotes, data.purchaseOrders, data.pickupRegistrations.
-4. User's verbatim instruction: "cải thiện cả giao diện trên iphone và adroi và thiết kế theo phong cách Giao Diện Ios 26 Liquid Glass" / "theo khuyến nghị của bạn"
+2. Affected API: Client-side Order Detail Adaptive iOS Bottom Sheet & Desktop Slide-over Drawer (window.WMS_COMPONENTS.OrderDrawer), handlers.onRequestDelete.
+3. Data schemas: Uses order, data.boms, data.stockBalances, data.skus, data.uoms, data.goodsDispatchNotes, data.purchaseOrders, data.pickupRegistrations, currentUser.
+4. User's verbatim instruction: "Ban Giám Đốc MEVN (ADMIN) và tôi cần chức năng xóa" / "theo khuyến nghị của bạn"
 */
 
-function OrderDrawer({ order, isOpen, onClose, data, handlers, onOpenPrintPreview }) {
+function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOpenPrintPreview }) {
   const [activeTab, setActiveTab] = React.useState('bom');
   const { STATUS_MAP, formatMoney, formatNumber, formatDate } = window.WMS_CONSTANTS || {
     STATUS_MAP: {},
@@ -378,12 +378,32 @@ function OrderDrawer({ order, isOpen, onClose, data, handlers, onOpenPrintPrevie
 
         {/* Footer Operations */}
         <div className="p-3 sm:p-4 bg-slate-50/90 dark:bg-slate-800/90 border-t border-slate-200/80 dark:border-slate-800 flex items-center justify-between gap-2 flex-wrap">
-          <button
-            onClick={() => onOpenPrintPreview('ORDER', order)}
-            className="px-3 py-2 bg-white dark:bg-slate-900 hover:bg-slate-100 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-xs liquid-touch"
-          >
-            <i className="fa-solid fa-file-pdf text-red-500"></i> In Hồ Sơ
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onOpenPrintPreview('ORDER', order)}
+              className="px-3 py-2 bg-white dark:bg-slate-900 hover:bg-slate-100 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-xs liquid-touch"
+            >
+              <i className="fa-solid fa-file-pdf text-red-500"></i> In Hồ Sơ
+            </button>
+            {handlers?.onRequestDelete && (currentUser?.role === 'ADMIN' || currentUser?.role === 'GD') && (
+              <button
+                onClick={() => {
+                  onClose();
+                  handlers.onRequestDelete({
+                    id: order.id,
+                    type: 'ORDER',
+                    code: order.code,
+                    title: `${order.title} (${order.customerName})`,
+                    details: 'Hệ thống sẽ giải phóng toàn bộ số lượng giữ chỗ (Reserved) của BOM đơn hàng này về tồn kho tự do, và xóa toàn bộ chứng từ liên kết.'
+                  });
+                }}
+                className="px-3 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 rounded-xl border border-red-200 dark:border-red-900 text-xs font-bold flex items-center gap-1.5 shadow-xs liquid-touch"
+                title="Xóa Đơn Hàng & Giải Phóng Giữ Chỗ"
+              >
+                <i className="fa-solid fa-trash-can"></i> Xóa Đơn
+              </button>
+            )}
+          </div>
 
           <div className="flex items-center gap-2">
             {order.status === 'CHO_BOM' && (

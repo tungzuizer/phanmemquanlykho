@@ -1,8 +1,8 @@
 /*
 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/GrnsTab.js"></script>
-2. Affected API: iOS 26 Liquid Glass Goods Receipt Note (GRN) Tab (window.WMS_COMPONENTS.GrnsTab).
-3. Data schemas: Uses data.goodsReceiptNotes, data.purchaseOrders, data.skus, data.uoms, data.bins, currentUser.
-4. User's verbatim instruction: "cải thiện cả giao diện trên iphone và adroi và thiết kế theo phong cách Giao Diện Ios 26 Liquid Glass" / "theo khuyến nghị của bạn"
+2. Affected API: iOS 26 Liquid Glass Goods Receipt Note (GRN) Tab (window.WMS_COMPONENTS.GrnsTab), DELETE /api/grns/:id, handlers.onRequestDelete.
+3. Data schemas: Uses data.goodsReceiptNotes, data.purchaseOrders, data.skus, data.uoms, data.bins, currentUser, { id, type: 'GRN', code, title, details }.
+4. User's verbatim instruction: "Ban Giám Đốc MEVN (ADMIN) và tôi cần chức năng xóa" / "theo khuyến nghị của bạn"
 */
 
 function GrnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
@@ -63,7 +63,7 @@ function GrnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                     )}
                   </div>
 
-                  <div className="flex items-center gap-3 justify-between sm:justify-end">
+                  <div className="flex items-center gap-2 justify-between sm:justify-end flex-wrap">
                     <span className="text-xs text-slate-400">
                       Ngày nhập: {formatDate(grn.receivedDate || grn.createdAt)}
                     </span>
@@ -73,6 +73,21 @@ function GrnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                     >
                       <i className="fa-solid fa-print text-blue-500"></i> In Phiếu Nhập
                     </button>
+                    {handlers?.onRequestDelete && (currentUser?.role === 'ADMIN' || currentUser?.role === 'GD') && (
+                      <button
+                        onClick={() => handlers.onRequestDelete({
+                          id: grn.id,
+                          type: 'GRN',
+                          code: grn.code,
+                          title: `Phiếu nhập ${grn.code} - ${grn.supplierName}`,
+                          details: 'Hệ thống sẽ xóa phiếu nhập kho GRN này và các dòng chi tiết nhập vật tư liên quan.'
+                        })}
+                        className="px-2.5 py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 font-bold text-xs rounded-xl border border-red-200 dark:border-red-900 flex items-center gap-1 liquid-touch"
+                        title="Xóa Phiếu Nhập Kho"
+                      >
+                        <i className="fa-solid fa-trash-can"></i> Xóa
+                      </button>
+                    )}
                   </div>
                 </div>
 
