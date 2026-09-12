@@ -7,10 +7,73 @@ const prisma = require('../db');
 const DataNormalizer = require('./dataNormalizer');
 
 class WmsService {
+  constructor() {
+    this.stateCache = null;
+    this.stateCacheTime = 0;
+    this.stateVersion = 1;
+    this.CACHE_TTL_MS = 60000; // 60s TTL
+    this.isWarming = false;
+    this.startKeepAlive();
+  }
+
+  /**
+   * Duy trì kết nối TCP/TLS liên tục tới Supabase PostgreSQL để tránh cold-start
+   */
+  startKeepAlive() {
+    setInterval(async () => {
+      try {
+        await prisma.$queryRaw`SELECT 1;`;
+      } catch (e) {
+        // Silent keep-alive heartbeat
+      }
+    }, 150000); // 2.5 phút một lần
+  }
+
+  /**
+   * Lấy phiên bản cache hiện tại (cho ETag)
+   */
+  getStateVersion() {
+    return this.stateVersion;
+  }
+
+  /**
+   * Kiểm tra xem đang có cache khả dụng hay không
+   */
+  hasCachedState() {
+    return !!this.stateCache && (Date.now() - this.stateCacheTime < this.CACHE_TTL_MS);
+  }
+
+  /**
+   * Xóa cache ngay lập tức khi có bất kỳ thay đổi dữ liệu nào (Mutation)
+   * và kích hoạt nạp trước dữ liệu ngầm (Background Revalidation)
+   */
+  invalidateCache() {
+    this.stateCache = null;
+    this.stateCacheTime = 0;
+    this.stateVersion++;
+    if (!this.isWarming) {
+      this.isWarming = true;
+      setImmediate(async () => {
+        try {
+          await this.getFullState(true);
+        } catch (e) {
+          // Silent background warmup
+        } finally {
+          this.isWarming = false;
+        }
+      });
+    }
+  }
+
   /**
    * Lấy toàn bộ trạng thái dữ liệu thời gian thực từ Supabase PostgreSQL
+   * (Tích hợp In-Memory L1 Cache < 5ms và Fallback Live Database Fetch)
    */
-  async getFullState() {
+  async getFullState(forceRefresh = false) {
+    if (!forceRefresh && this.stateCache && (Date.now() - this.stateCacheTime < this.CACHE_TTL_MS)) {
+      return this.stateCache;
+    }
+
     // Chạy truy vấn gộp qua Prisma $transaction Batching: an toàn tuyệt đối trên 1 connection pooler và tối ưu thời gian phản hồi
     const [
       users,
@@ -183,7 +246,7 @@ class WmsService {
     const normalizedKpiLogs = kpiLogs.map(k => DataNormalizer.normalizeKpiLog(k));
     const standardBins = DataNormalizer.getStandardBins(warehouses);
 
-    return {
+    const fullState = {
       users: normalizedUsers,
       warehouses: normalizedWarehouses,
       uoms: normalizedUoms,
@@ -203,6 +266,12 @@ class WmsService {
       stockTransactions: normalizedStockTransactions,
       bins: standardBins, // Standard visual bins for InventoryTab Visual Map
     };
+
+    // Lưu vào In-Memory L1 Cache
+    this.stateCache = fullState;
+    this.stateCacheTime = Date.now();
+
+    return fullState;
   }
 
   /**
@@ -235,6 +304,7 @@ class WmsService {
       include: { panels: true },
     });
 
+    this.invalidateCache();
     return newOrder;
   }
 
@@ -298,6 +368,7 @@ class WmsService {
       return createdBom;
     }, { maxWait: 20000, timeout: 60000 });
 
+    this.invalidateCache();
     return newBom;
   }
 
@@ -308,7 +379,7 @@ class WmsService {
     const thuKhoUser = await prisma.user.findFirst({ where: { role: 'THU_KHO' } });
     const verifiedById = payload.verifiedById || (thuKhoUser ? thuKhoUser.id : (await prisma.user.findFirst()).id);
 
-    return await prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       const bom = await tx.bom.findUnique({
         where: { id: bomId },
         include: { items: true, order: true },
@@ -437,6 +508,9 @@ class WmsService {
 
       return { bom: updatedBom, orderStatus: nextOrderStatus };
     }, { maxWait: 20000, timeout: 60000 });
+
+    this.invalidateCache();
+    return result;
   }
 
   /**
@@ -447,7 +521,7 @@ class WmsService {
     const createdById = payload.createdById || (muaHangUser ? muaHangUser.id : (await prisma.user.findFirst()).id);
     const poCode = payload.code || `PO-2026-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    return await prisma.$transaction(async (tx) => {
+    const newPo = await prisma.$transaction(async (tx) => {
       let totalAmount = 0;
       const itemsData = [];
 
@@ -499,6 +573,9 @@ class WmsService {
 
       return newPo;
     }, { maxWait: 20000, timeout: 60000 });
+
+    this.invalidateCache();
+    return newPo;
   }
 
   /**
@@ -509,7 +586,7 @@ class WmsService {
     const createdById = payload.createdById || (thuKhoUser ? thuKhoUser.id : (await prisma.user.findFirst()).id);
     const grnCode = payload.code || `PNK-2026-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    return await prisma.$transaction(async (tx) => {
+    const grn = await prisma.$transaction(async (tx) => {
       const po = payload.poId ? await tx.purchaseOrder.findUnique({
         where: { id: payload.poId },
         include: { items: true, order: true },
@@ -707,6 +784,9 @@ class WmsService {
 
       return grn;
     }, { maxWait: 20000, timeout: 60000 });
+
+    this.invalidateCache();
+    return grn;
   }
 
   /**
@@ -753,6 +833,7 @@ class WmsService {
       return createdReg;
     }, { maxWait: 20000, timeout: 60000 });
 
+    this.invalidateCache();
     return reg;
   }
 
@@ -809,6 +890,7 @@ class WmsService {
       return createdGdn;
     }, { maxWait: 20000, timeout: 60000 });
 
+    this.invalidateCache();
     return gdn;
   }
 
@@ -819,7 +901,7 @@ class WmsService {
     const adminUser = await prisma.user.findFirst({ where: { role: 'ADMIN' } });
     const approvedById = payload.approvedById || (adminUser ? adminUser.id : (await prisma.user.findFirst()).id);
 
-    return await prisma.goodsDispatchNote.update({
+    const updated = await prisma.goodsDispatchNote.update({
       where: { id: gdnId },
       data: {
         status: 'APPROVED',
@@ -827,13 +909,16 @@ class WmsService {
         approvedAt: new Date(),
       },
     });
+
+    this.invalidateCache();
+    return updated;
   }
 
   /**
    * 9. Thực xuất kho & Ký nhận điện tử giữa Thủ kho và Sản xuất (ACID Transaction + Ledger)
    */
   async dispatchGdn(gdnId) {
-    return await prisma.$transaction(async (tx) => {
+    const updatedGdn = await prisma.$transaction(async (tx) => {
       const gdn = await tx.goodsDispatchNote.findUnique({
         where: { id: gdnId },
         include: { items: { include: { sku: true } }, order: true },
@@ -965,6 +1050,9 @@ class WmsService {
 
       return updatedGdn;
     }, { maxWait: 20000, timeout: 60000 });
+
+    this.invalidateCache();
+    return updatedGdn;
   }
 
   /**
@@ -976,7 +1064,7 @@ class WmsService {
     const returnCode = payload.code || `PTK-2026-${Math.floor(100 + Math.random() * 900)}`;
     const isDefective = Boolean(payload.isDefective);
 
-    return await prisma.$transaction(async (tx) => {
+    const returnNote = await prisma.$transaction(async (tx) => {
       // Nếu là hàng hỏng/phế liệu -> Bắt buộc vào KHO_CACH_LY
       let targetWarehouse;
       if (isDefective) {
@@ -1064,6 +1152,9 @@ class WmsService {
 
       return returnNote;
     }, { maxWait: 20000, timeout: 60000 });
+
+    this.invalidateCache();
+    return returnNote;
   }
 
   /**
@@ -1144,6 +1235,7 @@ class WmsService {
       }
     }, { maxWait: 20000, timeout: 60000 });
 
+    this.invalidateCache();
     return { importedCount };
   }
 

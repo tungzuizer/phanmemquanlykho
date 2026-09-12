@@ -1,13 +1,14 @@
-// 1. Importers/Callers: Node.js runtime entrypoint (package.json "start")
-// 2. Affected API: Full HTTP API Server & REST Endpoints delegating to WmsService
-// 3. Data Schemas: JSON Request/Response over HTTP
-// 4. User's Verbatim Instruction: "check lại logic cốt lõi cấm đươc fake dự liệu phải thật nghiệm ngặt về luồng dữ liệu và logic code và dữ liệu sẽ lưu trên database" and "dùng data base trên supabase"
+// 1. Importers/Callers: Node.js runtime entrypoint (package.json "start", Vercel Serverless)
+// 2. Affected API: GET /api/state (with ETag 304, L1 Cache & Gzip), GET /api/health, all REST CRUD endpoints
+// 3. Data Schemas: JSON Request/Response with ETag, HTTP 304 Not Modified, Gzip Buffer
+// 4. User's Verbatim Instruction: "theo khuyến nghị của bạn nhưng loading quá lâu cần upadate tốc độ"
 
 require('dotenv').config();
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
 const url = require('url');
+const zlib = require('zlib');
 const wmsService = require('./src/services/wmsService');
 
 const PORT = process.env.PORT || 3000;
@@ -16,7 +17,8 @@ async function handleApiRequest(req, res, pathname, query) {
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, If-None-Match');
+  res.setHeader('Access-Control-Expose-Headers', 'ETag');
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204);
@@ -24,15 +26,54 @@ async function handleApiRequest(req, res, pathname, query) {
     return;
   }
 
-  // GET State (Real-time data directly from Supabase PostgreSQL)
+  // GET Health / Ping
+  if (req.method === 'GET' && pathname === '/api/health') {
+    res.writeHead(200);
+    return res.end(JSON.stringify({
+      status: 'healthy',
+      database: 'Supabase PostgreSQL',
+      cached: wmsService.hasCachedState(),
+      cacheVersion: wmsService.getStateVersion(),
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+    }));
+  }
+
+  // GET State (Real-time data with L1 In-Memory Cache, ETag 304 & Gzip Compression)
   if (req.method === 'GET' && pathname === '/api/state') {
     try {
       if (!process.env.DATABASE_URL) {
         throw new Error('Chưa cài đặt biến môi trường DATABASE_URL trên Vercel. Vui lòng vào Vercel Dashboard -> Project -> Settings -> Environment Variables để cấu hình.');
       }
-      const data = await wmsService.getFullState();
-      res.writeHead(200);
-      res.end(JSON.stringify({ success: true, data }));
+
+      const forceRefresh = query?.refresh === 'true' || query?.force === 'true';
+      const version = wmsService.getStateVersion();
+      const etag = `"wms-v${version}"`;
+
+      res.setHeader('ETag', etag);
+      res.setHeader('Cache-Control', 'private, no-cache, must-revalidate');
+
+      const ifNoneMatch = req.headers['if-none-match'];
+      if (!forceRefresh && ifNoneMatch === etag && wmsService.hasCachedState()) {
+        res.writeHead(304);
+        res.end();
+        return;
+      }
+
+      const data = await wmsService.getFullState(forceRefresh);
+      const jsonResponse = JSON.stringify({ success: true, data, version });
+
+      const acceptEncoding = req.headers['accept-encoding'] || '';
+      if (acceptEncoding.includes('gzip')) {
+        const compressed = zlib.gzipSync(Buffer.from(jsonResponse));
+        res.setHeader('Content-Encoding', 'gzip');
+        res.setHeader('Content-Length', compressed.length);
+        res.writeHead(200);
+        res.end(compressed);
+      } else {
+        res.writeHead(200);
+        res.end(jsonResponse);
+      }
     } catch (err) {
       console.error('[API ERROR] /api/state:', err);
       res.writeHead(500);
@@ -157,7 +198,8 @@ async function handleApiRequest(req, res, pathname, query) {
       if (req.method === 'POST' && pathname === '/api/reset-seed') {
         const seedMain = require('./prisma/seed');
         await seedMain();
-        const freshData = await wmsService.getFullState();
+        wmsService.invalidateCache();
+        const freshData = await wmsService.getFullState(true);
         res.writeHead(200);
         return res.end(JSON.stringify({ success: true, data: freshData, message: 'Đã đồng bộ và khôi phục dữ liệu chuẩn MEVN trên Supabase PostgreSQL thành công!' }));
       }

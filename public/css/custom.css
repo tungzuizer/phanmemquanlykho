@@ -1,8 +1,8 @@
 /*
 1. Importers/Callers: public/index.html via <link rel="stylesheet" href="/css/custom.css">
-2. Affected API: Global CSS styling, iOS 26 Liquid Glass design tokens, Mobile Safe Area insets, Bottom Sheet & Floating Dock animations.
-3. Data schemas: CSS variables, frosted glass classes, specular borders, squircle radii.
-4. User's verbatim instruction: "cải thiện cả giao diện trên iphone và adroi và thiết kế theo phong cách Giao Diện Ios 26 Liquid Glass" / "theo khuyến nghị của bạn"
+2. Affected API: Global CSS styling, Industrial Grid, Telemetry Radar Pulse, Hairline Borders, Drawer Slide animations, iOS 26 Liquid Glass design tokens.
+3. Data schemas: CSS variables, frosted glass classes, specular borders, industrial utility classes.
+4. User's verbatim instruction: "trang đăng nhập quá xuất cần cải thiện lại cho chuyên nghiệp và xịn xò không thể 1 web do ai tạo lên được" / "theo khuyếnn nghị của bạn"
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
@@ -199,6 +199,47 @@ body {
 
 .animate-fade-in {
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Industrial Grid & CAD Background Pattern */
+.bg-industrial-grid {
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+}
+.dark .bg-industrial-grid {
+  background-size: 32px 32px;
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+/* Telemetry Signal Radar Pulse */
+@keyframes radarPulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.6); opacity: 0; }
+  100% { transform: scale(0.95); opacity: 0; }
+}
+.radar-pulse {
+  animation: radarPulse 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Specular Hairline Borders */
+.hairline-border {
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+.hairline-border-light {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.06) inset;
+}
+
+/* Floating Drawer Animations */
+@keyframes drawerSlideRight {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.animate-drawer-slide {
+  animation: drawerSlideRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Print Styling for ISO Documents */
