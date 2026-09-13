@@ -34,7 +34,7 @@ async function main() {
     await prisma.order.deleteMany();
     await prisma.user.deleteMany({
       where: {
-        username: { notIn: ['kien', 'tuat', 'vu', 'manh', 'lyna', 'phuong', 'lethai', 'ngocthai', 'duy'] }
+        username: { notIn: ['kien', 'tuat', 'vinh', 'vu', 'manh', 'lyna', 'lena', 'phuong', 'tien', 'lethai', 'ngocthai', 'thanh', 'duy', 'dung'] }
       }
     });
     console.log('✅ [MEVN SEED] Đã dọn sạch các bảng giao dịch cũ và tài khoản demo không sử dụng.');
@@ -65,17 +65,18 @@ async function main() {
   console.log('✅ [MEVN SEED] Đã thiết lập CHECK Constraints: (quantity_physical >= quantity_reserved >= 0)');
 
   // 1. SEED USERS (Bcrypt Hashed Passwords) - Danh Sách 9 Nhân Sự Chính Thức MEVN
+  // Định dạng: "HọTên (ChứcVụ) (MÃ_ROLE)" viết liền không khoảng trắng
   const defaultHashedPassword = await hashPassword('mevn@2026');
   const usersData = [
-    { username: 'kien', email: 'kien@gmail.com', fullName: 'Đỗ Kiên', role: 'ADMIN', passwordHash: defaultHashedPassword },
-    { username: 'tuat', email: 'tuat@gmail.com', fullName: 'Nguyễn Thị Tuất', role: 'THU_KHO', passwordHash: defaultHashedPassword },
-    { username: 'vu', email: 'vu@gmail.com', fullName: 'Bùi Thế Vũ', role: 'KY_THUAT', passwordHash: defaultHashedPassword },
-    { username: 'manh', email: 'manh@gmail.com', fullName: 'Đỗ Như Mạnh', role: 'KY_THUAT', passwordHash: defaultHashedPassword },
-    { username: 'lyna', email: 'lyna@gmail.com', fullName: 'Khuất Thị Ly Na', role: 'KE_TOAN', passwordHash: defaultHashedPassword },
-    { username: 'phuong', email: 'phuong@gmail.com', fullName: 'Khất Thị Phượng', role: 'MUA_HANG', passwordHash: defaultHashedPassword },
-    { username: 'lethai', email: 'lethai@gmail.com', fullName: 'Lê Thái', role: 'KY_THUAT', passwordHash: defaultHashedPassword },
-    { username: 'ngocthai', email: 'ngocthai@gmail.com', fullName: 'Nguyễn Ngọc Thái', role: 'KY_THUAT', passwordHash: defaultHashedPassword },
-    { username: 'duy', email: 'duy@gmail.com', fullName: 'Vương Duy', role: 'SAN_XUAT', passwordHash: defaultHashedPassword },
+    { username: 'kien', email: 'kien.do@maxelectric.vn', fullName: 'ĐỗKiên (Admin) (ADMIN)', role: 'ADMIN', passwordHash: defaultHashedPassword },
+    { username: 'tuat', email: 'storemanager@maxelectric.vn', fullName: 'NguyễnThịTuất (ThủKho) (THU_KHO)', role: 'THU_KHO', passwordHash: defaultHashedPassword },
+    { username: 'vinh', email: 'vinh.bt@maxelectric.vn', fullName: 'BùiThếVinh (KỹThuật) (KY_THUAT_1)', role: 'KY_THUAT', passwordHash: defaultHashedPassword },
+    { username: 'manh', email: 'manh.dh@maxelectric.vn', fullName: 'ĐỗNhưMạnh (KỹThuật) (KY_THUAT_2)', role: 'KY_THUAT', passwordHash: defaultHashedPassword },
+    { username: 'lyna', email: 'na.ktl@maxelectric.vn', fullName: 'KhuấtThịLêNa (KếToán) (KE_TOAN)', role: 'KE_TOAN', passwordHash: defaultHashedPassword },
+    { username: 'tien', email: 'Nguyenthitienmax@gmail.com', fullName: 'NguyễnThịTiến (PhòngMua) (MUA_HANG)', role: 'MUA_HANG', passwordHash: defaultHashedPassword },
+    { username: 'lethai', email: 'thai.le@maxelectric.vn', fullName: 'LêThái (KỹThuật) (KY_THUAT_3)', role: 'KY_THUAT', passwordHash: defaultHashedPassword },
+    { username: 'thanh', email: 'thanh.nn@maxelectric.vn', fullName: 'NguyễnNgọcThành (KỹThuật) (KY_THUAT_4)', role: 'KY_THUAT', passwordHash: defaultHashedPassword },
+    { username: 'dung', email: 'dung.vv@maxelectric.vn', fullName: 'VũVănDũng (SảnXuất) (SAN_XUAT)', role: 'SAN_XUAT', passwordHash: defaultHashedPassword },
   ];
 
   for (const u of usersData) {
@@ -90,11 +91,11 @@ async function main() {
   // Fallback mappings for seed relations
   userMap['admin'] = userMap['kien'] || users[0];
   userMap['thukho_dien'] = userMap['tuat'] || users[0];
-  userMap['kythuat_bom'] = userMap['vu'] || users[0];
+  userMap['kythuat_bom'] = userMap['vinh'] || userMap['vu'] || users[0];
   userMap['sale_admin'] = userMap['lyna'] || users[0];
   userMap['ketoan_kho'] = userMap['lyna'] || users[0];
-  userMap['muahang_po'] = userMap['phuong'] || users[0];
-  userMap['sanxuat_to1'] = userMap['duy'] || users[0];
+  userMap['muahang_po'] = userMap['tien'] || userMap['phuong'] || users[0];
+  userMap['sanxuat_to1'] = userMap['dung'] || userMap['duy'] || users[0];
   console.log(`✅ [MEVN SEED] Đã nạp ${users.length} Users nội bộ chính thức MEVN.`);
 
   // 2. SEED WAREHOUSES

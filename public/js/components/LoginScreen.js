@@ -312,22 +312,22 @@ function LoginScreen({ onLoginSuccess, darkMode, setDarkMode }) {
             {/* Quick Demo Accounts Selector (9 Official MEVN Staff) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {[
-                { name: 'Đỗ Kiên', roleName: 'Ban Giám Đốc (Admin)', user: 'kien', email: 'kien@gmail.com', role: 'ADMIN', color: 'border-amber-400/50 bg-amber-500/10 text-amber-300' },
-                { name: 'Nguyễn Thị Tuất', roleName: 'Thủ Kho', user: 'tuat', email: 'tuat@gmail.com', role: 'THU_KHO', color: 'border-cyan-400/50 bg-cyan-500/10 text-cyan-300' },
-                { name: 'Bùi Thế Vũ', roleName: 'Kỹ Thuật BOM', user: 'vu', email: 'vu@gmail.com', role: 'KY_THUAT', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
-                { name: 'Đỗ Như Mạnh', roleName: 'Kỹ Thuật BOM', user: 'manh', email: 'manh@gmail.com', role: 'KY_THUAT', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
-                { name: 'Khuất Thị Ly Na', roleName: 'Kế Toán & Đơn Hàng', user: 'lyna', email: 'lyna@gmail.com', role: 'KE_TOAN', color: 'border-sky-400/50 bg-sky-500/10 text-sky-300' },
-                { name: 'Khất Thị Phượng', roleName: 'Phụ Mua (Thu Mua)', user: 'phuong', email: 'phuong@gmail.com', role: 'MUA_HANG', color: 'border-emerald-400/50 bg-emerald-500/10 text-emerald-300' },
-                { name: 'Lê Thái', roleName: 'Kỹ Thuật BOM', user: 'lethai', email: 'lethai@gmail.com', role: 'KY_THUAT', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
-                { name: 'Nguyễn Ngọc Thái', roleName: 'Kỹ Thuật BOM', user: 'ngocthai', email: 'ngocthai@gmail.com', role: 'KY_THUAT', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
-                { name: 'Vương Duy', roleName: 'Tổ Trưởng Sản Xuất', user: 'duy', email: 'duy@gmail.com', role: 'SAN_XUAT', color: 'border-blue-400/50 bg-blue-500/10 text-blue-300' },
+                { name: 'ĐỗKiên (Admin) (ADMIN)', roleName: 'Admin', user: 'kien', email: 'kien.do@maxelectric.vn', role: 'ADMIN', color: 'border-amber-400/50 bg-amber-500/10 text-amber-300' },
+                { name: 'NguyễnThịTuất (ThủKho) (THU_KHO)', roleName: 'ThủKho', user: 'tuat', email: 'storemanager@maxelectric.vn', role: 'THU_KHO', color: 'border-cyan-400/50 bg-cyan-500/10 text-cyan-300' },
+                { name: 'BùiThếVinh (KỹThuật) (KY_THUAT_1)', roleName: 'KỹThuật', user: 'vinh', email: 'vinh.bt@maxelectric.vn', role: 'KY_THUAT_1', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
+                { name: 'ĐỗNhưMạnh (KỹThuật) (KY_THUAT_2)', roleName: 'KỹThuật', user: 'manh', email: 'manh.dh@maxelectric.vn', role: 'KY_THUAT_2', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
+                { name: 'KhuấtThịLêNa (KếToán) (KE_TOAN)', roleName: 'KếToán', user: 'lyna', email: 'na.ktl@maxelectric.vn', role: 'KE_TOAN', color: 'border-sky-400/50 bg-sky-500/10 text-sky-300' },
+                { name: 'NguyễnThịTiến (PhòngMua) (MUA_HANG)', roleName: 'PhòngMua', user: 'tien', email: 'Nguyenthitienmax@gmail.com', role: 'MUA_HANG', color: 'border-emerald-400/50 bg-emerald-500/10 text-emerald-300' },
+                { name: 'LêThái (KỹThuật) (KY_THUAT_3)', roleName: 'KỹThuật', user: 'lethai', email: 'thai.le@maxelectric.vn', role: 'KY_THUAT_3', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
+                { name: 'NguyễnNgọcThành (KỹThuật) (KY_THUAT_4)', roleName: 'KỹThuật', user: 'thanh', email: 'thanh.nn@maxelectric.vn', role: 'KY_THUAT_4', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
+                { name: 'VũVănDũng (SảnXuất) (SAN_XUAT)', roleName: 'SảnXuất', user: 'dung', email: 'dung.vv@maxelectric.vn', role: 'SAN_XUAT', color: 'border-blue-400/50 bg-blue-500/10 text-blue-300' },
               ].map((acc) => (
                 <button
                   key={acc.user}
                   type="button"
                   onClick={() => {
-                    setUsernameOrEmail(acc.user);
-                    setPassword('admin');
+                    setUsernameOrEmail(acc.email);
+                    setPassword('mevn@2026');
                     setShowHelpModal(false);
                     setErrorMsg('');
                   }}
@@ -337,10 +337,9 @@ function LoginScreen({ onLoginSuccess, darkMode, setDarkMode }) {
                     <span className="font-bold text-white text-xs">{acc.name}</span>
                     <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/10">{acc.role}</span>
                   </div>
-                  <div className="text-[11px] opacity-90 mt-1 text-cyan-200">{acc.roleName}</div>
-                  <div className="flex items-center justify-between text-[10px] opacity-75 mt-1.5 font-mono pt-1 border-t border-white/10">
+                  <div className="mt-1 flex items-center justify-between text-[11px] text-cyan-200/70 font-mono">
                     <span>{acc.email}</span>
-                    <span className="text-amber-300 font-bold">Pass: admin</span>
+                    <i className="fa-solid fa-arrow-right text-[10px] opacity-0 group-hover:opacity-100 transition-opacity"></i>
                   </div>
                 </button>
               ))}
@@ -349,11 +348,11 @@ function LoginScreen({ onLoginSuccess, darkMode, setDarkMode }) {
             <div className="p-3 bg-white/5 rounded-2xl border border-white/10 text-xs space-y-1 font-medium mt-2">
               <div className="flex items-center justify-between text-[11px]">
                 <span className="text-cyan-300">Quản trị viên IT:</span>
-                <span className="text-white font-bold">Đỗ Kiên (kien@gmail.com)</span>
+                <span className="text-white font-bold">ĐỗKiên (Admin) (kien.do@maxelectric.vn)</span>
               </div>
               <div className="flex items-center justify-between text-[11px]">
-                <span className="text-cyan-300">Mật khẩu chuẩn:</span>
-                <span className="text-amber-300 font-mono font-bold">admin (hoặc mevn@2026)</span>
+                <span className="text-cyan-300">Mật khẩu chuẩn MEVN:</span>
+                <span className="text-amber-300 font-mono font-bold">mevn@2026 (hoặc admin)</span>
               </div>
             </div>
 

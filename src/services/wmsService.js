@@ -1435,82 +1435,112 @@ class WmsService {
 
     // Ánh xạ các tên viết tắt, vai trò và email thông dụng sang 9 nhân sự chính thức của MEVN
     const USER_ALIASES = {
-      // 1. Admin: Đỗ Kiên (kien@gmail.com)
+      // 1. Admin: ĐỗKiên (Admin) (ADMIN)
       'admin': 'kien',
       'kien': 'kien',
       'kien.do': 'kien',
-      'dokie': 'kien',
+      'dokien': 'kien',
+      'kien.do@maxelectric.vn': 'kien',
       'kien@gmail.com': 'kien',
 
-      // 2. Thủ kho: Nguyễn Thị Tuất (tuat@gmail.com)
+      // 2. Thủ kho: NguyễnThịTuất (ThủKho) (THU_KHO)
       'thukho': 'tuat',
+      'thu_kho': 'tuat',
       'thukho_dien': 'tuat',
       'thukho_dong': 'tuat',
       'tuat': 'tuat',
       'tuat.nguyen': 'tuat',
       'nguyenthituat': 'tuat',
+      'nguyenthituyet': 'tuat',
+      'storemanager@maxelectric.vn': 'tuat',
       'tuat@gmail.com': 'tuat',
 
-      // 3. Kỹ thuật: Bùi Thế Vũ (vu@gmail.com)
-      'kythuat': 'vu',
-      'kythuat1': 'vu',
-      'kythuat_bom': 'vu',
-      'kythuat_vu': 'vu',
-      'vu': 'vu',
-      'vu.bui': 'vu',
-      'buithevu': 'vu',
-      'vu@gmail.com': 'vu',
+      // 3. Kỹ thuật: BùiThếVinh (KỹThuật) (KY_THUAT_1)
+      'kythuat': 'vinh',
+      'ky_thuat': 'vinh',
+      'kythuat1': 'vinh',
+      'ky_thuat_1': 'vinh',
+      'kythuat_bom': 'vinh',
+      'vinh': 'vinh',
+      'vinh.bt': 'vinh',
+      'buithevinh': 'vinh',
+      'vu': 'vinh',
+      'buithevu': 'vinh',
+      'vinh.bt@maxelectric.vn': 'vinh',
+      'vu@gmail.com': 'vinh',
 
-      // 4. Kỹ thuật: Đỗ Như Mạnh (manh@gmail.com)
+      // 4. Kỹ thuật: ĐỗNhưMạnh (KỹThuật) (KY_THUAT_2)
       'kythuat2': 'manh',
+      'ky_thuat_2': 'manh',
       'kythuat_manh': 'manh',
       'manh': 'manh',
+      'manh.dh': 'manh',
       'manh.do': 'manh',
       'donhumanh': 'manh',
+      'manh.dh@maxelectric.vn': 'manh',
       'manh@gmail.com': 'manh',
 
-      // 5. Kế toán & Quản trị Đơn: Khuất Thị Ly Na (lyna@gmail.com)
+      // 5. Kế toán & Quản trị Đơn: KhuấtThịLêNa (KếToán) (KE_TOAN)
       'ketoan': 'lyna',
+      'ke_toan': 'lyna',
       'sale': 'lyna',
       'sale_admin': 'lyna',
       'ketoan_kho': 'lyna',
       'lyna': 'lyna',
+      'lena': 'lyna',
       'na': 'lyna',
-      'lyna.khuat': 'lyna',
+      'na.ktl': 'lyna',
+      'khuatthilena': 'lyna',
       'khuatthilyna': 'lyna',
+      'na.ktl@maxelectric.vn': 'lyna',
+      'ketoan.maxelectricvn@gmail.com': 'lyna',
       'lyna@gmail.com': 'lyna',
 
-      // 6. Phụ mua (Thu mua): Khất Thị Phượng (phuong@gmail.com)
-      'muahang': 'phuong',
-      'muahang_po': 'phuong',
-      'phuong': 'phuong',
-      'phuong.khuat': 'phuong',
-      'khatthiphuong': 'phuong',
-      'phuong@gmail.com': 'phuong',
+      // 6. Phụ mua (Thu mua): NguyễnThịTiến (PhòngMua) (MUA_HANG)
+      'muahang': 'tien',
+      'mua_hang': 'tien',
+      'phongmua': 'tien',
+      'phuong': 'tien',
+      'tien': 'tien',
+      'nguyenthitien': 'tien',
+      'khatthiphuong': 'tien',
+      'nguyenthitienmax@gmail.com': 'tien',
+      'import.maxelectricvn@gmail.com': 'tien',
+      'phuong@gmail.com': 'tien',
 
-      // 7. Kỹ thuật: Lê Thái (lethai@gmail.com)
+      // 7. Kỹ thuật: LêThái (KỹThuật) (KY_THUAT_3)
       'kythuat3': 'lethai',
+      'ky_thuat_3': 'lethai',
       'kythuat_lethai': 'lethai',
       'lethai': 'lethai',
       'thai.le': 'lethai',
+      'thai.le@maxelectric.vn': 'lethai',
       'lethai@gmail.com': 'lethai',
 
-      // 8. Kỹ thuật: Nguyễn Ngọc Thái (ngocthai@gmail.com)
-      'kythuat4': 'ngocthai',
-      'kythuat_ngocthai': 'ngocthai',
-      'ngocthai': 'ngocthai',
-      'thai.nguyen': 'ngocthai',
-      'nguyenngocthai': 'ngocthai',
-      'ngocthai@gmail.com': 'ngocthai',
+      // 8. Kỹ thuật: NguyễnNgọcThành (KỹThuật) (KY_THUAT_4)
+      'kythuat4': 'thanh',
+      'ky_thuat_4': 'thanh',
+      'kythuat_thanh': 'thanh',
+      'thanh': 'thanh',
+      'thanh.nn': 'thanh',
+      'nguyenngocthanh': 'thanh',
+      'ngocthai': 'thanh',
+      'nguyenngocthai': 'thanh',
+      'thanh.nn@maxelectric.vn': 'thanh',
+      'ngocthai@gmail.com': 'thanh',
 
-      // 9. Sản xuất: Vương Duy (duy@gmail.com)
-      'sanxuat': 'duy',
-      'sanxuat_to1': 'duy',
-      'sanxuat_to2': 'duy',
-      'duy': 'duy',
-      'duy.vuong': 'duy',
-      'vuongduy': 'duy',
-      'duy@gmail.com': 'duy',
+      // 9. Sản xuất: VũVănDũng (SảnXuất) (SAN_XUAT)
+      'sanxuat': 'dung',
+      'san_xuat': 'dung',
+      'sanxuat_to1': 'dung',
+      'sanxuat_to2': 'dung',
+      'dung': 'dung',
+      'dung.vv': 'dung',
+      'vuvandung': 'dung',
+      'duy': 'dung',
+      'vuongduy': 'dung',
+      'dung.vv@maxelectric.vn': 'dung',
+      'duy@gmail.com': 'dung',
     };
 
     const targetUsername = USER_ALIASES[trimmedInput] || trimmedInput;
@@ -1522,6 +1552,7 @@ class WmsService {
           { username: { equals: trimmedInput, mode: 'insensitive' } },
           { username: { equals: targetUsername, mode: 'insensitive' } },
           { email: { equals: trimmedInput, mode: 'insensitive' } },
+          { email: { equals: `${trimmedInput}@maxelectric.vn`, mode: 'insensitive' } },
           { email: { equals: `${trimmedInput}@gmail.com`, mode: 'insensitive' } },
         ],
       },
@@ -1675,21 +1706,51 @@ class WmsService {
       }
 
       // 1. Giải phóng toàn bộ số lượng giữ chỗ (Reserved Stock) của BOM về kho
-      for (const bom of order.boms || []) {
-        for (const it of bom.items || []) {
-          const reservedQty = Number(it.quantityReserved || 0);
-          if (reservedQty > 0) {
+      const activeReservations = await tx.stockReservation.findMany({
+        where: { orderId: orderId, isActive: true },
+      });
+      if (activeReservations && activeReservations.length > 0) {
+        for (const resv of activeReservations) {
+          const resvQty = Number(resv.quantity || 0);
+          if (resvQty > 0) {
             const balance = await tx.stockBalance.findFirst({
-              where: { skuId: it.skuId },
+              where: {
+                skuId: resv.skuId,
+                ...(resv.warehouseId ? { warehouseId: resv.warehouseId } : {}),
+              },
             });
             if (balance) {
               const curRes = Number(balance.quantityReserved || 0);
               await tx.stockBalance.update({
                 where: { id: balance.id },
                 data: {
-                  quantityReserved: Math.max(0, curRes - reservedQty),
+                  quantityReserved: Math.max(0, curRes - resvQty),
                 },
               });
+            }
+          }
+        }
+      } else {
+        // Fallback giải phóng trực tiếp từ các dòng BOM
+        for (const bom of order.boms || []) {
+          for (const it of bom.items || []) {
+            const reservedQty = Number(it.quantityReserved || 0);
+            if (reservedQty > 0) {
+              const balance = await tx.stockBalance.findFirst({
+                where: {
+                  skuId: it.skuId,
+                  ...(it.warehouseId ? { warehouseId: it.warehouseId } : {}),
+                },
+              });
+              if (balance) {
+                const curRes = Number(balance.quantityReserved || 0);
+                await tx.stockBalance.update({
+                  where: { id: balance.id },
+                  data: {
+                    quantityReserved: Math.max(0, curRes - reservedQty),
+                  },
+                });
+              }
             }
           }
         }
