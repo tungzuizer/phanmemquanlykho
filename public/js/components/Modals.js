@@ -1,14 +1,16 @@
-/*
-1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Modals.js"></script>
-2. Affected API: Client-side modal components suite rendered as iOS 26 Liquid Glass Bottom Action Sheets on Mobile (window.WMS_COMPONENTS.Modals).
-3. Data schemas: Uses data.orders, data.skus, data.uoms, data.warehouses, data.bins, data.purchaseOrders, data.goodsDispatchNotes, currentUser.
-4. User's verbatim instruction: "cải thiện cả giao diện trên iphone và adroi và thiết kế theo phong cách Giao Diện Ios 26 Liquid Glass" / "theo khuyến nghị của bạn"
-*/
+/**
+ * Fact-Forcing Gate Details:
+ * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Modals.js"></script>
+ * 2. Affected API: Client-side modal components suite rendered with Aurora Glassmorphism (window.WMS_COMPONENTS.Modals).
+ * 3. Data schemas: Uses data.orders, data.skus, data.uoms, data.warehouses, data.bins, data.purchaseOrders, data.goodsDispatchNotes, currentUser.
+ * 4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
+ */
 
 function Modals({
   data,
   currentUser,
   activeModal,
+  activeModalTarget,
   onClose,
   onSubmitOrder,
   onSubmitBom,
@@ -32,25 +34,25 @@ function Modals({
     formatDate: d => d
   };
 
-  // Reusable Modal / Sheet Wrapper with iOS 26 Liquid Glass Styling
-  const ModalShell = ({ title, icon, iconColor = 'text-blue-600', children, maxWidth = 'max-w-lg' }) => (
-    <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4 animate-fade-in">
+  // Reusable Modal Shell with Aurora Glass Styling
+  const ModalShell = ({ title, icon, iconColor = 'text-indigo-600', children, maxWidth = 'max-w-lg' }) => (
+    <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-end md:items-center justify-center p-0 md:p-4 animate-fade-in font-sans">
       <div
-        className={`w-full ${maxWidth} bg-white/95 dark:bg-slate-900/95 backdrop-blur-2xl rounded-t-3xl md:rounded-3xl p-5 sm:p-6 shadow-2xl border-t md:border border-white/80 dark:border-white/10 space-y-4 max-h-[92vh] flex flex-col liquid-specular pb-[max(1.25rem,env(safe-area-inset-bottom))] md:pb-6`}
+        className={`w-full ${maxWidth} liquid-glass rounded-t-3xl md:rounded-3xl p-5 sm:p-6 shadow-2xl border-t md:border border-white/60 dark:border-white/10 space-y-4 max-h-[92vh] flex flex-col pb-[max(1.25rem,env(safe-area-inset-bottom))] md:pb-6`}
       >
         {/* Mobile Drag Handle */}
         <div className="md:hidden flex justify-center -mt-2 -mb-1">
           <div className="liquid-sheet-handle"></div>
         </div>
 
-        <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800 pb-3">
-          <h3 className="text-sm font-black text-slate-900 dark:text-white flex items-center gap-2">
+        <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3">
+          <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 font-display">
             <i className={`fa-solid ${icon} ${iconColor}`}></i>
             <span>{title}</span>
           </h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center justify-center liquid-touch"
+            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center justify-center transition active:scale-95 cursor-pointer"
             aria-label="Đóng"
           >
             <i className="fa-solid fa-xmark text-sm"></i>
@@ -566,7 +568,170 @@ function Modals({
     );
   }
 
-  // 4. SHIFT PICKUP REGISTRATION (MẪU 1)
+  // 4. GRN MODAL (GOODS RECEIPT NOTE - NHẬP KHO TỪ PO HOẶC TRỰC TIẾP)
+  if (activeModal === 'GRN') {
+    const defaultPo = activeModalTarget?.type === 'PO' ? activeModalTarget : (data.purchaseOrders?.find(p => p.id === activeModalTarget?.id) || null);
+    const [selectedPoId, setSelectedPoId] = React.useState(defaultPo?.id || '');
+    const currentPo = (data.purchaseOrders || []).find(p => p.id === selectedPoId);
+
+    const initialSkuId = defaultPo?.items?.[0]?.skuId || data.skus?.[0]?.id || '';
+    const initialQty = defaultPo?.items?.[0]?.quantityPurchased || 20;
+    const initialUnitPrice = defaultPo?.items?.[0]?.unitPrice || 1500000;
+
+    return (
+      <ModalShell
+        title="Tạo Phiếu Nhập Kho Hàng Về (GRN)"
+        icon="fa-truck-ramp-box"
+        iconColor="text-teal-600"
+      >
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const poIdVal = fd.get('poId');
+            const skuIdVal = fd.get('skuId');
+            const qtyVal = Number(fd.get('quantity') || 1);
+            const priceVal = Number(fd.get('unitPrice') || 0);
+            const whIdVal = fd.get('warehouseId');
+
+            onSubmitGrn({
+              code: fd.get('code'),
+              poId: poIdVal || undefined,
+              warehouseId: whIdVal || undefined,
+              documentRef: fd.get('documentRef'),
+              note: fd.get('note') || 'Nhập kho hàng về từ nhà cung cấp',
+              items: [{
+                skuId: skuIdVal,
+                quantity: qtyVal,
+                unitPrice: priceVal,
+              }]
+            });
+          }}
+          className="space-y-3 text-xs"
+        >
+          <div>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Mã Phiếu Nhập (GRN Code)</label>
+            <input
+              name="code"
+              defaultValue={`PNK-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`}
+              required
+              className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-mono font-bold text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Theo Đơn PO Mua Hàng</label>
+              <select
+                name="poId"
+                value={selectedPoId}
+                onChange={e => setSelectedPoId(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-900 dark:text-white"
+              >
+                <option value="">-- Nhập trực tiếp (Không theo PO) --</option>
+                {(data.purchaseOrders || []).map(p => (
+                  <option key={p.id} value={p.id}>
+                    {p.code} - {p.supplierName || 'NCC'} ({p.status})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Kho Tiếp Nhận</label>
+              <select
+                name="warehouseId"
+                className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-bold text-slate-900 dark:text-white"
+              >
+                {(data.warehouses || []).map(w => (
+                  <option key={w.id} value={w.id}>
+                    {w.name} ({w.code})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Số Hóa Đơn / Phiếu Giao Hàng NCC</label>
+            <input
+              name="documentRef"
+              defaultValue={`HĐ-NCC-${Math.floor(1000 + Math.random() * 9000)}`}
+              required
+              className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Mã Vật Tư Nhập (SKU)</label>
+              <select
+                name="skuId"
+                defaultValue={initialSkuId}
+                className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-mono text-[11px] text-slate-900 dark:text-white"
+              >
+                {(data.skus || []).map(s => (
+                  <option key={s.id} value={s.id}>
+                    {s.code} - {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Số Lượng Thực Nhập</label>
+              <input
+                name="quantity"
+                type="number"
+                defaultValue={initialQty}
+                min="1"
+                required
+                className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-mono font-bold text-slate-900 dark:text-white"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Đơn Giá Nhập Thực Tế (VNĐ)</label>
+            <input
+              name="unitPrice"
+              type="number"
+              defaultValue={initialUnitPrice}
+              min="0"
+              required
+              className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl font-mono font-bold text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div>
+            <label className="block font-bold text-slate-700 dark:text-slate-300 mb-1">Ghi Chú Kiểm Tra Ngoại Quan & Vị Trí Kệ</label>
+            <input
+              name="note"
+              defaultValue="Nhập kho đầy đủ CO/CQ, đạt tiêu chuẩn kiểm nghiệm ngoại quan"
+              className="w-full px-3.5 py-2.5 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-slate-900 dark:text-white"
+            />
+          </div>
+
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-200/80 dark:border-slate-800">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-2xl font-bold liquid-touch"
+            >
+              Hủy
+            </button>
+            <button
+              type="submit"
+              className="px-5 py-2.5 bg-gradient-to-r from-teal-500 to-emerald-600 hover:from-teal-400 hover:to-emerald-500 text-white rounded-2xl font-bold shadow-md shadow-teal-500/20 liquid-touch flex items-center gap-1.5"
+            >
+              <i className="fa-solid fa-truck-ramp-box"></i>
+              <span>Nhập Kho (GRN)</span>
+            </button>
+          </div>
+        </form>
+      </ModalShell>
+    );
+  }
+
+  // 5. SHIFT PICKUP REGISTRATION (MẪU 1)
   if (activeModal === 'PICKUP') {
     return (
       <ModalShell

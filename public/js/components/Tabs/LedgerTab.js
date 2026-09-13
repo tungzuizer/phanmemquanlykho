@@ -1,9 +1,10 @@
-/*
-1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/LedgerTab.js"></script>
-2. Affected API: iOS 26 Liquid Glass Immutable Stock Movement Ledger Tab (window.WMS_COMPONENTS.LedgerTab).
-3. Data schemas: Uses data.stockTransactions, data.skus, data.uoms, data.warehouses, data.bins, currentUser.
-4. User's verbatim instruction: "cải thiện cả giao diện trên iphone và adroi và thiết kế theo phong cách Giao Diện Ios 26 Liquid Glass" / "theo khuyến nghị của bạn"
-*/
+/**
+ * Fact-Forcing Gate Details:
+ * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/LedgerTab.js"></script>
+ * 2. Affected API: window.WMS_COMPONENTS.LedgerTab (Immutable Stock Movement Ledger Tab)
+ * 3. Data schemas: Uses data.stockTransactions, data.skus, data.uoms, data.warehouses, data.bins, currentUser
+ * 4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
+ */
 
 function LedgerTab({ data, currentUser }) {
   const [filterType, setFilterType] = React.useState('ALL');
@@ -28,32 +29,32 @@ function LedgerTab({ data, currentUser }) {
   });
 
   return (
-    <div className="space-y-5 animate-fade-in select-none">
-      {/* Top Banner */}
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl p-4 sm:p-5 rounded-3xl border border-white/80 dark:border-white/10 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4 liquid-specular">
+    <div className="space-y-4 sm:space-y-5 animate-fade-in font-sans">
+      {/* Top Header Card */}
+      <div className="liquid-glass p-4 sm:p-5 rounded-2xl border border-white/40 dark:border-white/10 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3.5">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-1">
+          <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1 font-display">
             <i className="fa-solid fa-shield-halved"></i>
-            <span>ISO 9001:2015 Audit Trail</span>
+            <span>Nhật Ký Kiểm Toán Kho Bất Biến (ISO 9001:2015)</span>
           </div>
-          <h2 className="text-sm sm:text-base font-black text-slate-900 dark:text-white">
-            Sổ Cái Biến Động Kho Bất Biến (Immutable Stock Movement Ledger)
+          <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white font-display">
+            Sổ Cái Biến Động Kho (Stock Movement Ledger)
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-            Nhật ký kiểm toán ghi nhận mọi biến động xuất nhập tồn, khoá giữ chỗ đơn hàng và thu hồi phế phẩm — Dữ liệu chỉ ghi nối (Append-Only), không thể chỉnh sửa hay xoá lùi ngày.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 max-w-2xl">
+            Ghi nhận mọi giao dịch nhập xuất, khóa giữ chỗ BOM và thu hồi phế phẩm. Dữ liệu chỉ ghi nối (Append-Only), không cho phép sửa đổi hay lùi ngày.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="px-3.5 py-2 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold text-xs border border-emerald-200 dark:border-emerald-800 flex items-center gap-1.5 shadow-xs">
+          <span className="px-3.5 py-2 rounded-xl bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-bold text-xs border border-emerald-500/20 flex items-center gap-1.5 shadow-xs font-mono">
             <i className="fa-solid fa-circle-check text-emerald-500"></i>
-            Hồ sơ kiểm toán toàn vẹn (ACID)
+            Hồ sơ kiểm toán ACID
           </span>
         </div>
       </div>
 
       {/* Filter Chips & Search Bar */}
-      <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-3xl border border-white/80 dark:border-white/10 p-4 sm:p-5 shadow-sm space-y-4 liquid-specular">
+      <div className="liquid-glass rounded-2xl border border-white/40 dark:border-white/10 p-4 sm:p-5 shadow-xs space-y-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div className="flex items-center gap-2 overflow-x-auto pb-1.5 no-scrollbar">
             {[
@@ -66,10 +67,10 @@ function LedgerTab({ data, currentUser }) {
               <button
                 key={tab.id}
                 onClick={() => setFilterType(tab.id)}
-                className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap liquid-touch ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer active:scale-95 ${
                   filterType === tab.id
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/25'
-                    : 'bg-slate-100/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 hover:bg-slate-200/80 dark:hover:bg-slate-700/80'
+                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20'
+                    : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
                 }`}
               >
                 {tab.icon && <i className={`fa-solid ${tab.icon}`}></i>}
@@ -85,13 +86,13 @@ function LedgerTab({ data, currentUser }) {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Tìm theo Mã CT, SKU, Người lập..."
-              className="w-full pl-9 pr-4 py-2 bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="w-full pl-9 pr-4 py-2 bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
             />
           </div>
         </div>
 
-        {/* Mobile Adaptive Cards (Visible on Mobile < 768px) */}
-        <div className="md:hidden space-y-3">
+        {/* Mobile Adaptive Cards */}
+        <div className="md:hidden space-y-2.5">
           {filteredTxns.length === 0 ? (
             <div className="py-8 text-center text-slate-400 text-xs font-bold">
               Không có giao dịch nào phù hợp với bộ lọc.
@@ -109,20 +110,20 @@ function LedgerTab({ data, currentUser }) {
               return (
                 <div
                   key={t.id}
-                  className="p-3.5 rounded-2xl bg-white/70 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700/80 shadow-xs space-y-2 liquid-touch"
+                  className="p-3.5 rounded-xl bg-white/50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 shadow-xs space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-xs text-blue-600 dark:text-blue-400">
+                    <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
                       {t.referenceDocCode || 'AUTO-SYSTEM'}
                     </span>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                       t.type === 'RECEIPT'
-                        ? 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
+                        ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20'
                         : t.type === 'DISPATCH'
-                        ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                        ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20'
                         : t.type === 'RESERVATION_HOLD'
-                        ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
-                        : 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                        ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20'
+                        : 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20'
                     }`}>
                       {t.type}
                     </span>
@@ -130,13 +131,13 @@ function LedgerTab({ data, currentUser }) {
 
                   <div className="flex items-center justify-between">
                     <div className="text-xs font-bold text-slate-900 dark:text-white">
-                      <span className="font-mono text-blue-600 dark:text-blue-400 mr-1.5">{sku?.code}</span>
+                      <span className="font-mono text-indigo-600 dark:text-indigo-400 mr-1.5">{sku?.code}</span>
                       <span>{sku?.name}</span>
                     </div>
-                    <div className="font-mono font-black text-xs">
+                    <div className="font-mono font-bold text-xs">
                       <span className={
                         isPositive ? 'text-emerald-600 dark:text-emerald-400' :
-                        isNegative ? 'text-red-600 dark:text-red-400' :
+                        isNegative ? 'text-rose-600 dark:text-rose-400' :
                         'text-indigo-600 dark:text-indigo-400'
                       }>
                         {isPositive ? `+${formatNumber(t.quantity)}` : isNegative ? `-${formatNumber(t.quantity)}` : `${formatNumber(t.quantity)} (HOLD)`}
@@ -145,9 +146,9 @@ function LedgerTab({ data, currentUser }) {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1.5 border-t border-slate-200/60 dark:border-slate-800">
                     <span>{wh?.code?.slice(0, 8)} / <strong className="font-mono text-slate-600 dark:text-slate-300">{bin?.code || 'Kệ chính'}</strong></span>
-                    <span>{formatDateTime(t.timestamp || t.createdAt)}</span>
+                    <span className="font-mono">{formatDateTime(t.timestamp || t.createdAt)}</span>
                   </div>
                 </div>
               );
@@ -155,11 +156,11 @@ function LedgerTab({ data, currentUser }) {
           )}
         </div>
 
-        {/* Desktop Transactions Table (Visible on Desktop >= 768px) */}
-        <div className="hidden md:block border border-slate-200/80 dark:border-slate-800 rounded-2xl overflow-x-auto shadow-xs">
+        {/* Desktop Transactions Table */}
+        <div className="hidden md:block border border-slate-200/60 dark:border-slate-800 rounded-xl overflow-x-auto shadow-xs">
           <table className="w-full text-left text-xs border-collapse min-w-[700px]">
             <thead>
-              <tr className="bg-slate-50/80 dark:bg-slate-800/80 text-slate-600 dark:text-slate-300 border-b border-slate-200/80 dark:border-slate-700/80 font-bold">
+              <tr className="bg-white/40 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 border-b border-slate-200/60 dark:border-slate-800 font-bold">
                 <th className="py-2.5 px-3.5">Thời Gian</th>
                 <th className="py-2.5 px-3.5">Chứng Từ Tham Chiếu</th>
                 <th className="py-2.5 px-3.5">Loại Nghiệp Vụ</th>
@@ -169,7 +170,7 @@ function LedgerTab({ data, currentUser }) {
                 <th className="py-2.5 px-3.5">Người Thực Hiện</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-slate-200/60 dark:divide-slate-800">
               {filteredTxns.length === 0 ? (
                 <tr>
                   <td colSpan="7" className="py-8 text-center text-slate-400">
@@ -187,22 +188,22 @@ function LedgerTab({ data, currentUser }) {
                   const isNegative = t.type === 'DISPATCH';
 
                   return (
-                    <tr key={t.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition">
+                    <tr key={t.id} className="hover:bg-white/60 dark:hover:bg-slate-800/40 transition">
                       <td className="py-2.5 px-3.5 font-mono text-slate-500 text-[11px] whitespace-nowrap">
                         {formatDateTime(t.timestamp || t.createdAt)}
                       </td>
-                      <td className="py-2.5 px-3.5 font-mono font-bold text-blue-600 dark:text-blue-400">
+                      <td className="py-2.5 px-3.5 font-mono font-bold text-indigo-600 dark:text-indigo-400">
                         {t.referenceDocCode || 'AUTO-SYSTEM'}
                       </td>
                       <td className="py-2.5 px-3.5">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           t.type === 'RECEIPT'
-                            ? 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300'
+                            ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20'
                             : t.type === 'DISPATCH'
-                            ? 'bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300'
+                            ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20'
                             : t.type === 'RESERVATION_HOLD'
-                            ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-300'
-                            : 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300'
+                            ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20'
+                            : 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20'
                         }`}>
                           {t.type}
                         </span>
@@ -214,12 +215,12 @@ function LedgerTab({ data, currentUser }) {
                       <td className="py-2.5 px-3.5 text-[11px]">
                         <span className="text-slate-700 dark:text-slate-300">{wh?.code?.slice(0, 8)}</span>
                         <span className="text-slate-400 mx-1">/</span>
-                        <span className="font-mono text-blue-600 dark:text-blue-400">{bin?.code || 'Kệ chính'}</span>
+                        <span className="font-mono text-indigo-600 dark:text-indigo-400">{bin?.code || 'Kệ chính'}</span>
                       </td>
                       <td className="py-2.5 px-3 text-right font-mono font-bold whitespace-nowrap">
                         <span className={
                           isPositive ? 'text-emerald-600 dark:text-emerald-400' :
-                          isNegative ? 'text-red-600 dark:text-red-400' :
+                          isNegative ? 'text-rose-600 dark:text-rose-400' :
                           'text-indigo-600 dark:text-indigo-400'
                         }>
                           {isPositive ? `+${formatNumber(t.quantity)}` : isNegative ? `-${formatNumber(t.quantity)}` : `${formatNumber(t.quantity)} (HOLD)`}

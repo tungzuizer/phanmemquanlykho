@@ -1,9 +1,9 @@
 /*
-Fact-Forcing Gate Info:
-1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Header.js?v=2026.09.12"></script>
-2. Affected API: Industrial CAD Top Control Bar with Zero-Flicker Sync Status, Live Telemetry & Role Switcher
-3. Data schemas: currentUser, setCurrentUser, users, darkMode, setDarkMode, onOpenCommandPalette, onResetSeed, onLogout, isSyncing, onRefresh
-4. User verbatim: "theo khuyến nghị của bạn" / "web không thay đổi gì cả ?"
+Fact-Forcing Gate Details:
+1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Header.js"></script>
+2. Affected API: Top Header Navigation Bar with Live Telemetry & Role Switcher (window.WMS_COMPONENTS.Header)
+3. Data schemas: currentUser, setCurrentUser, users, darkMode, setDarkMode, onOpenCommandPalette, onResetSeed, onLogout, sidebarCollapsed, setSidebarCollapsed, mobileDrawerOpen, setMobileDrawerOpen, isSyncing, onRefresh
+4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
 */
 
 function Header({
@@ -26,60 +26,60 @@ function Header({
   const roleConfig = getRoleConfig(currentUser?.role);
 
   return (
-    <header className="sticky top-0 z-30 select-none bg-white/90 dark:bg-slate-950/90 backdrop-blur-2xl border-b border-slate-200/80 dark:border-slate-800/80 shadow-xs transition-colors duration-200">
-      {/* Safe Area Inset Top Spacer for iPhone Notch / Dynamic Island */}
+    <header className="sticky top-0 z-30 select-none liquid-glass border-b border-white/40 dark:border-white/10 shadow-xs transition-colors duration-200 font-sans">
+      {/* Safe Area Inset Top Spacer for Notch */}
       <div className="h-[env(safe-area-inset-top,0px)]"></div>
 
       <div className="px-3 sm:px-5 h-16 flex items-center justify-between gap-2.5 sm:gap-4 max-w-7xl mx-auto">
-        {/* Left: Hamburger & Industrial Brand */}
+        {/* Left: Hamburger & Brand */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Desktop Hamburger: Collapse/Expand Sidebar */}
+          {/* Desktop Hamburger */}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="hidden md:flex p-2 rounded-xl text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 liquid-touch"
-            title={sidebarCollapsed ? "Mở rộng thanh điều hướng (16rem)" : "Thu gọn thanh điều hướng (4.5rem)"}
+            className="hidden md:flex p-2 rounded-xl text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 transition active:scale-95 cursor-pointer"
+            title={sidebarCollapsed ? "Mở rộng thanh menu" : "Thu gọn thanh menu"}
           >
             <i className={`fa-solid ${sidebarCollapsed ? 'fa-bars-staggered' : 'fa-bars'} text-sm`}></i>
           </button>
 
-          {/* Mobile Hamburger: Open Slide-Over Drawer */}
+          {/* Mobile Hamburger */}
           <button
             onClick={() => setMobileDrawerOpen(true)}
-            className="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 liquid-touch"
+            className="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 transition active:scale-95 cursor-pointer"
             title="Mở menu điều hướng"
           >
-            <i className="fa-solid fa-bars text-sm text-blue-600 dark:text-blue-400"></i>
+            <i className="fa-solid fa-bars text-sm text-indigo-600 dark:text-indigo-400"></i>
           </button>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 via-indigo-600 to-cyan-500 flex items-center justify-center font-black text-sm shadow-md shadow-blue-500/20 text-white border border-white/30 liquid-touch">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 flex items-center justify-center font-bold text-sm shadow-md shadow-indigo-500/25 text-white border border-white/30 font-display">
               ME
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xs sm:text-sm font-black tracking-tight text-slate-900 dark:text-white font-mono">
+                <span className="text-xs sm:text-sm font-bold tracking-tight text-slate-900 dark:text-white font-display">
                   MAX ELECTRIC
                 </span>
-                <span className="text-[9px] uppercase font-black tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 px-1.5 py-0.5 rounded border border-blue-500/20 font-mono">
-                  WMS 26
+                <span className="text-[9px] uppercase font-bold tracking-wider bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded border border-indigo-500/20 font-mono">
+                  WMS
                 </span>
               </div>
               <p className="text-[10px] text-slate-500 dark:text-slate-400 hidden sm:flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-                <span>IEC 61439 & ISO 9001:2015</span>
+                <span>Hệ Thống Kho Chuẩn ISO 9001:2015</span>
               </p>
             </div>
           </div>
         </div>
 
-        {/* Center: Universal Command Palette (Ctrl+K) Trigger */}
+        {/* Center: Command Palette Trigger */}
         <div className="flex-1 max-w-md hidden md:block">
           <button
             onClick={onOpenCommandPalette}
-            className="w-full flex items-center justify-between px-3.5 py-2 bg-slate-100/80 dark:bg-slate-900/80 hover:bg-slate-200/60 dark:hover:bg-slate-800/60 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl border border-slate-200 dark:border-slate-800 text-xs transition group shadow-xs liquid-touch"
+            className="w-full flex items-center justify-between px-3.5 py-2 bg-white/60 dark:bg-slate-900/60 hover:bg-white/90 dark:hover:bg-slate-800/90 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl border border-slate-200/80 dark:border-slate-800 text-xs transition group shadow-xs cursor-pointer active:scale-98"
           >
             <span className="flex items-center gap-2">
-              <i className="fa-solid fa-magnifying-glass text-slate-400 group-hover:text-blue-500 transition"></i>
+              <i className="fa-solid fa-magnifying-glass text-slate-400 group-hover:text-indigo-500 transition"></i>
               <span>Tìm nhanh SKU, đơn hàng, lệnh xuất, kệ...</span>
             </span>
             <kbd className="hidden lg:inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded border border-slate-200 dark:border-slate-700 text-[10px] font-mono shadow-xs">
@@ -88,37 +88,37 @@ function Header({
           </button>
         </div>
 
-        {/* Right Controls: Telemetry, Role Switcher, Theme, Reset & Logout */}
+        {/* Right Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Live Node Telemetry Pill */}
-          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[11px] font-mono">
+          {/* Live Telemetry */}
+          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 text-[11px] font-mono">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="text-slate-500 dark:text-slate-400">TOKYO NODE</span>
+            <span className="text-slate-500 dark:text-slate-400">SERVER</span>
             <span className="text-emerald-600 dark:text-emerald-400 font-bold">18ms</span>
           </div>
 
-          {/* SWR Zero-Flicker Sync Status Pill */}
+          {/* Sync Status Button */}
           <button
             onClick={() => onRefresh && onRefresh(true)}
             disabled={isSyncing}
-            className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all shadow-xs ${
+            className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-95 ${
               isSyncing
-                ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 animate-pulse'
-                : 'bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800 liquid-touch'
+                ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border-indigo-500/30 animate-pulse'
+                : 'bg-white/60 dark:bg-slate-900/60 hover:bg-white/90 dark:hover:bg-slate-800/90 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-800'
             }`}
-            title={isSyncing ? "Đang đồng bộ dữ liệu ngầm với Supabase..." : "Đã đồng bộ ngầm. Bấm để làm mới dữ liệu"}
+            title={isSyncing ? "Đang đồng bộ dữ liệu..." : "Đã đồng bộ. Bấm để làm mới"}
           >
-            <i className={`fa-solid ${isSyncing ? 'fa-arrows-rotate fa-spin text-blue-500' : 'fa-database text-blue-500 text-xs'}`}></i>
+            <i className={`fa-solid ${isSyncing ? 'fa-arrows-rotate fa-spin text-indigo-500' : 'fa-database text-indigo-500 text-xs'}`}></i>
             <span className="hidden xl:inline font-mono text-[11px]">{isSyncing ? 'SYNCING...' : 'SYNCED'}</span>
           </button>
 
-          {/* User & Role Selector Pill */}
+          {/* User & Role Switcher */}
           {currentUser && (
-            <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-900 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 shadow-xs">
-              <i className={`fa-solid ${roleConfig.icon || 'fa-circle-user'} text-xs text-blue-600 dark:text-blue-400`}></i>
+            <div className="flex items-center gap-1.5 bg-white/60 dark:bg-slate-900/60 px-2.5 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+              <i className={`fa-solid ${roleConfig.icon || 'fa-circle-user'} text-xs text-indigo-600 dark:text-indigo-400`}></i>
               {users && users.length > 0 && setCurrentUser ? (
                 <select
                   value={currentUser?.id || ''}
@@ -142,23 +142,23 @@ function Header({
             </div>
           )}
 
-          {/* Theme Toggle Button */}
+          {/* Theme Toggle */}
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 liquid-touch shadow-xs"
+            className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 transition active:scale-95 cursor-pointer shadow-xs"
             title={darkMode ? "Chuyển sang Giao diện Sáng" : "Chuyển sang Giao diện Tối"}
           >
-            <i className={`fa-solid ${darkMode ? 'fa-sun text-amber-400' : 'fa-moon text-blue-500'} text-xs`}></i>
+            <i className={`fa-solid ${darkMode ? 'fa-sun text-amber-400' : 'fa-moon text-indigo-500'} text-xs`}></i>
           </button>
 
-          {/* Reset Demo Seed (For Admins) */}
+          {/* Reset Seed Button (Admin) */}
           {(!currentUser || currentUser.role === 'ADMIN') && (
             <button
               onClick={onResetSeed}
-              className="hidden sm:flex px-2.5 py-1.5 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-800 items-center gap-1.5 liquid-touch shadow-xs"
-              title="Khôi phục dữ liệu mẫu chuẩn MEVN vào Supabase"
+              className="hidden sm:flex px-2.5 py-1.5 bg-white/60 dark:bg-slate-900/60 hover:bg-white/90 dark:hover:bg-slate-800/90 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-slate-200/80 dark:border-slate-800 items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-xs"
+              title="Khôi phục dữ liệu mẫu chuẩn MEVN"
             >
-              <i className="fa-solid fa-rotate-left text-blue-500 text-xs"></i>
+              <i className="fa-solid fa-rotate-left text-indigo-500 text-xs"></i>
               <span className="font-mono text-[11px]">RESET</span>
             </button>
           )}
@@ -167,7 +167,7 @@ function Header({
           {onLogout && (
             <button
               onClick={onLogout}
-              className="w-8 h-8 flex items-center justify-center rounded-xl text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/60 border border-red-200/80 dark:border-red-800/80 liquid-touch shadow-xs"
+              className="w-8 h-8 flex items-center justify-center rounded-xl text-rose-600 dark:text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition active:scale-95 cursor-pointer shadow-xs"
               title="Đăng xuất khỏi hệ thống MEVN"
             >
               <i className="fa-solid fa-arrow-right-from-bracket text-xs"></i>

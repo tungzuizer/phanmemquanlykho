@@ -1,9 +1,9 @@
 /*
-Fact-Forcing Gate Info:
+Fact-Forcing Gate Details:
 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/MobileBottomDock.js"></script>
-2. Affected API: iOS 26 Floating Liquid Bottom Dock & Quick SKU Field Lens with Role-Adaptive Filtering (window.WMS_COMPONENTS.MobileBottomDock)
-3. Data schemas: Uses activeTab, setActiveTab, counts, data (skus, stockBalances, bins, warehouses), currentUser, onOpenCommandPalette
-4. User verbatim: "cần bạn tách các dự liệu tài khoản và phân luồng các tài khoản và có phần đăng nhập"
+2. Affected API: iOS Floating Liquid Bottom Dock & Quick SKU Field Lens with Role-Adaptive Filtering (window.WMS_COMPONENTS.MobileBottomDock)
+3. Data schemas: activeTab, setActiveTab, counts, data (skus, stockBalances, bins, warehouses), currentUser, onOpenCommandPalette
+4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
 */
 
 function MobileBottomDock({
@@ -59,14 +59,14 @@ function MobileBottomDock({
   return (
     <>
       {/* Liquid Floating Capsule Bottom Dock (Visible only on Mobile md:hidden) */}
-      <nav className="md:hidden liquid-bottom-dock flex items-center justify-around select-none">
+      <nav className="md:hidden liquid-bottom-dock flex items-center justify-around select-none font-sans">
         {mainTabs.map(tab => {
           if (tab.isAction) {
             return (
               <button
                 key={tab.id}
                 onClick={() => setShowSkuLens(true)}
-                className="relative -top-3 w-12 h-12 rounded-full bg-gradient-to-tr from-blue-600 via-indigo-600 to-cyan-400 text-white flex items-center justify-center shadow-lg shadow-blue-500/40 liquid-touch border-2 border-white/80 dark:border-slate-800"
+                className="relative -top-3 w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/40 border-2 border-white/80 dark:border-slate-800 cursor-pointer active:scale-95"
                 aria-label="Tra cứu nhanh SKU hiện trường"
               >
                 <i className={`fa-solid ${tab.icon} text-lg`}></i>
@@ -80,16 +80,16 @@ function MobileBottomDock({
               <button
                 key={tab.id}
                 onClick={() => setShowMoreMenu(true)}
-                className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl liquid-touch relative ${
+                className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative cursor-pointer active:scale-95 ${
                   isMoreActive
-                    ? 'text-blue-600 dark:text-blue-400 font-extrabold'
+                    ? 'text-indigo-600 dark:text-indigo-400 font-bold'
                     : 'text-slate-500 dark:text-slate-400 font-medium'
                 }`}
               >
                 <i className={`fa-solid ${tab.icon} text-base`}></i>
                 <span className="text-[10px] mt-0.5">{tab.label}</span>
                 {tab.badge > 0 && (
-                  <span className="absolute -top-0.5 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                  <span className="absolute -top-0.5 right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">
                     {tab.badge}
                   </span>
                 )}
@@ -102,16 +102,16 @@ function MobileBottomDock({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl liquid-touch relative ${
+              className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative cursor-pointer active:scale-95 ${
                 isActive
-                  ? 'text-blue-600 dark:text-blue-400 font-extrabold'
+                  ? 'text-indigo-600 dark:text-indigo-400 font-bold'
                   : 'text-slate-500 dark:text-slate-400 font-medium'
               }`}
             >
               <i className={`fa-solid ${tab.icon} text-base`}></i>
               <span className="text-[10px] mt-0.5">{tab.label}</span>
               {tab.badge > 0 && (
-                <span className="absolute -top-0.5 right-1 w-4 h-4 bg-blue-600 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 right-1 w-4 h-4 bg-indigo-600 text-white text-[9px] font-black rounded-full flex items-center justify-center">
                   {tab.badge}
                 </span>
               )}
@@ -124,19 +124,19 @@ function MobileBottomDock({
       {showSkuLens && (
         <div className="liquid-sheet-overlay" onClick={() => setShowSkuLens(false)}>
           <div
-            className="liquid-sheet-content p-5 space-y-4"
+            className="liquid-sheet-content p-5 space-y-4 font-sans"
             onClick={e => e.stopPropagation()}
           >
             <div className="liquid-sheet-handle"></div>
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-blue-600/10 dark:bg-blue-400/10 text-blue-600 dark:text-blue-400 flex items-center justify-center font-black">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold border border-indigo-500/20">
                   <i className="fa-solid fa-qrcode"></i>
                 </div>
                 <div>
-                  <h3 className="text-sm font-black text-slate-900 dark:text-white">
-                    Tra Cứu Vật Tư & Vị Trí Kệ Tại Xưởng
+                  <h3 className="text-sm font-bold text-slate-900 dark:text-white font-display">
+                    Tra Cứu Vật Tư & Vị Trí Kệ
                   </h3>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400">
                     Tra cứu tồn vật lý, giữ chỗ & khả dụng tức thì
@@ -145,7 +145,7 @@ function MobileBottomDock({
               </div>
               <button
                 onClick={() => setShowSkuLens(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center liquid-touch"
+                className="w-8 h-8 rounded-xl bg-white/60 dark:bg-slate-800 text-slate-500 flex items-center justify-center cursor-pointer active:scale-95"
               >
                 <i className="fa-solid fa-xmark text-xs"></i>
               </button>
@@ -153,13 +153,13 @@ function MobileBottomDock({
 
             {/* Quick Search Input */}
             <div className="relative">
-              <i className="fa-solid fa-barcode absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-500 text-sm"></i>
+              <i className="fa-solid fa-barcode absolute left-3.5 top-1/2 -translate-y-1/2 text-indigo-500 text-sm"></i>
               <input
                 type="text"
                 value={skuQuery}
                 onChange={e => setSkuQuery(e.target.value)}
                 placeholder="Nhập mã SKU, quét barcode hoặc tên..."
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 rounded-2xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-2.5 bg-white/60 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-2xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
                 autoFocus
               />
             </div>
@@ -178,7 +178,7 @@ function MobileBottomDock({
                     className="p-3.5 rounded-2xl bg-white/60 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 shadow-xs space-y-2"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono font-bold text-xs text-blue-600 dark:text-blue-400">
+                      <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
                         {sku.code}
                       </span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
@@ -216,18 +216,18 @@ function MobileBottomDock({
       {showMoreMenu && (
         <div className="liquid-sheet-overlay" onClick={() => setShowMoreMenu(false)}>
           <div
-            className="liquid-sheet-content p-5 space-y-4"
+            className="liquid-sheet-content p-5 space-y-4 font-sans"
             onClick={e => e.stopPropagation()}
           >
             <div className="liquid-sheet-handle"></div>
 
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-black text-slate-900 dark:text-white">
-                Phân Hệ Thuộc Quyền Hạn Của Bạn
+              <h3 className="text-sm font-bold text-slate-900 dark:text-white font-display">
+                Phân Hệ Mở Rộng
               </h3>
               <button
                 onClick={() => setShowMoreMenu(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 flex items-center justify-center liquid-touch"
+                className="w-8 h-8 rounded-xl bg-white/60 dark:bg-slate-800 text-slate-500 flex items-center justify-center cursor-pointer active:scale-95"
               >
                 <i className="fa-solid fa-xmark text-xs"></i>
               </button>
@@ -241,13 +241,13 @@ function MobileBottomDock({
                     setActiveTab(item.id);
                     setShowMoreMenu(false);
                   }}
-                  className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 liquid-touch relative ${
+                  className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 cursor-pointer active:scale-95 relative ${
                     activeTab === item.id
-                      ? 'bg-blue-50/80 dark:bg-blue-950/50 border-blue-300 dark:border-blue-700 shadow-xs'
+                      ? 'bg-indigo-50/80 dark:bg-indigo-950/50 border-indigo-300 dark:border-indigo-700 shadow-xs'
                       : 'bg-white/60 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/60'
                   }`}
                 >
-                  <div className={`w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center text-sm ${item.color}`}>
+                  <div className={`w-9 h-9 rounded-xl bg-white/80 dark:bg-slate-700 flex items-center justify-center text-sm shadow-xs ${item.color}`}>
                     <i className={`fa-solid ${item.icon}`}></i>
                   </div>
                   <div className="flex-1 min-w-0">
@@ -256,7 +256,7 @@ function MobileBottomDock({
                     </div>
                   </div>
                   {item.badge > 0 && (
-                    <span className="w-5 h-5 rounded-full bg-red-500 text-white text-[10px] font-black flex items-center justify-center">
+                    <span className="w-5 h-5 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center">
                       {item.badge}
                     </span>
                   )}
