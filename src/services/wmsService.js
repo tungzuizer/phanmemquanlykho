@@ -1610,6 +1610,62 @@ class WmsService {
   }
 
   /**
+   * Chuyển đổi nhanh tài khoản làm việc nội bộ (Quick Switch 1-Click with Fresh JWT)
+   */
+  async switchUser(payload = {}) {
+    const targetUserId = payload.targetUserId || payload.userId || payload.id;
+    const targetUsername = payload.username;
+    const targetEmail = payload.email;
+
+    if (!targetUserId && !targetUsername && !targetEmail) {
+      throw new Error('Vui lòng chỉ định tài khoản nhân sự cần chuyển đổi.');
+    }
+
+    const whereOr = [];
+    if (targetUserId) whereOr.push({ id: targetUserId });
+    if (targetUsername) whereOr.push({ username: targetUsername });
+    if (targetEmail) whereOr.push({ email: targetEmail });
+
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: whereOr,
+      },
+    });
+
+    if (!user) {
+      throw new Error('Không tìm thấy tài khoản nhân sự trong hệ thống MEVN.');
+    }
+
+    if (!user.isActive) {
+      throw new Error(`Tài khoản ${user.fullName} đang bị tạm khóa.`);
+    }
+
+    const rolePermissions = this.getRolePermissions(user.role);
+    const safeUser = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      fullName: user.fullName,
+      phone: user.phone,
+      role: user.role,
+      isActive: user.isActive,
+      createdAt: user.createdAt,
+      permissions: rolePermissions.permissions,
+      allowedTabs: rolePermissions.allowedTabs,
+      roleName: rolePermissions.roleName,
+      department: rolePermissions.department,
+      description: rolePermissions.description,
+    };
+
+    const token = generateToken(safeUser);
+
+    return {
+      token,
+      user: safeUser,
+    };
+  }
+
+  /**
    * Lấy ma trận phân quyền chi tiết cho từng Vai trò (RBAC)
    */
   getRolePermissions(role) {

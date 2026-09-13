@@ -1,9 +1,9 @@
 /**
  * Fact-Forcing Gate Details:
  * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Sidebar.js"></script> and public/js/app.js
- * 2. Affected API: Desktop Collapsible Sidebar & Mobile Navigation Drawer with Independent Scrolling (window.WMS_COMPONENTS.Sidebar)
+ * 2. Affected API: Desktop Collapsible Sidebar & Mobile Navigation Drawer with Seamless Typography (window.WMS_COMPONENTS.Sidebar)
  * 3. Data schemas: NAV_DOMAINS (filtered by role), currentUser, setCurrentUser, users, onOpenCommandPalette, onLogout, counts, mobileDrawerOpen, setMobileDrawerOpen, activeTab, setActiveTab, collapsed
- * 4. User's verbatim instruction: "giao diện máy tính tôi nhìn đang quá rối mắt nền thì trắng hoa mắt chữ thì lan man không rõ rằng chữ thì cách nhau mấy cái không cần thiết như server0ms hay chế độ sáng tối ios9001 pro2026 , vân vân quá loạn và lan mang giao diện thì trắng đen quá xấu và đơn sắc hãy mix nhiều màu với nhau và cần thật sáng sủa và tách menu và trang ra làm 2 bên độc lập có thẻ vuốt lên xuống độc lập và cấm dùng màu tím hồng trắng đen sửa lại giao diện sáng sủa nhiều màu mix và cả phông nền ở đằng sau"
+ * 4. User's verbatim instruction: "sao chữ ở phần menu lại rời rạc vậy nhìn quá xấu"
  */
 
 function Sidebar({
@@ -34,6 +34,25 @@ function Sidebar({
     }
   };
 
+  const getRoleBadgeStyle = (role) => {
+    switch (role) {
+      case 'ADMIN':
+        return 'bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30';
+      case 'THU_KHO':
+        return 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/30';
+      case 'KY_THUAT':
+        return 'bg-teal-500/15 text-teal-700 dark:text-teal-300 border-teal-500/30';
+      case 'KE_TOAN':
+        return 'bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30';
+      case 'MUA_HANG':
+        return 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30';
+      case 'SAN_XUAT':
+        return 'bg-blue-500/15 text-blue-700 dark:text-blue-300 border-blue-500/30';
+      default:
+        return 'bg-slate-500/15 text-slate-700 dark:text-slate-300 border-slate-500/30';
+    }
+  };
+
   return (
     <React.Fragment>
       {/* 1. Desktop Multi-tier Collapsible Sidebar (Independent Scroll Pane) */}
@@ -49,21 +68,21 @@ function Sidebar({
             <div className="p-2.5 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-cyan-500/25 space-y-1.5 shadow-xs">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-teal-500/20 text-cyan-700 dark:text-cyan-300 flex items-center justify-center text-sm font-bold shrink-0 border border-cyan-500/30">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 text-slate-950 flex items-center justify-center text-xs font-bold shrink-0 shadow-xs">
                     <i className={`fa-solid ${roleConfig.icon || 'fa-user-tie'}`}></i>
                   </div>
                   <div className="min-w-0">
                     <div className="text-xs font-bold text-slate-900 dark:text-white truncate font-display">
                       {currentUser.fullName}
                     </div>
-                    <div className="text-[10px] text-cyan-700 dark:text-cyan-300 font-bold font-mono truncate">
+                    <div className="text-[11px] text-cyan-700 dark:text-cyan-300 font-semibold truncate">
                       {roleConfig.roleName || currentUser.role}
                     </div>
                   </div>
                 </div>
               </div>
-              <div className="text-[9px] text-slate-500 dark:text-slate-400 line-clamp-1 font-mono flex items-center gap-1">
-                <i className="fa-solid fa-industry text-[8px] text-teal-500"></i>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 line-clamp-1 flex items-center gap-1 font-medium">
+                <i className="fa-solid fa-industry text-[9px] text-teal-500"></i>
                 <span>{roleConfig.department || 'Nhà máy MEVN'}</span>
               </div>
             </div>
@@ -74,7 +93,7 @@ function Sidebar({
         {collapsed && currentUser && (
           <div className="p-3 border-b border-cyan-500/20 flex justify-center shrink-0">
             <div
-              className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-teal-500/20 text-cyan-700 dark:text-cyan-300 flex items-center justify-center text-base border border-cyan-500/30 shadow-xs"
+              className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 text-slate-950 flex items-center justify-center text-sm shadow-xs"
               title={`${currentUser.fullName} (${currentUser.role})`}
             >
               <i className={`fa-solid ${roleConfig.icon || 'fa-user-tie'}`}></i>
@@ -83,20 +102,17 @@ function Sidebar({
         )}
 
         {/* Navigation Items (Filtered by User Role) - Independent Scroll Body */}
-        <div className="flex-1 py-3 overflow-y-auto space-y-4">
+        <div className="flex-1 py-2 overflow-y-auto space-y-3 custom-scrollbar">
           {roleNavDomains.map((domain, idx) => (
-            <div key={idx} className="px-2.5">
+            <div key={idx} className="px-2.5 space-y-1">
               {!collapsed && (
-                <div className="flex items-center justify-between px-2.5 mb-1.5">
-                  <h3 className="text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono">
+                <div className="px-3 pt-2 pb-1 border-b border-cyan-500/10">
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-normal uppercase font-display">
                     {domain.group}
-                  </h3>
-                  <span className="text-[8px] font-mono text-cyan-700 dark:text-cyan-300 bg-cyan-500/10 px-1 py-0.5 rounded border border-cyan-500/20">
-                    0{idx+1}
                   </span>
                 </div>
               )}
-              <div className="space-y-1">
+              <div className="space-y-0.5">
                 {domain.items.map(item => {
                   const isActive = activeTab === item.id;
                   const badgeCount = counts[item.id] || 0;
@@ -106,9 +122,9 @@ function Sidebar({
                       key={item.id}
                       onClick={() => handleSelectTab(item.id)}
                       title={collapsed ? item.label : undefined}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all group relative cursor-pointer active:scale-98 ${
+                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all group relative cursor-pointer active:scale-98 ${
                         isActive
-                          ? 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 shadow-md shadow-cyan-500/20 font-extrabold'
+                          ? 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 shadow-md shadow-cyan-500/25 font-bold'
                           : 'text-slate-700 dark:text-slate-200 hover:bg-white/80 dark:hover:bg-slate-800/80 hover:text-cyan-700 dark:hover:text-cyan-300'
                       } ${collapsed ? 'justify-center' : ''}`}
                     >
@@ -120,12 +136,12 @@ function Sidebar({
                               : 'text-slate-400 group-hover:text-cyan-500'
                           }`}
                         ></i>
-                        {!collapsed && <span className="truncate">{item.label}</span>}
+                        {!collapsed && <span className="truncate tracking-normal text-[12px]">{item.label}</span>}
                       </div>
 
                       {!collapsed && badgeCount > 0 && (
                         <span
-                          className={`px-1.5 py-0.5 rounded text-[10px] font-bold font-mono transition ${
+                          className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold transition ${
                             isActive
                               ? 'bg-slate-950/20 text-slate-950'
                               : item.id === 'pos'
@@ -155,11 +171,11 @@ function Sidebar({
           {onLogout && !collapsed && (
             <button
               onClick={onLogout}
-              className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition font-mono cursor-pointer active:scale-95"
+              className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 border border-rose-500/20 transition cursor-pointer active:scale-95"
               title="Đăng xuất khỏi phiên làm việc"
             >
               <i className="fa-solid fa-arrow-right-from-bracket text-xs"></i>
-              <span>ĐĂNG XUẤT</span>
+              <span>Đăng xuất</span>
             </button>
           )}
 
@@ -192,15 +208,15 @@ function Sidebar({
             {/* Drawer Header */}
             <div className="p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 flex items-center justify-center font-bold text-sm text-slate-950 border border-white/40 font-display">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 flex items-center justify-center font-bold text-sm text-slate-950 border border-white/40 font-display shadow-xs">
                   ME
                 </div>
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold tracking-tight text-slate-900 dark:text-white font-display">
+                    <span className="text-xs font-bold tracking-normal text-slate-900 dark:text-white font-display">
                       MAX ELECTRIC
                     </span>
-                    <span className="text-[8px] uppercase font-bold tracking-wider bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 px-1 py-0.5 rounded border border-cyan-500/25 font-mono">
+                    <span className="text-[9px] uppercase font-bold bg-gradient-to-r from-cyan-500/15 to-emerald-500/15 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/25">
                       WMS
                     </span>
                   </div>
@@ -221,47 +237,69 @@ function Sidebar({
             {currentUser && (
               <div className="p-3 mx-3 mt-3 rounded-2xl bg-white/80 dark:bg-slate-900/80 border border-cyan-500/25 space-y-2 shrink-0">
                 <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-500/20 to-teal-500/20 text-cyan-700 dark:text-cyan-300 flex items-center justify-center text-sm font-bold shrink-0 border border-cyan-500/30">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 text-slate-950 flex items-center justify-center text-xs font-bold shrink-0 shadow-xs">
                     <i className={`fa-solid ${roleConfig.icon || 'fa-user-tie'}`}></i>
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="text-xs font-bold text-slate-900 dark:text-white truncate font-display">
                       {currentUser.fullName}
                     </div>
-                    <div className="text-[10px] text-cyan-700 dark:text-cyan-300 font-bold font-mono truncate">
+                    <div className="text-[11px] text-cyan-700 dark:text-cyan-300 font-semibold truncate">
                       {roleConfig.roleName || currentUser.role}
                     </div>
                   </div>
+                  <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${getRoleBadgeStyle(currentUser.role)}`}>
+                    {currentUser.role}
+                  </span>
                 </div>
 
-                {/* Quick Role Selection Dropdown */}
+                {/* 1-Click Role Switcher in Mobile Drawer */}
                 {users && users.length > 0 && setCurrentUser && (
-                  <select
-                    value={currentUser.id || ''}
-                    onChange={e => {
-                      const user = users.find(u => u.id === e.target.value);
-                      if (user) setCurrentUser(user);
-                    }}
-                    className="w-full bg-white dark:bg-slate-950 px-2.5 py-1.5 border border-cyan-500/25 rounded-xl text-[11px] font-mono font-bold text-slate-800 dark:text-slate-200 focus:outline-none"
-                  >
-                    {users.map(u => (
-                      <option key={u.id} value={u.id}>
-                        {u.fullName} ({u.role})
-                      </option>
-                    ))}
-                  </select>
+                  <div className="pt-2 border-t border-cyan-500/15">
+                    <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-normal uppercase font-display mb-1 flex items-center gap-1.5">
+                      <i className="fa-solid fa-repeat text-cyan-500 text-[10px]"></i>
+                      <span>Đổi tài khoản nhanh (1-Click)</span>
+                    </div>
+                    <div className="grid grid-cols-1 gap-1 max-h-36 overflow-y-auto custom-scrollbar pr-0.5">
+                      {users.map(u => {
+                        const isCurrent = u.id === currentUser.id;
+                        return (
+                          <button
+                            key={u.id}
+                            type="button"
+                            onClick={() => {
+                              if (!isCurrent) {
+                                setCurrentUser(u);
+                                setMobileDrawerOpen(false);
+                              }
+                            }}
+                            className={`px-2.5 py-1.5 rounded-xl border text-left text-xs flex items-center justify-between cursor-pointer transition ${
+                              isCurrent
+                                ? 'bg-cyan-500/20 border-cyan-500/60 font-bold text-cyan-700 dark:text-cyan-300'
+                                : 'bg-white/50 dark:bg-slate-950/50 hover:bg-white/90 dark:hover:bg-slate-900/90 border-cyan-500/15 text-slate-700 dark:text-slate-300 font-medium'
+                            }`}
+                          >
+                            <span className="truncate">{u.fullName}</span>
+                            <span className="text-[10px] opacity-75 shrink-0 ml-1.5">({u.role})</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
             )}
 
             {/* Navigation Domains List (Filtered by Role) - Scrollable */}
-            <div className="flex-1 py-3 px-3 overflow-y-auto space-y-4">
+            <div className="flex-1 py-2 px-3 overflow-y-auto space-y-3 custom-scrollbar">
               {roleNavDomains.map((domain, idx) => (
                 <div key={idx} className="space-y-1">
-                  <h3 className="px-2 text-[9px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest font-mono">
-                    {domain.group}
-                  </h3>
-                  <div className="space-y-1">
+                  <div className="px-2 pt-1 pb-0.5 border-b border-cyan-500/10">
+                    <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-normal uppercase font-display">
+                      {domain.group}
+                    </span>
+                  </div>
+                  <div className="space-y-0.5">
                     {domain.items.map(item => {
                       const isActive = activeTab === item.id;
                       const badgeCount = counts[item.id] || 0;
@@ -270,10 +308,10 @@ function Sidebar({
                         <button
                           key={item.id}
                           onClick={() => handleSelectTab(item.id)}
-                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer active:scale-98 ${
+                          className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer active:scale-98 ${
                             isActive
-                              ? 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-extrabold shadow-sm'
-                              : 'text-slate-700 dark:text-slate-200 hover:bg-white/80 dark:hover:bg-slate-800/80'
+                              ? 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-bold shadow-sm'
+                              : 'text-slate-700 dark:text-slate-200 hover:bg-white/80 dark:hover:bg-slate-800/80 font-medium'
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
@@ -282,12 +320,12 @@ function Sidebar({
                                 isActive ? 'text-slate-950 font-bold' : 'text-slate-400'
                               }`}
                             ></i>
-                            <span>{item.label}</span>
+                            <span className="tracking-normal">{item.label}</span>
                           </div>
 
                           {badgeCount > 0 && (
                             <span
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold font-mono ${
+                              className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
                                 isActive
                                   ? 'bg-slate-950/20 text-slate-950'
                                   : item.id === 'pos'
@@ -317,10 +355,10 @@ function Sidebar({
                     setMobileDrawerOpen(false);
                     onLogout();
                   }}
-                  className="w-full px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-bold font-mono flex items-center justify-center gap-2 border border-rose-500/20 cursor-pointer active:scale-95"
+                  className="w-full px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 border border-rose-500/20 cursor-pointer active:scale-95"
                 >
                   <i className="fa-solid fa-arrow-right-from-bracket"></i>
-                  <span>ĐĂNG XUẤT</span>
+                  <span>Đăng xuất</span>
                 </button>
               )}
 
@@ -331,13 +369,13 @@ function Sidebar({
                     setMobileDrawerOpen(false);
                     onOpenCommandPalette();
                   }}
-                  className="w-full px-3 py-2 bg-white/80 dark:bg-slate-950/80 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center justify-between border border-cyan-500/20 cursor-pointer active:scale-95"
+                  className="w-full px-3 py-2 bg-white/80 dark:bg-slate-950/80 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center justify-between border border-cyan-500/20 cursor-pointer active:scale-95"
                 >
                   <span className="flex items-center gap-2">
                     <i className="fa-solid fa-magnifying-glass text-cyan-500"></i>
                     <span>Tìm kiếm nhanh</span>
                   </span>
-                  <span className="text-[10px] font-mono text-slate-400">Ctrl+K</span>
+                  <span className="text-[11px] font-medium text-slate-400">Ctrl+K</span>
                 </button>
               )}
             </div>

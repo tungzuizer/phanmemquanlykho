@@ -2,7 +2,7 @@
 1. Importers/Callers: public/index.html via <script src="/js/dataConstants.js?v=2026.09.13"></script> and all React domain components
 2. Affected API: Role matrix, navigation filters, permission checks, status color mapping (window.WMS_CONSTANTS)
 3. Data schemas: STATUS_MAP, ROLES, ROLE_CONFIG, NAV_DOMAINS, helper functions
-4. User's verbatim instruction: "giao diện máy tính tôi nhìn đang quá rối mắt nền thì trắng hoa mắt chữ thì lan man không rõ rằng chữ thì cách nhau mấy cái không cần thiết như server0ms hay chế độ sáng tối ios9001 pro2026 , vân vân quá loạn và lan mang giao diện thì trắng đen quá xấu và đơn sắc hãy mix nhiều màu với nhau và cần thật sáng sủa và tách menu và trang ra làm 2 bên độc lập có thẻ vuốt lên xuống độc lập và cấm dùng màu tím hồng trắng đen sửa lại giao diện sáng sủa nhiều màu mix và cả phông nền ở đằng sau"
+4. User's verbatim instruction: "sao chữ ở phần menu lại rời rạc vậy nhìn quá xấu"
 */
 
 window.WMS_CONSTANTS = {
@@ -104,33 +104,33 @@ window.WMS_CONSTANTS = {
 
   NAV_DOMAINS: [
     {
-      group: 'Tổng Quan & Giám Sát',
+      group: 'TỔNG QUAN',
       items: [
-        { id: 'dashboard', label: 'Bảng Điều Hành', icon: 'fa-gauge-high' },
-        { id: 'kpi', label: 'Đo Lường KPI (3 Chỉ số)', icon: 'fa-chart-pie' }
+        { id: 'dashboard', label: 'Tổng quan', icon: 'fa-gauge-high' },
+        { id: 'kpi', label: 'Chỉ số KPI', icon: 'fa-chart-pie' }
       ]
     },
     {
-      group: 'Đơn Hàng & Kỹ Thuật',
+      group: 'ĐƠN HÀNG & KỸ THUẬT',
       items: [
-        { id: 'orders', label: 'Quản Lý Đơn Hàng & Vòng Đời', icon: 'fa-cubes' },
-        { id: 'boms', label: 'BOM & Đối Chiếu Delta', icon: 'fa-list-check' }
+        { id: 'orders', label: 'Đơn hàng', icon: 'fa-cubes' },
+        { id: 'boms', label: 'Định mức BOM', icon: 'fa-list-check' }
       ]
     },
     {
-      group: 'Kho Vận & Cung Ứng',
+      group: 'KHO VẬN & CUNG ỨNG',
       items: [
-        { id: 'pos', label: 'Mua Hàng Bù Thiếu (PO)', icon: 'fa-cart-shopping' },
-        { id: 'grns', label: 'Nhập Kho Hàng Về (GRN)', icon: 'fa-truck-ramp-box' },
-        { id: 'dispatch', label: 'Đăng Ký & Xuất Kho (PXK-01)', icon: 'fa-dolly' },
-        { id: 'returns', label: 'Nhập Trả / Phế Phẩm', icon: 'fa-arrow-rotate-left' }
+        { id: 'pos', label: 'Mua hàng (PO)', icon: 'fa-cart-shopping' },
+        { id: 'grns', label: 'Nhập kho (GRN)', icon: 'fa-truck-ramp-box' },
+        { id: 'dispatch', label: 'Xuất kho (GDN)', icon: 'fa-dolly' },
+        { id: 'returns', label: 'Nhập trả hàng', icon: 'fa-arrow-rotate-left' }
       ]
     },
     {
-      group: 'Tra Cứu & Báo Cáo',
+      group: 'TRA CỨU & BÁO CÁO',
       items: [
-        { id: 'inventory', label: 'Tồn Kho & Vị Trí Kệ', icon: 'fa-boxes-stacked' },
-        { id: 'ledger', label: 'Sổ Cái Biến Động (Ledger)', icon: 'fa-book-bookmark' }
+        { id: 'inventory', label: 'Tồn kho & Vị trí', icon: 'fa-boxes-stacked' },
+        { id: 'ledger', label: 'Sổ cái biến động', icon: 'fa-book-bookmark' }
       ]
     }
   ],

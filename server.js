@@ -235,6 +235,27 @@ async function handleApiRequest(req, res, pathname, query) {
         return res.end(JSON.stringify({ success: true, message: 'Đã đăng xuất an toàn khỏi hệ thống MEVN WMS.' }));
       }
 
+      // 0.2 Chuyển đổi nhanh tài khoản làm việc (Quick Switch 1-Click with Fresh JWT Token)
+      if (req.method === 'POST' && pathname === '/api/auth/switch') {
+        try {
+          const switchResult = await wmsService.switchUser(payload);
+          res.writeHead(200);
+          return res.end(JSON.stringify({
+            success: true,
+            token: switchResult.token,
+            user: switchResult.user,
+            message: `Đã chuyển đổi sang tài khoản: ${switchResult.user.fullName} (${switchResult.user.roleName || switchResult.user.role})!`
+          }));
+        } catch (switchErr) {
+          res.writeHead(400);
+          return res.end(JSON.stringify({
+            success: false,
+            code: 'SWITCH_FAILED',
+            message: switchErr.message || 'Không thể chuyển đổi tài khoản người dùng.'
+          }));
+        }
+      }
+
       // =======================================================================
       // 4. CÁC ENDPOINT NGHIỆP VỤ (YÊU CẦU XÁC THỰC TOKEN & RBAC NGHIÊM NGẶT)
       // =======================================================================

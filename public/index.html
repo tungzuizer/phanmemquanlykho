@@ -280,18 +280,46 @@
         showToast('Đã đăng xuất an toàn khỏi hệ thống!');
       };
 
-      const handleSwitchUser = (user) => {
-        setCurrentUser(user);
-        if (user) {
+      const handleSwitchUser = async (user) => {
+        if (!user) return;
+        try {
+          showToast(`Đang chuyển sang tài khoản ${user.fullName}...`);
+          const res = await fetch('/api/auth/switch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetUserId: user.id, username: user.username, email: user.email })
+          });
+          const json = await res.json();
+          if (json.success && json.user) {
+            const switchedUser = json.user;
+            setCurrentUser(switchedUser);
+            try {
+              localStorage.setItem('mevn_auth_user', JSON.stringify(switchedUser));
+              if (json.token) {
+                localStorage.setItem('mevn_auth_token', json.token);
+              }
+            } catch (e) {}
+
+            // Chuyển tab sang trang phù hợp nhất với vai trò mới nếu tab hiện tại không được phép
+            const { isTabAllowed, getRoleConfig } = window.WMS_CONSTANTS || {};
+            if (isTabAllowed && !isTabAllowed(switchedUser, activeTab)) {
+              const cfg = getRoleConfig ? getRoleConfig(switchedUser.role) : null;
+              const firstTab = cfg?.allowedTabs?.[0] || 'dashboard';
+              setActiveTab(firstTab);
+            }
+
+            showToast(json.message || `Đã chuyển sang tài khoản: ${switchedUser.fullName} (${switchedUser.role})!`);
+            fetchState(true);
+          } else {
+            showToast(json.message || 'Chuyển tài khoản không thành công', 'error');
+          }
+        } catch (err) {
+          console.error('[Switch User Error]:', err);
+          // Fallback cập nhật local nếu mạng tạm gián đoạn
+          setCurrentUser(user);
           try {
             localStorage.setItem('mevn_auth_user', JSON.stringify(user));
           } catch (e) {}
-          const { isTabAllowed, getRoleConfig } = window.WMS_CONSTANTS || {};
-          if (isTabAllowed && !isTabAllowed(user, activeTab)) {
-            const cfg = getRoleConfig ? getRoleConfig(user.role) : null;
-            const firstTab = cfg?.allowedTabs?.[0] || 'dashboard';
-            setActiveTab(firstTab);
-          }
           showToast(`Đã chuyển sang tài khoản: ${user.fullName} (${user.role})`);
         }
       };
