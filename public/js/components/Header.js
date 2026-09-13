@@ -1,17 +1,15 @@
 /**
  * Fact-Forcing Gate Details:
  * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Header.js"></script> and public/js/app.js
- * 2. Affected API: Top Header Navigation Bar with Live Telemetry & Role Switcher (window.WMS_COMPONENTS.Header)
- * 3. Data schemas: currentUser, setCurrentUser, users, darkMode, setDarkMode, onOpenCommandPalette, onResetSeed, onLogout, sidebarCollapsed, setSidebarCollapsed, mobileDrawerOpen, setMobileDrawerOpen, isSyncing, onRefresh
- * 4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
+ * 2. Affected API: Top Header Navigation Bar with Role Switcher & Fast Actions (window.WMS_COMPONENTS.Header)
+ * 3. Data schemas: currentUser, setCurrentUser, users, onOpenCommandPalette, onResetSeed, onLogout, sidebarCollapsed, setSidebarCollapsed, mobileDrawerOpen, setMobileDrawerOpen, isSyncing, onRefresh
+ * 4. User's verbatim instruction: "mấy cái không cần thiết như server0ms hay chế độ sáng tối ios9001 pro2026 , vân vân quá loạn và lan mang giao diện thì trắng đen quá xấu và đơn sắc hãy mix nhiều màu với nhau và cần thật sáng sủa và tách menu và trang ra làm 2 bên độc lập có thẻ vuốt lên xuống độc lập và cấm dùng màu tím hồng trắng đen sửa lại giao diện sáng sủa nhiều màu mix và cả phông nền ở đằng sau"
  */
 
 function Header({
   currentUser,
   setCurrentUser,
   users = [],
-  darkMode,
-  setDarkMode,
   onOpenCommandPalette,
   onResetSeed,
   onLogout,
@@ -26,7 +24,7 @@ function Header({
   const roleConfig = getRoleConfig(currentUser?.role);
 
   return (
-    <header className="sticky top-0 z-30 select-none liquid-glass border-b border-slate-200/80 dark:border-slate-800 shadow-xs transition-colors duration-200 font-sans">
+    <header className="sticky top-0 z-30 select-none liquid-glass border-b border-cyan-500/20 shadow-sm transition-colors duration-200 font-sans">
       {/* Safe Area Inset Top Spacer for Notch */}
       <div className="h-[env(safe-area-inset-top,0px)]"></div>
 
@@ -36,7 +34,7 @@ function Header({
           {/* Desktop Hamburger */}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            className="hidden md:flex p-2 rounded-xl text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 transition active:scale-95 cursor-pointer"
+            className="hidden md:flex p-2 rounded-xl text-slate-700 hover:text-cyan-600 dark:text-slate-200 dark:hover:text-cyan-400 bg-white/80 dark:bg-slate-900/80 border border-cyan-500/20 transition active:scale-95 cursor-pointer shadow-xs"
             title={sidebarCollapsed ? "Mở rộng thanh menu" : "Thu gọn thanh menu"}
           >
             <i className={`fa-solid ${sidebarCollapsed ? 'fa-bars-staggered' : 'fa-bars'} text-xs sm:text-sm`}></i>
@@ -45,14 +43,14 @@ function Header({
           {/* Mobile Hamburger */}
           <button
             onClick={() => setMobileDrawerOpen(true)}
-            className="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 dark:text-slate-200 dark:hover:text-white bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 transition active:scale-95 cursor-pointer"
+            className="md:hidden p-2 rounded-xl text-slate-700 hover:text-cyan-600 dark:text-slate-200 dark:hover:text-cyan-400 bg-white/80 dark:bg-slate-900/80 border border-cyan-500/20 transition active:scale-95 cursor-pointer"
             title="Mở menu điều hướng"
           >
             <i className="fa-solid fa-bars text-sm text-cyan-600 dark:text-cyan-400"></i>
           </button>
 
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-500 to-emerald-500 flex items-center justify-center font-bold text-xs sm:text-sm shadow-md shadow-cyan-500/20 text-slate-950 border border-white/40 font-display">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 flex items-center justify-center font-bold text-xs sm:text-sm shadow-md shadow-cyan-500/25 text-slate-950 border border-white/50 font-display">
               ME
             </div>
             <div>
@@ -60,14 +58,10 @@ function Header({
                 <span className="text-xs sm:text-sm font-bold tracking-tight text-slate-900 dark:text-white font-display">
                   MAX ELECTRIC
                 </span>
-                <span className="text-[9px] uppercase font-bold tracking-wider bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/20 font-mono">
+                <span className="text-[9px] uppercase font-bold tracking-wider bg-gradient-to-r from-cyan-500/15 to-emerald-500/15 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.5 rounded-md border border-cyan-500/25 font-mono">
                   WMS
                 </span>
               </div>
-              <p className="text-[10px] text-slate-500 dark:text-slate-400 hidden sm:flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block"></span>
-                <span>Kho Tủ Điện & Cung Ứng ISO 9001:2015</span>
-              </p>
             </div>
           </div>
         </div>
@@ -76,13 +70,13 @@ function Header({
         <div className="flex-1 max-w-md hidden md:block">
           <button
             onClick={onOpenCommandPalette}
-            className="w-full flex items-center justify-between px-3.5 py-2 bg-white/70 dark:bg-slate-900/70 hover:bg-white dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl border border-slate-200/80 dark:border-slate-800 text-xs transition group shadow-xs cursor-pointer active:scale-98"
+            className="w-full flex items-center justify-between px-3.5 py-2 bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl border border-cyan-500/20 text-xs transition group shadow-xs cursor-pointer active:scale-98"
           >
             <span className="flex items-center gap-2">
-              <i className="fa-solid fa-magnifying-glass text-slate-400 group-hover:text-cyan-500 transition"></i>
+              <i className="fa-solid fa-magnifying-glass text-cyan-500 group-hover:scale-110 transition-transform"></i>
               <span>Tìm nhanh SKU, đơn hàng, lệnh xuất, kệ...</span>
             </span>
-            <kbd className="hidden lg:inline-flex items-center gap-1 px-2 py-0.5 bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 rounded border border-slate-200 dark:border-slate-700 text-[10px] font-mono shadow-xs">
+            <kbd className="hidden lg:inline-flex items-center gap-1 px-2 py-0.5 bg-white/90 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md border border-slate-200 dark:border-slate-700 text-[10px] font-mono shadow-xs">
               <span className="text-xs">⌘</span> K
             </kbd>
           </button>
@@ -90,34 +84,24 @@ function Header({
 
         {/* Right Controls */}
         <div className="flex items-center gap-1.5 sm:gap-2">
-          {/* Live Telemetry */}
-          <div className="hidden lg:flex items-center gap-2 px-2.5 py-1.5 rounded-xl bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 text-[11px] font-mono">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="text-slate-500 dark:text-slate-400">SERVER</span>
-            <span className="text-emerald-600 dark:text-emerald-400 font-bold">0ms</span>
-          </div>
-
           {/* Sync Status Button */}
           <button
             onClick={() => onRefresh && onRefresh(true)}
             disabled={isSyncing}
             className={`hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-95 ${
               isSyncing
-                ? 'bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30 animate-pulse'
-                : 'bg-white/70 dark:bg-slate-900/70 hover:bg-white dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200/80 dark:border-slate-800'
+                ? 'bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 border-cyan-500/40 animate-pulse'
+                : 'bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200 border-cyan-500/20'
             }`}
-            title={isSyncing ? "Đang đồng bộ dữ liệu..." : "Đã đồng bộ. Bấm để làm mới"}
+            title={isSyncing ? "Đang đồng bộ dữ liệu..." : "Đã kết nối. Bấm để làm mới"}
           >
-            <i className={`fa-solid ${isSyncing ? 'fa-arrows-rotate fa-spin text-cyan-500' : 'fa-database text-cyan-500 text-xs'}`}></i>
-            <span className="hidden xl:inline font-mono text-[11px]">{isSyncing ? 'SYNCING...' : 'SYNCED'}</span>
+            <i className={`fa-solid ${isSyncing ? 'fa-arrows-rotate fa-spin text-cyan-500' : 'fa-database text-teal-500 text-xs'}`}></i>
+            <span className="hidden xl:inline font-mono text-[11px] font-bold">{isSyncing ? 'ĐANG ĐỒNG BỘ...' : 'ĐỒNG BỘ'}</span>
           </button>
 
           {/* User & Role Switcher */}
           {currentUser && (
-            <div className="flex items-center gap-1.5 bg-white/70 dark:bg-slate-900/70 px-2.5 py-1.5 rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
+            <div className="flex items-center gap-1.5 bg-white/80 dark:bg-slate-900/80 px-2.5 py-1.5 rounded-xl border border-cyan-500/25 shadow-xs">
               <i className={`fa-solid ${roleConfig.icon || 'fa-user-tie'} text-xs text-cyan-600 dark:text-cyan-400`}></i>
               {users && users.length > 0 && setCurrentUser ? (
                 <select
@@ -142,23 +126,14 @@ function Header({
             </div>
           )}
 
-          {/* Theme Toggle */}
-          <button
-            onClick={() => setDarkMode(!darkMode)}
-            className="w-8 h-8 flex items-center justify-center rounded-xl text-slate-600 dark:text-slate-300 bg-white/70 dark:bg-slate-900/70 border border-slate-200/80 dark:border-slate-800 transition active:scale-95 cursor-pointer shadow-xs"
-            title={darkMode ? "Chuyển sang Giao diện Sáng" : "Chuyển sang Giao diện Tối"}
-          >
-            <i className={`fa-solid ${darkMode ? 'fa-sun text-amber-400' : 'fa-moon text-cyan-500'} text-xs`}></i>
-          </button>
-
           {/* Reset Seed Button (Admin) */}
           {(!currentUser || currentUser.role === 'ADMIN') && (
             <button
               onClick={onResetSeed}
-              className="hidden sm:flex px-2.5 py-1.5 bg-white/70 dark:bg-slate-900/70 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-slate-200/80 dark:border-slate-800 items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-xs"
+              className="hidden sm:flex px-2.5 py-1.5 bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl text-xs font-bold border border-cyan-500/20 items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-xs"
               title="Khôi phục dữ liệu mẫu chuẩn MEVN"
             >
-              <i className="fa-solid fa-rotate-left text-cyan-500 text-xs"></i>
+              <i className="fa-solid fa-rotate-left text-amber-500 text-xs"></i>
               <span className="font-mono text-[11px]">RESET</span>
             </button>
           )}

@@ -108,7 +108,7 @@ function BomsTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrevie
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/60 dark:border-slate-800">
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-xs bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 px-2.5 py-1 rounded-lg shadow-xs">
+                    <span className="font-mono font-bold text-xs bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 px-2.5 py-1 rounded-lg shadow-sm font-extrabold">
                       BOM v{selectedBom.version}
                     </span>
                     <span className="text-xs text-slate-400 font-mono">

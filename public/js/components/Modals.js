@@ -937,7 +937,7 @@ function Modals({
       <ModalShell
         title="Lập Phiếu Nhập Trả & Thu Hồi Phế Liệu"
         icon="fa-arrow-rotate-left"
-        iconColor="text-purple-600"
+        iconColor="text-amber-500"
       >
         <form
           onSubmit={e => {

@@ -1,8 +1,8 @@
 /*
 1. Importers/Callers: public/index.html via <link rel="stylesheet" href="/css/custom.css">
-2. Affected API: Global CSS styling, Vietnamese Typography (Be Vietnam Pro + Plus Jakarta Sans), Aurora Cosmic Mesh Gradient, Interactive Spotlight, Glassmorphism, Modern Glow Badges.
-3. Data schemas: CSS variables, frosted glass classes, specular borders, aurora glow utility classes.
-4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
+2. Affected API: Global CSS styling, Vietnamese Typography (Be Vietnam Pro + Plus Jakarta Sans), Two-Pane Split Layout, Multi-Color Ambient Mesh Background, Frosted Glass & Custom Scrollbars.
+3. Data schemas: CSS variables, Two-Pane Layout (.app-two-pane-shell, .pane-sidebar, .pane-workspace), multi-color oceanic/emerald/amber mesh ambient layers.
+4. User's verbatim instruction: "giao diện máy tính tôi nhìn đang quá rối mắt nền thì trắng hoa mắt chữ thì lan man không rõ rằng chữ thì cách nhau mấy cái không cần thiết như server0ms hay chế độ sáng tối ios9001 pro2026 , vân vân quá loạn và lan mang giao diện thì trắng đen quá xấu và đơn sắc hãy mix nhiều màu với nhau và cần thật sáng sủa và tách menu và trang ra làm 2 bên độc lập có thẻ vuốt lên xuống độc lập và cấm dùng màu tím hồng trắng đen sửa lại giao diện sáng sủa nhiều màu mix và cả phông nền ở đằng sau"
 */
 
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
@@ -18,23 +18,23 @@
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
 
-  /* Modern Multi-Color Aurora Glass Tokens */
-  --glass-bg: rgba(255, 255, 255, 0.82);
-  --glass-bg-subtle: rgba(255, 255, 255, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.9);
-  --glass-border-subtle: rgba(226, 232, 240, 0.85);
-  --glass-shadow: 0 20px 45px -15px rgba(30, 41, 59, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
+  /* Modern Vibrant Multi-Color Glass Tokens */
+  --glass-bg: rgba(240, 253, 250, 0.85);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(6, 182, 212, 0.25);
+  --glass-border-subtle: rgba(16, 185, 129, 0.2);
+  --glass-shadow: 0 20px 45px -15px rgba(2, 132, 199, 0.12), 0 0 0 1px rgba(255, 255, 255, 0.8) inset;
   --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.95);
 }
 
 .dark {
-  /* Rich Multi-Color Aurora Cosmic Glass Tokens (Not Flat Black) */
-  --glass-bg: rgba(19, 24, 48, 0.76);
-  --glass-bg-subtle: rgba(30, 39, 73, 0.65);
-  --glass-border: rgba(255, 255, 255, 0.16);
-  --glass-border-subtle: rgba(255, 255, 255, 0.09);
-  --glass-shadow: 0 25px 50px -12px rgba(10, 15, 35, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.12) inset;
-  --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.28);
+  /* Vibrant Deep Oceanic & Emerald Dark Mode (No Pitch Black) */
+  --glass-bg: rgba(4, 28, 48, 0.82);
+  --glass-bg-subtle: rgba(8, 40, 68, 0.72);
+  --glass-border: rgba(6, 182, 212, 0.28);
+  --glass-border-subtle: rgba(20, 184, 166, 0.2);
+  --glass-shadow: 0 25px 50px -12px rgba(2, 30, 56, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+  --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 * {
@@ -50,29 +50,58 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   letter-spacing: -0.01em;
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
 }
 
-/* Multi-Color Oceanic Emerald & Solar Gold Mesh Ambient Backgrounds */
+/* Multi-Color Living Mesh Ambient Background (Cyan, Amber, Emerald, Sky Blue, Teal) */
 body {
-  background-color: #f0fdf4;
+  background-color: #ecfeff;
   background-image:
-    radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.22) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.20) 0px, transparent 50%),
-    radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.18) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(2, 132, 199, 0.22) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(217, 119, 6, 0.18) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.28) 0px, transparent 45%),
+    radial-gradient(at 100% 0%, rgba(245, 158, 11, 0.24) 0px, transparent 45%),
+    radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.22) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(2, 132, 199, 0.28) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(20, 184, 166, 0.25) 0px, transparent 45%);
   background-attachment: fixed;
 }
 
 .dark body, body.dark {
-  background-color: #041320;
+  background-color: #031e2e;
   background-image:
-    radial-gradient(at 5% 5%, rgba(6, 182, 212, 0.35) 0px, transparent 50%),
-    radial-gradient(at 95% 10%, rgba(245, 158, 11, 0.28) 0px, transparent 50%),
-    radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.28) 0px, transparent 50%),
-    radial-gradient(at 10% 90%, rgba(2, 132, 199, 0.35) 0px, transparent 50%),
-    radial-gradient(at 90% 90%, rgba(20, 184, 166, 0.28) 0px, transparent 50%);
+    radial-gradient(at 5% 5%, rgba(6, 182, 212, 0.38) 0px, transparent 50%),
+    radial-gradient(at 95% 10%, rgba(245, 158, 11, 0.32) 0px, transparent 50%),
+    radial-gradient(at 50% 50%, rgba(16, 185, 129, 0.30) 0px, transparent 50%),
+    radial-gradient(at 10% 90%, rgba(2, 132, 199, 0.38) 0px, transparent 50%),
+    radial-gradient(at 90% 90%, rgba(20, 184, 166, 0.32) 0px, transparent 50%);
   background-attachment: fixed;
+}
+
+/* Two-Pane Independent Scrolling Architecture */
+.app-two-pane-shell {
+  height: 100vh;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pane-sidebar {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
+}
+
+.pane-workspace {
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  flex: 1 1 0%;
 }
 
 /* Dynamic Oceanic & Solar Mesh Keyframes */

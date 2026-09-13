@@ -47,8 +47,8 @@ function InventoryTab({ data, currentUser }) {
             onClick={() => setSelectedWhId('ALL')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer ${
               selectedWhId === 'ALL'
-                ? 'bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
-                : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
+                ? 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-extrabold shadow-sm'
+                : 'liquid-glass text-slate-700 dark:text-slate-200 hover:bg-white/90 dark:hover:bg-slate-800/90'
             }`}
           >
             Tất Cả Kho
@@ -59,8 +59,8 @@ function InventoryTab({ data, currentUser }) {
               onClick={() => setSelectedWhId(wh.id)}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 active:scale-95 cursor-pointer ${
                 selectedWhId === wh.id
-                  ? 'bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
-                  : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
+                  ? 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-extrabold shadow-sm'
+                  : 'liquid-glass text-slate-700 dark:text-slate-200 hover:bg-white/90 dark:hover:bg-slate-800/90'
               }`}
             >
               <i className={`fa-solid ${wh.code.includes('DONG') ? 'fa-cubes text-amber-500' : 'fa-bolt text-cyan-500'}`}></i>

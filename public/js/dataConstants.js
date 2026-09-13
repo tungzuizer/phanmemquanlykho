@@ -1,8 +1,8 @@
-/* Fact-Forcing Gate Answer:
-1. Importers/Callers: public/index.html via <script src="/js/dataConstants.js?v=2026.09.13"></script> and all React components
-2. Affected API: Role matrix, navigation filters, permission checks (window.WMS_CONSTANTS)
-3. Data schemas: ROLE_CONFIG, getNavDomainsForRole, hasPermission, isTabAllowed, formatters
-4. User verbatim: "giao diện quá hỗn loạn không biết ở trong có cái gì quá loạn và chữ thì nhiều và hỗn loạn hãy kiểm tra lại vè mấy cái huy chương hay icon tương tự đi phèn quá"
+/*
+1. Importers/Callers: public/index.html via <script src="/js/dataConstants.js?v=2026.09.13"></script> and all React domain components
+2. Affected API: Role matrix, navigation filters, permission checks, status color mapping (window.WMS_CONSTANTS)
+3. Data schemas: STATUS_MAP, ROLES, ROLE_CONFIG, NAV_DOMAINS, helper functions
+4. User's verbatim instruction: "giao diện máy tính tôi nhìn đang quá rối mắt nền thì trắng hoa mắt chữ thì lan man không rõ rằng chữ thì cách nhau mấy cái không cần thiết như server0ms hay chế độ sáng tối ios9001 pro2026 , vân vân quá loạn và lan mang giao diện thì trắng đen quá xấu và đơn sắc hãy mix nhiều màu với nhau và cần thật sáng sủa và tách menu và trang ra làm 2 bên độc lập có thẻ vuốt lên xuống độc lập và cấm dùng màu tím hồng trắng đen sửa lại giao diện sáng sủa nhiều màu mix và cả phông nền ở đằng sau"
 */
 
 window.WMS_CONSTANTS = {
@@ -10,23 +10,23 @@ window.WMS_CONSTANTS = {
     'MOI_NHAN': { label: 'Mới Nhận', step: 1, color: 'bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700' },
     'CHO_BOM': { label: 'Chờ BOM Kỹ Thuật', step: 2, color: 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800' },
     'DANG_DOI_CHIEU_TON': { label: 'Đang Đối Chiếu Tồn', step: 3, color: 'bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950/60 dark:text-blue-300 dark:border-blue-800' },
-    'DA_GIU_CHO': { label: 'Đã Giữ Chỗ 1 Phần', step: 4, color: 'bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-950/60 dark:text-indigo-300 dark:border-indigo-800' },
+    'DA_GIU_CHO': { label: 'Đã Giữ Chỗ 1 Phần', step: 4, color: 'bg-sky-100 text-sky-800 border-sky-300 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800' },
     'CHO_MUA': { label: 'Chờ Mua Bù Thiếu', step: 5, color: 'bg-red-100 text-red-800 border-red-300 dark:bg-red-950/60 dark:text-red-300 dark:border-red-800' },
     'DA_NHAP_KHO': { label: 'Đã Nhập Kho PO', step: 6, color: 'bg-teal-100 text-teal-800 border-teal-300 dark:bg-teal-950/60 dark:text-teal-300 dark:border-teal-800' },
     'SAN_SANG_XUAT': { label: 'Sẵn Sàng Xuất Kho', step: 7, color: 'bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 font-bold' },
-    'DA_XUAT_MOT_PHAN': { label: 'Đã Xuất 1 Phần', step: 8, color: 'bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950/60 dark:text-purple-300 dark:border-purple-800' },
-    'HOAN_TAT': { label: 'Hoàn Tất Đơn Hàng', step: 9, color: 'bg-green-100 text-green-900 border-green-400 dark:bg-green-950/60 dark:text-green-300 dark:border-green-800 font-bold' }
+    'DA_XUAT_MOT_PHAN': { label: 'Đã Xuất 1 Phần', step: 8, color: 'bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800' },
+    'HOAN_TAT': { label: 'Hoàn Tất Đơn Hàng', step: 9, color: 'bg-emerald-100 text-emerald-900 border-emerald-400 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 font-bold' }
   },
 
   ROLES: [
     { id: 'all', name: 'Tất cả Vai trò', icon: 'fa-users', color: 'text-slate-500' },
     { id: 'ADMIN', name: 'Ban Giám Đốc / Admin', icon: 'fa-user-tie', color: 'text-cyan-600 dark:text-cyan-400' },
     { id: 'THU_KHO', name: 'Thủ Kho (Điện & Đồng)', icon: 'fa-warehouse', color: 'text-blue-500' },
-    { id: 'KY_THUAT', name: 'Kỹ Sư BOM Thiết Kế', icon: 'fa-ruler-combined', color: 'text-indigo-500' },
+    { id: 'KY_THUAT', name: 'Kỹ Sư BOM Thiết Kế', icon: 'fa-ruler-combined', color: 'text-sky-600' },
     { id: 'MUA_HANG', name: 'Nhân Viên Thu Mua PO', icon: 'fa-cart-shopping', color: 'text-rose-500' },
     { id: 'SAN_XUAT', name: 'Đội Trưởng Lắp Ráp', icon: 'fa-helmet-safety', color: 'text-emerald-500' },
-    { id: 'SALE_ADMIN', name: 'Sale Admin Dự Án', icon: 'fa-briefcase', color: 'text-sky-500' },
-    { id: 'KE_TOAN', name: 'Kế Toán & Kiểm Toán', icon: 'fa-calculator', color: 'text-purple-500' }
+    { id: 'SALE_ADMIN', name: 'Sale Admin Dự Án', icon: 'fa-briefcase', color: 'text-teal-500' },
+    { id: 'KE_TOAN', name: 'Kế Toán & Kiểm Toán', icon: 'fa-calculator', color: 'text-amber-600 dark:text-amber-400' }
   ],
 
   ROLE_CONFIG: {
@@ -95,7 +95,7 @@ window.WMS_CONSTANTS = {
       roleName: 'Kế Toán Kho & Kiểm Toán Nội Bộ',
       department: 'Phòng Kế Toán & Tài Chính',
       icon: 'fa-calculator',
-      badgeBg: 'bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 border-violet-300 dark:border-violet-800',
+      badgeBg: 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800',
       allowedTabs: ['dashboard', 'kpi', 'orders', 'pos', 'grns', 'dispatch', 'returns', 'inventory', 'ledger'],
       permissions: ['AUDIT_VIEW'],
       description: 'Kiểm toán Sổ cái biến động kho bất biến (Immutable Ledger) và giám sát 3 KPI ISO.'

@@ -53,7 +53,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-full font-sans antialiased">
+<body class="text-slate-800 dark:text-slate-100 min-h-full font-sans antialiased">
   <div id="root"></div>
 
   <!-- Domain Constants & Shared Helpers -->
@@ -849,12 +849,12 @@
       };
 
       return (
-        <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+        <div className="app-two-pane-shell text-slate-800 dark:text-slate-100 font-sans select-text">
           {/* Toast Notification */}
           {toast && (
             <div className={`fixed top-5 right-5 z-50 px-5 py-3 rounded-2xl shadow-2xl text-white font-bold text-xs flex items-center gap-3 animate-fade-in transition-all border ${
               toast.type === 'error'
-                ? 'bg-red-600 border-red-500 shadow-red-500/20'
+                ? 'bg-rose-600 border-rose-500 shadow-rose-500/20'
                 : 'bg-emerald-600 border-emerald-500 shadow-emerald-500/20'
             }`}>
               <i className={`fa-solid ${toast.type === 'error' ? 'fa-triangle-exclamation' : 'fa-circle-check'} text-sm`}></i>
@@ -882,9 +882,9 @@
             />
           )}
 
-          {/* Workspace Body */}
-          <div className="flex-1 flex overflow-hidden">
-            {/* Multi-tier Collapsible Sidebar & Mobile Slide-Over Drawer */}
+          {/* Workspace Body: 2 Columns with Independent Scrolling */}
+          <div className="flex-1 flex overflow-hidden min-h-0">
+            {/* Multi-tier Collapsible Sidebar (Left Independent Pane) */}
             {Sidebar && (
               <Sidebar
                 activeTab={activeTab}
@@ -903,8 +903,8 @@
               />
             )}
 
-            {/* Main Content Viewport */}
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 pb-28 md:pb-8">
+            {/* Main Content Workspace (Right Independent Pane) */}
+            <main className="pane-workspace p-4 sm:p-6 lg:p-8 pb-28 md:pb-8">
               <div className="max-w-7xl mx-auto space-y-4">
                 {/* Non-blocking background sync or connection alert */}
                 {isInitialLoading && !data && (

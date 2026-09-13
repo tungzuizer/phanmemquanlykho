@@ -38,7 +38,7 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
           </button>
           <button
             onClick={() => handlers.onOpenGdnModal()}
-            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
+            className="px-4 py-2.5 bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-extrabold text-xs rounded-xl shadow-md shadow-cyan-500/20 flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
           >
             <i className="fa-solid fa-plus text-xs"></i>
             <span>Lập Phiếu Xuất (PXK-01)</span>
@@ -52,8 +52,8 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
           onClick={() => setActiveSubTab('gdn')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer active:scale-95 ${
             activeSubTab === 'gdn'
-              ? 'bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
-              : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
+              ? 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-extrabold shadow-sm'
+              : 'liquid-glass text-slate-700 dark:text-slate-200 hover:bg-white/90 dark:hover:bg-slate-800/90'
           }`}
         >
           <i className="fa-solid fa-file-invoice"></i>
@@ -63,8 +63,8 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
           onClick={() => setActiveSubTab('pickup')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer active:scale-95 ${
             activeSubTab === 'pickup'
-              ? 'bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
-              : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
+              ? 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-extrabold shadow-sm'
+              : 'liquid-glass text-slate-700 dark:text-slate-200 hover:bg-white/90 dark:hover:bg-slate-800/90'
           }`}
         >
           <i className="fa-solid fa-calendar-check"></i>

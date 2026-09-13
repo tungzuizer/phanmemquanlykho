@@ -94,7 +94,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
 
           <button
             onClick={() => handlers.onOpenOrderModal()}
-            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
+            className="px-4 py-2.5 bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 hover:brightness-105 font-extrabold text-xs rounded-xl shadow-md shadow-cyan-500/20 flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
           >
             <i className="fa-solid fa-plus text-xs"></i>
             <span>Tạo Đơn Hàng</span>
@@ -110,16 +110,16 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
             onClick={() => setFilterStatus(chip.id)}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap cursor-pointer active:scale-95 ${
               filterStatus === chip.id
-                ? 'bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
-                : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
+                ? 'bg-gradient-to-r from-cyan-500 via-teal-500 to-emerald-500 text-slate-950 font-extrabold shadow-sm'
+                : 'liquid-glass text-slate-700 dark:text-slate-200 hover:bg-white/90 dark:hover:bg-slate-800/90'
             }`}
           >
             <span>{chip.label}</span>
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                 filterStatus === chip.id
-                  ? 'bg-white/20 text-white dark:bg-slate-950/20 dark:text-slate-950'
-                  : 'bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                  ? 'bg-slate-950/20 text-slate-950'
+                  : 'bg-cyan-500/10 text-cyan-800 dark:text-cyan-300 border border-cyan-500/20'
               }`}
             >
               {chip.count}
