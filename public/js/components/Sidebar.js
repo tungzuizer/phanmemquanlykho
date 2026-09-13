@@ -3,7 +3,7 @@
  * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Sidebar.js"></script> and public/js/app.js
  * 2. Affected API: Desktop Collapsible Sidebar & Mobile Navigation Drawer with Seamless Typography (window.WMS_COMPONENTS.Sidebar)
  * 3. Data schemas: NAV_DOMAINS (filtered by role), currentUser, setCurrentUser, users, onOpenCommandPalette, onLogout, counts, mobileDrawerOpen, setMobileDrawerOpen, activeTab, setActiveTab, collapsed
- * 4. User's verbatim instruction: "sao chữ ở phần menu lại rời rạc vậy nhìn quá xấu"
+ * 4. User's verbatim instruction: "bỏ phần chuyển đổi tài khoản 1click bỏ đi và sửa lại vị trí của MAX ELECTRIC đang bị lệch"
  */
 
 function Sidebar({
@@ -208,18 +208,16 @@ function Sidebar({
             {/* Drawer Header */}
             <div className="p-4 border-b border-cyan-500/20 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 flex items-center justify-center font-bold text-sm text-slate-950 border border-white/40 font-display shadow-xs">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 flex items-center justify-center font-bold text-sm text-slate-950 border border-white/40 font-display shadow-xs shrink-0">
                   ME
                 </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-xs font-bold tracking-normal text-slate-900 dark:text-white font-display">
-                      MAX ELECTRIC
-                    </span>
-                    <span className="text-[9px] uppercase font-bold bg-gradient-to-r from-cyan-500/15 to-emerald-500/15 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/25">
-                      WMS
-                    </span>
-                  </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs sm:text-sm font-bold tracking-normal text-slate-900 dark:text-white font-display">
+                    MAX ELECTRIC
+                  </span>
+                  <span className="text-[9px] uppercase font-bold bg-gradient-to-r from-cyan-500/15 to-emerald-500/15 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/25">
+                    WMS
+                  </span>
                 </div>
               </div>
 
@@ -252,41 +250,6 @@ function Sidebar({
                     {currentUser.role}
                   </span>
                 </div>
-
-                {/* 1-Click Role Switcher in Mobile Drawer */}
-                {users && users.length > 0 && setCurrentUser && (
-                  <div className="pt-2 border-t border-cyan-500/15">
-                    <div className="text-[10px] font-bold text-slate-500 dark:text-slate-400 tracking-normal uppercase font-display mb-1 flex items-center gap-1.5">
-                      <i className="fa-solid fa-repeat text-cyan-500 text-[10px]"></i>
-                      <span>Đổi tài khoản nhanh (1-Click)</span>
-                    </div>
-                    <div className="grid grid-cols-1 gap-1 max-h-36 overflow-y-auto custom-scrollbar pr-0.5">
-                      {users.map(u => {
-                        const isCurrent = u.id === currentUser.id;
-                        return (
-                          <button
-                            key={u.id}
-                            type="button"
-                            onClick={() => {
-                              if (!isCurrent) {
-                                setCurrentUser(u);
-                                setMobileDrawerOpen(false);
-                              }
-                            }}
-                            className={`px-2.5 py-1.5 rounded-xl border text-left text-xs flex items-center justify-between cursor-pointer transition ${
-                              isCurrent
-                                ? 'bg-cyan-500/20 border-cyan-500/60 font-bold text-cyan-700 dark:text-cyan-300'
-                                : 'bg-white/50 dark:bg-slate-950/50 hover:bg-white/90 dark:hover:bg-slate-900/90 border-cyan-500/15 text-slate-700 dark:text-slate-300 font-medium'
-                            }`}
-                          >
-                            <span className="truncate">{u.fullName}</span>
-                            <span className="text-[10px] opacity-75 shrink-0 ml-1.5">({u.role})</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
               </div>
             )}
 

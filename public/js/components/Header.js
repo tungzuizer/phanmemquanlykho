@@ -1,9 +1,9 @@
 /**
  * Fact-Forcing Gate Details:
  * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Header.js"></script> and public/js/app.js
- * 2. Affected API: Top Header Navigation Bar with Interactive Profile Popover & 1-Click 9-Staff Switcher (window.WMS_COMPONENTS.Header)
+ * 2. Affected API: Top Header Navigation Bar with User Profile Card & Aligned Brand Logo (window.WMS_COMPONENTS.Header)
  * 3. Data schemas: currentUser, setCurrentUser, users, onOpenCommandPalette, onResetSeed, onLogout, sidebarCollapsed, setSidebarCollapsed, mobileDrawerOpen, setMobileDrawerOpen, isSyncing, onRefresh
- * 4. User's verbatim instruction: "sao chữ ở phần menu lại rời rạc vậy nhìn quá xấu"
+ * 4. User's verbatim instruction: "bỏ phần chuyển đổi tài khoản 1click bỏ đi và sửa lại vị trí của MAX ELECTRIC đang bị lệch"
  */
 
 function Header({
@@ -61,13 +61,13 @@ function Header({
   };
 
   return (
-    <header className="sticky top-0 z-30 select-none liquid-glass border-b border-cyan-500/20 shadow-sm transition-colors duration-200 font-sans">
+    <header className="sticky top-0 z-30 select-none liquid-glass border-b border-cyan-500/20 shadow-sm transition-colors duration-200 font-sans w-full">
       {/* Safe Area Inset Top Spacer for Notch */}
       <div className="h-[env(safe-area-inset-top,0px)]"></div>
 
-      <div className="px-3 sm:px-5 h-14 sm:h-16 flex items-center justify-between gap-2.5 sm:gap-4 max-w-7xl mx-auto">
-        {/* Left: Hamburger & Brand */}
-        <div className="flex items-center gap-2 sm:gap-3">
+      <div className="w-full px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-3 sm:gap-4">
+        {/* Left: Hamburger & Brand Alignment */}
+        <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
           {/* Desktop Hamburger */}
           <button
             onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -86,25 +86,24 @@ function Header({
             <i className="fa-solid fa-bars text-sm text-cyan-600 dark:text-cyan-400"></i>
           </button>
 
+          {/* Brand Logo & Name */}
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 flex items-center justify-center font-bold text-xs sm:text-sm shadow-md shadow-cyan-500/25 text-slate-950 border border-white/50 font-display">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 flex items-center justify-center font-bold text-xs sm:text-sm shadow-md shadow-cyan-500/25 text-slate-950 border border-white/50 font-display shrink-0">
               ME
             </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs sm:text-sm font-bold tracking-normal text-slate-900 dark:text-white font-display">
-                  MAX ELECTRIC
-                </span>
-                <span className="text-[9px] uppercase font-bold bg-gradient-to-r from-cyan-500/15 to-emerald-500/15 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.5 rounded-md border border-cyan-500/25">
-                  WMS
-                </span>
-              </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white font-display whitespace-nowrap">
+                MAX ELECTRIC
+              </span>
+              <span className="text-[10px] uppercase font-extrabold bg-gradient-to-r from-cyan-500/15 to-emerald-500/15 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.5 rounded-md border border-cyan-500/25 tracking-wider">
+                WMS
+              </span>
             </div>
           </div>
         </div>
 
         {/* Center: Command Palette Trigger */}
-        <div className="flex-1 max-w-md hidden md:block">
+        <div className="flex-1 max-w-md hidden md:block mx-2">
           <button
             onClick={onOpenCommandPalette}
             className="w-full flex items-center justify-between px-3.5 py-2 bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded-xl border border-cyan-500/20 text-xs transition group shadow-xs cursor-pointer active:scale-98"
@@ -120,7 +119,7 @@ function Header({
         </div>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           {/* Sync Status Button */}
           <button
             onClick={() => onRefresh && onRefresh(true)}
@@ -136,7 +135,7 @@ function Header({
             <span className="hidden xl:inline text-[11px] font-semibold">{isSyncing ? 'Đang đồng bộ...' : 'Đồng bộ'}</span>
           </button>
 
-          {/* User Profile & Interactive Switcher Popover */}
+          {/* User Profile Popover (Clean User Details & Logout) */}
           {currentUser && (
             <div className="relative" ref={profileRef}>
               <button
@@ -147,7 +146,7 @@ function Header({
                     ? 'border-cyan-500 ring-2 ring-cyan-500/30 bg-cyan-500/10'
                     : 'border-cyan-500/25'
                 }`}
-                title="Bấm để xem thông tin & chuyển đổi tài khoản nhân sự"
+                title="Xem thông tin tài khoản người dùng"
               >
                 <div className="w-6 h-6 rounded-lg bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 text-slate-950 flex items-center justify-center text-xs font-bold shrink-0 shadow-xs">
                   <i className={`fa-solid ${roleConfig.icon || 'fa-user-tie'}`}></i>
@@ -165,123 +164,72 @@ function Header({
 
               {/* Profile Dropdown Popover */}
               {profileOpen && (
-                <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl liquid-glass border border-cyan-500/30 shadow-2xl z-50 p-4 animate-fade-in font-sans space-y-3.5 backdrop-blur-2xl">
+                <div className="absolute right-0 mt-2 w-80 sm:w-88 rounded-2xl liquid-glass border border-cyan-500/30 shadow-2xl z-50 p-4 animate-fade-in font-sans space-y-3.5 backdrop-blur-2xl">
                   {/* Top Profile Card */}
-                  <div className="p-3.5 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-cyan-500/25 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 text-slate-950 flex items-center justify-center text-base font-bold shadow-md shadow-cyan-500/30">
-                          <i className={`fa-solid ${roleConfig.icon || 'fa-user-tie'}`}></i>
+                  <div className="p-3.5 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-cyan-500/25 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-400 via-teal-400 to-emerald-400 text-slate-950 flex items-center justify-center text-lg font-bold shadow-md shadow-cyan-500/30 shrink-0">
+                        <i className={`fa-solid ${roleConfig.icon || 'fa-user-tie'}`}></i>
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="text-sm font-bold text-slate-900 dark:text-white truncate font-display">
+                          {currentUser.fullName}
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs font-bold text-slate-900 dark:text-white truncate font-display">
-                            {currentUser.fullName}
-                          </div>
-                          <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                            {currentUser.email || `${currentUser.username}@maxelectric.vn`}
-                          </div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
+                          {currentUser.email || `${currentUser.username}@maxelectric.vn`}
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-cyan-500/20 text-[11px]">
-                      <span className={`px-2 py-0.5 rounded-lg border font-bold text-[10px] ${getRoleBadgeStyle(currentUser.role)}`}>
-                        {roleConfig.roleName || currentUser.role}
-                      </span>
-                      <span className="text-slate-500 dark:text-slate-400 font-medium">
-                        {roleConfig.department || 'Nhà máy MEVN'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Account Switcher Section Header */}
-                  <div>
-                    <div className="flex items-center justify-between px-1 mb-2">
-                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-cyan-700 dark:text-cyan-300 uppercase tracking-normal font-display">
-                        <i className="fa-solid fa-users-gear text-xs"></i>
-                        <span>Chuyển Đổi Tài Khoản (1-Click)</span>
+                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-cyan-500/20 text-[11px]">
+                      <div>
+                        <span className="text-slate-400 text-[10px] block">Vai trò nghiệp vụ:</span>
+                        <span className={`inline-block px-1.5 py-0.5 mt-0.5 rounded-md border font-bold text-[10px] ${getRoleBadgeStyle(currentUser.role)}`}>
+                          {currentUser.role}
+                        </span>
                       </div>
-                      <span className="text-[10px] font-semibold text-slate-400">
-                        {users.length} Nhân sự MEVN
-                      </span>
-                    </div>
-
-                    {/* 9 Staff List */}
-                    <div className="max-h-64 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar">
-                      {users.map(u => {
-                        const isCurrent = u.id === currentUser.id;
-                        const uRoleCfg = getRoleConfig(u.role);
-
-                        return (
-                          <button
-                            key={u.id}
-                            type="button"
-                            onClick={() => {
-                              if (!isCurrent && setCurrentUser) {
-                                setCurrentUser(u);
-                                setProfileOpen(false);
-                              }
-                            }}
-                            className={`w-full p-2.5 rounded-xl border text-left transition-all flex items-center justify-between gap-2.5 cursor-pointer active:scale-98 ${
-                              isCurrent
-                                ? 'bg-gradient-to-r from-cyan-500/20 via-teal-500/20 to-emerald-500/20 border-cyan-500/60 shadow-xs'
-                                : 'bg-white/60 dark:bg-slate-900/60 hover:bg-white/95 dark:hover:bg-slate-800/95 border-cyan-500/15 hover:border-cyan-500/40'
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 border ${
-                                isCurrent
-                                  ? 'bg-gradient-to-tr from-cyan-400 to-emerald-400 text-slate-950 border-white/40 shadow-xs'
-                                  : 'bg-white/80 dark:bg-slate-800 text-cyan-600 dark:text-cyan-400 border-cyan-500/20'
-                              }`}>
-                                <i className={`fa-solid ${uRoleCfg.icon || 'fa-user'}`}></i>
-                              </div>
-                              <div className="min-w-0">
-                                <div className={`text-xs font-bold truncate ${
-                                  isCurrent ? 'text-cyan-700 dark:text-cyan-300' : 'text-slate-900 dark:text-white'
-                                }`}>
-                                  {u.fullName}
-                                </div>
-                                <div className="text-[10px] text-slate-400 truncate">
-                                  {u.email || `${u.username}@maxelectric.vn`}
-                                </div>
-                              </div>
-                            </div>
-
-                            <div className="flex items-center gap-1.5 shrink-0">
-                              <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${getRoleBadgeStyle(u.role)}`}>
-                                {u.role}
-                              </span>
-                              {isCurrent && (
-                                <i className="fa-solid fa-circle-check text-emerald-500 text-xs"></i>
-                              )}
-                            </div>
-                          </button>
-                        );
-                      })}
+                      <div>
+                        <span className="text-slate-400 text-[10px] block">Phòng ban:</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300 block truncate mt-0.5">
+                          {roleConfig.department || 'Nhà máy MEVN'}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Footer Actions */}
-                  <div className="pt-2 border-t border-cyan-500/20 flex items-center justify-between text-xs">
-                    <span className="text-[10px] text-slate-400 flex items-center gap-1">
-                      <i className="fa-solid fa-shield-halved text-emerald-500 text-[10px]"></i>
-                      <span>Xác thực JWT 24h</span>
-                    </span>
-                    {onLogout && (
+                  {/* Account Session Info */}
+                  <div className="p-2.5 rounded-xl bg-cyan-500/5 dark:bg-slate-900/50 border border-cyan-500/15 space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-slate-500 dark:text-slate-400">Trạng thái xác thực:</span>
+                      <span className="font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span>JWT 24h Active</span>
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-slate-500 dark:text-slate-400">Phân hệ truy cập:</span>
+                      <span className="font-semibold text-cyan-700 dark:text-cyan-300">
+                        {currentUser.role === 'ADMIN' ? 'Tất cả (10/10)' : `${roleConfig.allowedTabs?.length || 0} Phân hệ`}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Footer Action: Logout */}
+                  {onLogout && (
+                    <div className="pt-1">
                       <button
                         type="button"
                         onClick={() => {
                           setProfileOpen(false);
                           onLogout();
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-500/20 transition active:scale-95 cursor-pointer flex items-center gap-1.5"
+                        className="w-full py-2.5 px-3 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-600 dark:text-rose-400 font-bold text-xs border border-rose-500/20 transition active:scale-98 cursor-pointer flex items-center justify-center gap-2"
                       >
                         <i className="fa-solid fa-arrow-right-from-bracket"></i>
-                        <span>Đăng xuất</span>
+                        <span>Đăng xuất khỏi hệ thống</span>
                       </button>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
