@@ -5,6 +5,7 @@
 
 const prisma = require('../db');
 const DataNormalizer = require('./dataNormalizer');
+const { verifyPassword, generateToken, hashPassword } = require('../utils/auth');
 
 class WmsService {
   constructor() {
@@ -1432,11 +1433,31 @@ class WmsService {
 
     const trimmedInput = usernameOrEmail.trim().toLowerCase();
 
-    // Tìm user theo username hoặc email
+    // Ánh xạ các tên viết tắt thông dụng sang username chuẩn trong hệ thống
+    const USER_ALIASES = {
+      'admin': 'admin',
+      'thukho': 'thukho_dien',
+      'thukho1': 'thukho_dien',
+      'thukho2': 'thukho_co',
+      'kythuat': 'kythuat_bom',
+      'kythuat1': 'kythuat_bom',
+      'kythuat2': 'kythuat_dien',
+      'muahang': 'muahang_po',
+      'sanxuat': 'sanxuat_to1',
+      'sanxuat1': 'sanxuat_to1',
+      'sanxuat2': 'sanxuat_to2',
+      'ketoan': 'ketoan_kho',
+      'sale': 'sale_admin',
+    };
+
+    const targetUsername = USER_ALIASES[trimmedInput] || trimmedInput;
+
+    // Tìm user theo username hoặc email hoặc alias
     const user = await prisma.user.findFirst({
       where: {
         OR: [
           { username: { equals: trimmedInput, mode: 'insensitive' } },
+          { username: { equals: targetUsername, mode: 'insensitive' } },
           { email: { equals: trimmedInput, mode: 'insensitive' } },
         ],
       },
@@ -1450,17 +1471,25 @@ class WmsService {
       throw new Error('Tài khoản này đang bị tạm khóa. Vui lòng liên hệ Quản trị viên (ADMIN).');
     }
 
-    // Kiểm tra mật khẩu (Hỗ trợ mật khẩu chuẩn seed hoặc hash)
-    const isValidPassword = password === user.passwordHash || password === 'mevn@2026' || password === '123456';
+    // Kiểm tra mật khẩu an toàn qua Bcrypt
+    const isValidPassword = await verifyPassword(password, user.passwordHash);
     if (!isValidPassword) {
       throw new Error('Mật khẩu đăng nhập không chính xác.');
+    }
+
+    // Tự động nâng cấp hash mật khẩu nếu tài khoản đang dùng plain-text
+    if (user.passwordHash && !user.passwordHash.startsWith('$2a$') && !user.passwordHash.startsWith('$2b$')) {
+      const newHash = await hashPassword(password);
+      prisma.user.update({
+        where: { id: user.id },
+        data: { passwordHash: newHash },
+      }).catch(err => console.warn('[Auto-Password-Hash-Upgrade Failed]:', err.message));
     }
 
     // Định nghĩa quyền hạn theo từng vai trò (RBAC matrix)
     const rolePermissions = this.getRolePermissions(user.role);
 
-    // Trả về thông tin an toàn (bảo mật: không gửi passwordHash về client)
-    return {
+    const safeUser = {
       id: user.id,
       username: user.username,
       email: user.email,
@@ -1474,6 +1503,14 @@ class WmsService {
       roleName: rolePermissions.roleName,
       department: rolePermissions.department,
       description: rolePermissions.description,
+    };
+
+    // Tạo JWT Token an toàn chứa danh tính & vai trò
+    const token = generateToken(safeUser);
+
+    return {
+      token,
+      user: safeUser,
     };
   }
 

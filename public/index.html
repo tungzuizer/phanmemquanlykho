@@ -151,6 +151,32 @@
         setTimeout(() => setToast(null), 4000);
       }, []);
 
+      // Authenticated Fetch Helper with Automatic JWT Token Injection & 401/403 Handling
+      const authFetch = useCallback(async (url, options = {}) => {
+        const token = localStorage.getItem('mevn_auth_token');
+        const headers = {
+          'Content-Type': 'application/json',
+          ...(options.headers || {})
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(url, {
+          ...options,
+          headers
+        });
+
+        if (response.status === 401) {
+          localStorage.removeItem('mevn_auth_token');
+          localStorage.removeItem('mevn_auth_user');
+          setCurrentUser(null);
+          showToast('Phiên làm việc đã hết hạn hoặc không hợp lệ. Vui lòng đăng nhập lại.', 'error');
+        }
+
+        return response;
+      }, [showToast]);
+
       // Fetch Full System State with SWR Zero-Flicker Background Sync (Silent Revalidation)
       const fetchState = useCallback(async (isSilent = false) => {
         if (isSilent || data) {
@@ -162,7 +188,7 @@
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 30000);
         try {
-          const res = await fetch('/api/state', { signal: controller.signal });
+          const res = await authFetch('/api/state', { signal: controller.signal });
           clearTimeout(timeoutId);
           let json;
           try {
@@ -207,7 +233,7 @@
           setIsInitialLoading(false);
           setIsSyncing(false);
         }
-      }, [data, showToast]);
+      }, [data, showToast, authFetch]);
 
       useEffect(() => {
         fetchState(false);
@@ -226,10 +252,13 @@
       }, []);
 
       // Auth & Role Handlers
-      const handleLoginSuccess = (user) => {
+      const handleLoginSuccess = (user, token) => {
         setCurrentUser(user);
         try {
           localStorage.setItem('mevn_auth_user', JSON.stringify(user));
+          if (token) {
+            localStorage.setItem('mevn_auth_token', token);
+          }
         } catch (e) {}
         showToast(`Chào mừng ${user.fullName} (${user.role}) đăng nhập thành công!`);
         const { isTabAllowed, getRoleConfig } = window.WMS_CONSTANTS || {};
@@ -243,9 +272,10 @@
 
       const handleLogout = async () => {
         try {
-          await fetch('/api/auth/logout', { method: 'POST' });
+          await authFetch('/api/auth/logout', { method: 'POST' });
         } catch (e) {}
         localStorage.removeItem('mevn_auth_user');
+        localStorage.removeItem('mevn_auth_token');
         setCurrentUser(null);
         showToast('Đã đăng xuất an toàn khỏi hệ thống!');
       };
@@ -288,7 +318,7 @@
           setActiveModal(null);
           showToast(`Đang tạo đơn hàng [${payload.code || ''}]...`);
 
-          const res = await fetch('/api/orders', {
+          const res = await authFetch('/api/orders', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(bodyPayload)
@@ -317,7 +347,7 @@
         try {
           setActiveModal(null);
           showToast('Đang nạp và đối chiếu BOM...');
-          const res = await fetch(`/api/orders/${payload.orderId}/boms`, {
+          const res = await authFetch(`/api/orders/${payload.orderId}/boms`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -352,7 +382,7 @@
             };
           });
           showToast('Đang đối chiếu và khóa giữ chỗ vật tư...');
-          const res = await fetch(`/api/boms/${bomId}/verify`, {
+          const res = await authFetch(`/api/boms/${bomId}/verify`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ verifiedById: currentUser?.id })
@@ -375,7 +405,7 @@
         try {
           setActiveModal(null);
           showToast('Đang phát hành Đơn Mua Hàng PO...');
-          const res = await fetch('/api/pos', {
+          const res = await authFetch('/api/pos', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -404,7 +434,7 @@
         try {
           setActiveModal(null);
           showToast('Đang tạo Phiếu Nhập Kho GRN...');
-          const res = await fetch('/api/grns', {
+          const res = await authFetch('/api/grns', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -433,7 +463,7 @@
         try {
           setActiveModal(null);
           showToast('Đang gửi Đăng Ký Ca Lấy Vật Tư...');
-          const res = await fetch('/api/pickup-registrations', {
+          const res = await authFetch('/api/pickup-registrations', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -462,7 +492,7 @@
         try {
           setActiveModal(null);
           showToast('Đang lập Phiếu Xuất Kho PXK-BOM-01...');
-          const res = await fetch('/api/gdns', {
+          const res = await authFetch('/api/gdns', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -497,7 +527,7 @@
             };
           });
           showToast('Đang duyệt Phiếu Xuất Kho GDN...');
-          const res = await fetch(`/api/gdns/${gdnId}/approve`, {
+          const res = await authFetch(`/api/gdns/${gdnId}/approve`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ approvedById: currentUser?.id })
@@ -526,7 +556,7 @@
             };
           });
           showToast('Đang thực xuất kho và cập nhật Sổ Cái...');
-          const res = await fetch(`/api/gdns/${gdnId}/dispatch`, {
+          const res = await authFetch(`/api/gdns/${gdnId}/dispatch`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({})
@@ -549,7 +579,7 @@
         try {
           setActiveModal(null);
           showToast('Đang tạo Phiếu Nhập Trả...');
-          const res = await fetch('/api/returns', {
+          const res = await authFetch('/api/returns', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
@@ -617,7 +647,7 @@
           });
 
           showToast('Đang tiến hành xóa chứng từ và giải phóng giữ chỗ...');
-          const res = await fetch(endpoint, { method: 'DELETE' });
+          const res = await authFetch(endpoint, { method: 'DELETE' });
           const json = await res.json();
           if (json.success) {
             showToast(json.message || 'Đã xóa chứng từ và giải phóng giữ chỗ thành công!');
@@ -635,7 +665,7 @@
       const handleResetSeed = async () => {
         if (!confirm('Bạn có chắc muốn khôi phục dữ liệu mẫu chuẩn MEVN vào Supabase PostgreSQL?')) return;
         try {
-          const res = await fetch('/api/reset-seed', { method: 'POST' });
+          const res = await authFetch('/api/reset-seed', { method: 'POST' });
           const json = await res.json();
           if (json.success) {
             setData(json.data);

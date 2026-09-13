@@ -5,6 +5,7 @@
 
 require('dotenv').config();
 const { PrismaClient } = require('@prisma/client');
+const { hashPassword } = require('../src/utils/auth');
 const prisma = new PrismaClient();
 
 async function main() {
@@ -58,16 +59,17 @@ async function main() {
 
   console.log('✅ [MEVN SEED] Đã thiết lập CHECK Constraints: (quantity_physical >= quantity_reserved >= 0)');
 
-  // 1. SEED USERS
+  // 1. SEED USERS (Bcrypt Hashed Passwords)
+  const defaultHashedPassword = await hashPassword('mevn@2026');
   const usersData = [
-    { username: 'admin', email: 'admin@maxelectric.vn', fullName: 'Ban Giám Đốc MEVN', role: 'ADMIN', passwordHash: 'mevn@2026' },
-    { username: 'thukho_dien', email: 'thukho.dien@maxelectric.vn', fullName: 'Nguyễn Văn Khoa (Thủ Kho Điện)', role: 'THU_KHO', passwordHash: 'mevn@2026' },
-    { username: 'thukho_dong', email: 'thukho.dong@maxelectric.vn', fullName: 'Trần Văn Đồng (Thủ Kho Đồng/Xưởng)', role: 'THU_KHO', passwordHash: 'mevn@2026' },
-    { username: 'kythuat_bom', email: 'kythuat.bom@maxelectric.vn', fullName: 'Lê Minh Kỹ (Kỹ Sư Thiết Kế BOM)', role: 'KY_THUAT', passwordHash: 'mevn@2026' },
-    { username: 'muahang_po', email: 'muahang.po@maxelectric.vn', fullName: 'Phạm Thị Mua (Trưởng Phòng Thu Mua)', role: 'MUA_HANG', passwordHash: 'mevn@2026' },
-    { username: 'sanxuat_to1', email: 'sanxuat.to1@maxelectric.vn', fullName: 'Hoàng Văn Ráp (Tổ Trưởng Lắp Ráp Tủ 1)', role: 'SAN_XUAT', passwordHash: 'mevn@2026' },
-    { username: 'sale_admin', email: 'sale.admin@maxelectric.vn', fullName: 'Đỗ Thị Huệ (Sale Admin Dự Án)', role: 'SALE_ADMIN', passwordHash: 'mevn@2026' },
-    { username: 'ketoan_kho', email: 'ketoan.kho@maxelectric.vn', fullName: 'Vũ Thị Toán (Kế Toán Kho Đối Chiếu)', role: 'KE_TOAN', passwordHash: 'mevn@2026' },
+    { username: 'admin', email: 'admin@maxelectric.vn', fullName: 'Ban Giám Đốc MEVN', role: 'ADMIN', passwordHash: defaultHashedPassword },
+    { username: 'thukho_dien', email: 'thukho.dien@maxelectric.vn', fullName: 'Nguyễn Văn Khoa (Thủ Kho Điện)', role: 'THU_KHO', passwordHash: defaultHashedPassword },
+    { username: 'thukho_dong', email: 'thukho.dong@maxelectric.vn', fullName: 'Trần Văn Đồng (Thủ Kho Đồng/Xưởng)', role: 'THU_KHO', passwordHash: defaultHashedPassword },
+    { username: 'kythuat_bom', email: 'kythuat.bom@maxelectric.vn', fullName: 'Lê Minh Kỹ (Kỹ Sư Thiết Kế BOM)', role: 'KY_THUAT', passwordHash: defaultHashedPassword },
+    { username: 'muahang_po', email: 'muahang.po@maxelectric.vn', fullName: 'Phạm Thị Mua (Trưởng Phòng Thu Mua)', role: 'MUA_HANG', passwordHash: defaultHashedPassword },
+    { username: 'sanxuat_to1', email: 'sanxuat.to1@maxelectric.vn', fullName: 'Hoàng Văn Ráp (Tổ Trưởng Lắp Ráp Tủ 1)', role: 'SAN_XUAT', passwordHash: defaultHashedPassword },
+    { username: 'sale_admin', email: 'sale.admin@maxelectric.vn', fullName: 'Đỗ Thị Huệ (Sale Admin Dự Án)', role: 'SALE_ADMIN', passwordHash: defaultHashedPassword },
+    { username: 'ketoan_kho', email: 'ketoan.kho@maxelectric.vn', fullName: 'Vũ Thị Toán (Kế Toán Kho Đối Chiếu)', role: 'KE_TOAN', passwordHash: defaultHashedPassword },
   ];
 
   for (const u of usersData) {
