@@ -1,9 +1,9 @@
 /**
  * Fact-Forcing Gate Details:
- * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/ReturnsTab.js"></script>
- * 2. Affected API: window.WMS_COMPONENTS.ReturnsTab (Action-Direct Material Return & Scrap Recovery Management), DELETE /api/returns/:id, handlers.onRequestDelete.
- * 3. Data schemas: Uses data.returnVouchers, data.orders, data.skus, data.uoms, currentUser, { id, type: 'RETURN', code, title, details }.
- * 4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
+ * Importers/Callers: public/index.html, public/js/app.js
+ * Affected API: window.WMS_COMPONENTS.ReturnsTab, DELETE /api/returns/:id
+ * Data schemas: { returnVouchers, orders, skus, uoms }, currentUser, handlers, onOpenPrintPreview
+ * User's verbatim instruction: "giao diện quá hỗn loạn không biết ở trong có cái gì quá loạn và chữ thì nhiều và hỗn loạn hãy kiểm tra lại vè mấy cái huy chương hay icon tương tự đi phèn quá"
  */
 
 function ReturnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
@@ -18,7 +18,7 @@ function ReturnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
       <div className="liquid-glass p-4 sm:p-5 rounded-2xl border border-white/40 dark:border-white/10 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3.5">
         <div>
           <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 font-display">
-            <i className="fa-solid fa-arrow-rotate-left text-purple-500"></i>
+            <i className="fa-solid fa-arrow-rotate-left text-amber-500"></i>
             Quản Lý Nhập Trả Vật Tư & Thu Hồi Phế Liệu
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
@@ -28,7 +28,7 @@ function ReturnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
 
         <button
           onClick={() => handlers.onOpenReturnModal()}
-          className="px-4 py-2.5 bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-400 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-500/25 flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
+          className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
         >
           <i className="fa-solid fa-plus text-xs"></i>
           <span>Lập Phiếu Nhập Trả</span>
@@ -53,7 +53,7 @@ function ReturnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/60 dark:border-slate-800">
                   <div className="flex items-center gap-2.5 flex-wrap">
-                    <span className="font-mono font-bold text-xs bg-purple-500/10 text-purple-700 dark:text-purple-300 px-2.5 py-1 rounded-lg border border-purple-500/20">
+                    <span className="font-mono font-bold text-xs bg-amber-500/10 text-amber-700 dark:text-amber-300 px-2.5 py-1 rounded-lg border border-amber-500/20">
                       {ret.code}
                     </span>
                     <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
@@ -68,7 +68,7 @@ function ReturnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                     </span>
                     {order && (
                       <span className="text-xs text-slate-400">
-                        Từ đơn: <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">{order.code}</span>
+                        Từ đơn: <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">{order.code}</span>
                       </span>
                     )}
                   </div>
@@ -79,9 +79,9 @@ function ReturnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                     </span>
                     <button
                       onClick={() => onOpenPrintPreview('RETURN', ret)}
-                      className="px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-pointer"
+                      className="px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-pointer transition active:scale-95"
                     >
-                      <i className="fa-solid fa-print text-purple-500"></i>
+                      <i className="fa-solid fa-print text-amber-500"></i>
                       <span>In Phiếu Trả</span>
                     </button>
                     {handlers?.onRequestDelete && (currentUser?.role === 'ADMIN' || currentUser?.role === 'GD') && (
@@ -112,14 +112,14 @@ function ReturnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                     return (
                       <div key={it.id} className="p-3 rounded-xl bg-white/40 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="font-mono font-bold text-xs text-purple-700 dark:text-purple-300">{sku?.code}</span>
-                          <span className="font-mono font-bold text-xs text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-lg border border-purple-500/20">
+                          <span className="font-mono font-bold text-xs text-amber-700 dark:text-amber-300">{sku?.code}</span>
+                          <span className="font-mono font-bold text-xs text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">
                             +{it.quantity} {uom?.name}
                           </span>
                         </div>
                         <div className="text-xs font-bold text-slate-900 dark:text-white line-clamp-1">{sku?.name}</div>
-                        <div className="text-[11px] text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
-                          Lý do: <strong className="text-slate-700 dark:text-slate-300">{it.reason || ret.reason || 'Dư thừa sau gia công'}</strong>
+                        <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-200/60 dark:border-slate-800">
+                          <span>Lý do: <strong className="text-slate-700 dark:text-slate-300">{it.reason || ret.reason || 'Dư thừa sau gia công'}</strong></span>
                         </div>
                       </div>
                     );
@@ -150,7 +150,7 @@ function ReturnsTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                             <td className="py-2.5 px-3.5 text-slate-700 dark:text-slate-200">
                               {sku?.name}
                             </td>
-                            <td className="py-2.5 px-3 text-right font-mono font-bold text-purple-700 dark:text-purple-300">
+                            <td className="py-2.5 px-3 text-right font-mono font-bold text-amber-600 dark:text-amber-400">
                               +{it.quantity} <span className="text-[10px] text-slate-400 font-normal">{uom?.name}</span>
                             </td>
                             <td className="py-2.5 px-3.5 text-slate-400 text-[11px]">

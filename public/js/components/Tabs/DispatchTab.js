@@ -3,7 +3,7 @@
  * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/DispatchTab.js"></script>
  * 2. Affected API: window.WMS_COMPONENTS.DispatchTab (Action-Direct Dispatch & Pickup Management), DELETE /api/gdns/:id, DELETE /api/pickup-registrations/:id, handlers.onRequestDelete.
  * 3. Data schemas: data ({ goodsDispatchNotes, pickupRegistrations, orders, skus, uoms }), currentUser, handlers, onOpenPrintPreview
- * 4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
+ * 4. User's verbatim instruction: "giao diện quá hỗn loạn không biết ở trong có cái gì quá loạn và chữ thì nhiều và hỗn loạn hãy kiểm tra lại vè mấy cái huy chương hay icon tương tự đi phèn quá"
  */
 
 function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
@@ -31,14 +31,14 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
         <div className="flex items-center gap-2 flex-wrap">
           <button
             onClick={() => handlers.onOpenPickupModal()}
-            className="px-4 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/25 flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
+            className="px-4 py-2.5 bg-white/80 hover:bg-white text-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-white font-bold text-xs rounded-xl border border-slate-200/80 dark:border-slate-700 shadow-xs flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
           >
-            <i className="fa-solid fa-calendar-plus text-xs"></i>
+            <i className="fa-solid fa-calendar-plus text-xs text-emerald-500"></i>
             <span>Đăng Ký Ca Lấy (Mẫu 1)</span>
           </button>
           <button
             onClick={() => handlers.onOpenGdnModal()}
-            className="px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
+            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
           >
             <i className="fa-solid fa-plus text-xs"></i>
             <span>Lập Phiếu Xuất (PXK-01)</span>
@@ -52,7 +52,7 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
           onClick={() => setActiveSubTab('gdn')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer active:scale-95 ${
             activeSubTab === 'gdn'
-              ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20'
+              ? 'bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
               : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
           }`}
         >
@@ -63,7 +63,7 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
           onClick={() => setActiveSubTab('pickup')}
           className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 cursor-pointer active:scale-95 ${
             activeSubTab === 'pickup'
-              ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md shadow-emerald-500/20'
+              ? 'bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
               : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
           }`}
         >
@@ -94,7 +94,7 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-200/60 dark:border-slate-800">
                     <div className="flex items-center gap-2.5 flex-wrap">
-                      <span className="font-mono font-bold text-xs bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-lg border border-indigo-500/20">
+                      <span className="font-mono font-bold text-xs bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 px-2.5 py-1 rounded-lg border border-cyan-500/20">
                         {gdn.code}
                       </span>
                       <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
@@ -120,9 +120,9 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                     <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
                       <button
                         onClick={() => onOpenPrintPreview('GDN', gdn)}
-                        className="px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-pointer"
+                        className="px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-pointer transition active:scale-95"
                       >
-                        <i className="fa-solid fa-print text-indigo-500"></i>
+                        <i className="fa-solid fa-print text-cyan-500"></i>
                         <span>In PXK-BOM-01</span>
                       </button>
 
@@ -146,7 +146,7 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                       {isDraft && (
                         <button
                           onClick={() => handlers.onApproveGdn(gdn.id)}
-                          className="px-3.5 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer transition active:scale-95"
+                          className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 cursor-pointer transition active:scale-95"
                         >
                           <i className="fa-solid fa-signature"></i>
                           <span>Duyệt Xuất</span>
@@ -156,7 +156,7 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                       {isApproved && (
                         <button
                           onClick={() => handlers.onDispatchGdn(gdn.id)}
-                          className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
+                          className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
                         >
                           <i className="fa-solid fa-truck-fast"></i>
                           <span>Xuất Kho & Trừ Tồn</span>
@@ -174,7 +174,7 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                       return (
                         <div key={it.id} className="p-3 rounded-xl bg-white/40 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 space-y-2">
                           <div className="flex items-center justify-between">
-                            <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">{sku?.code}</span>
+                            <span className="font-mono font-bold text-xs text-cyan-700 dark:text-cyan-300">{sku?.code}</span>
                             <span className="font-mono font-bold text-xs text-rose-600 dark:text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded-lg border border-rose-500/20">
                               -{it.quantityDispatched} {uom?.name}
                             </span>
@@ -267,7 +267,7 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                         Tổ trưởng nhận: <strong className="text-slate-700 dark:text-slate-200">{pk.teamLeaderName}</strong>
                       </div>
                       <div className="text-[11px] text-slate-400 mt-0.5">
-                        Đơn hàng: <span className="font-mono text-indigo-600 dark:text-indigo-400">{order?.code}</span> ({order?.title})
+                        Đơn hàng: <span className="font-mono text-cyan-600 dark:text-cyan-400">{order?.code}</span> ({order?.title})
                       </div>
                       <div className="text-[11px] text-slate-400">
                         Cửa xuất kho: <strong className="text-slate-600 dark:text-slate-300">{pk.gateNumber || 'Cửa A1'}</strong>
@@ -278,7 +278,7 @@ function DispatchTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                   <div className="pt-2.5 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between gap-2">
                     <button
                       onClick={() => onOpenPrintPreview('PICKUP', pk)}
-                      className="px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-pointer"
+                      className="px-3.5 py-1.5 bg-white dark:bg-slate-800 hover:bg-slate-50 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold flex items-center gap-1.5 border border-slate-200 dark:border-slate-700 cursor-pointer transition active:scale-95"
                     >
                       <i className="fa-solid fa-print text-emerald-500"></i>
                       <span>In Ca Lấy</span>

@@ -32,7 +32,7 @@ function PosTab({ data, currentUser, handlers, onOpenPrintPreview }) {
 
         <button
           onClick={() => handlers.onOpenPoModal()}
-          className="px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
+          className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
         >
           <i className="fa-solid fa-plus text-xs"></i>
           <span>Lập Đơn PO Mới</span>
@@ -89,7 +89,7 @@ function PosTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400 font-sans">Hạng mục:</span>
-                      <span className="font-bold text-indigo-600 dark:text-indigo-400">{po.items?.length || 0} mã</span>
+                      <span className="font-bold text-cyan-600 dark:text-cyan-400">{po.items?.length || 0} mã</span>
                     </div>
                   </div>
                 </div>
@@ -98,9 +98,9 @@ function PosTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => onOpenPrintPreview('PO', po)}
-                      className="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-indigo-600 flex items-center gap-1.5 cursor-pointer"
+                      className="text-xs font-bold text-slate-600 dark:text-slate-300 hover:text-cyan-600 flex items-center gap-1.5 cursor-pointer"
                     >
-                      <i className="fa-solid fa-print text-indigo-500"></i>
+                      <i className="fa-solid fa-print text-cyan-500"></i>
                       <span>In PO</span>
                     </button>
                     {handlers?.onRequestDelete && (currentUser?.role === 'ADMIN' || currentUser?.role === 'GD') && (
@@ -124,7 +124,7 @@ function PosTab({ data, currentUser, handlers, onOpenPrintPreview }) {
                   {!isReceived && (
                     <button
                       onClick={() => handlers.onOpenGrnModal(po)}
-                      className="px-3.5 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
+                      className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-emerald-500 dark:hover:bg-emerald-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 transition active:scale-95 cursor-pointer"
                     >
                       <i className="fa-solid fa-truck-ramp-box"></i>
                       <span>Nhập Kho (GRN)</span>

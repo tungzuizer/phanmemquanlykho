@@ -1,9 +1,9 @@
 /**
  * Fact-Forcing Gate Details:
- * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/LedgerTab.js"></script>
- * 2. Affected API: window.WMS_COMPONENTS.LedgerTab (Immutable Stock Movement Ledger Tab)
- * 3. Data schemas: Uses data.stockTransactions, data.skus, data.uoms, data.warehouses, data.bins, currentUser
- * 4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
+ * Importers/Callers: public/index.html, public/js/app.js
+ * Affected API: window.WMS_COMPONENTS.LedgerTab
+ * Data schemas: { stockTransactions, skus, uoms, warehouses, bins }, currentUser
+ * User's verbatim instruction: "giao diện quá hỗn loạn không biết ở trong có cái gì quá loạn và chữ thì nhiều và hỗn loạn hãy kiểm tra lại vè mấy cái huy chương hay icon tương tự đi phèn quá"
  */
 
 function LedgerTab({ data, currentUser }) {
@@ -33,7 +33,7 @@ function LedgerTab({ data, currentUser }) {
       {/* Top Header Card */}
       <div className="liquid-glass p-4 sm:p-5 rounded-2xl border border-white/40 dark:border-white/10 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3.5">
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider mb-1 font-display">
+          <div className="flex items-center gap-2 text-xs font-bold text-cyan-600 dark:text-cyan-400 uppercase tracking-wider mb-1 font-display">
             <i className="fa-solid fa-shield-halved"></i>
             <span>Nhật Ký Kiểm Toán Kho Bất Biến (ISO 9001:2015)</span>
           </div>
@@ -69,7 +69,7 @@ function LedgerTab({ data, currentUser }) {
                 onClick={() => setFilterType(tab.id)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 whitespace-nowrap cursor-pointer active:scale-95 ${
                   filterType === tab.id
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20'
+                    ? 'bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
                     : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
                 }`}
               >
@@ -86,7 +86,7 @@ function LedgerTab({ data, currentUser }) {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Tìm theo Mã CT, SKU, Người lập..."
-              className="w-full pl-9 pr-4 py-2 bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              className="w-full pl-9 pr-4 py-2 bg-white/60 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
             />
           </div>
         </div>
@@ -113,17 +113,17 @@ function LedgerTab({ data, currentUser }) {
                   className="p-3.5 rounded-xl bg-white/50 dark:bg-slate-900/60 border border-slate-200/60 dark:border-slate-800 shadow-xs space-y-2"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
+                    <span className="font-mono font-bold text-xs text-cyan-600 dark:text-cyan-400">
                       {t.referenceDocCode || 'AUTO-SYSTEM'}
                     </span>
                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                       t.type === 'RECEIPT'
-                        ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20'
+                        ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20'
                         : t.type === 'DISPATCH'
                         ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20'
                         : t.type === 'RESERVATION_HOLD'
-                        ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20'
-                        : 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20'
+                        ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20'
+                        : 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20'
                     }`}>
                       {t.type}
                     </span>
@@ -131,14 +131,14 @@ function LedgerTab({ data, currentUser }) {
 
                   <div className="flex items-center justify-between">
                     <div className="text-xs font-bold text-slate-900 dark:text-white">
-                      <span className="font-mono text-indigo-600 dark:text-indigo-400 mr-1.5">{sku?.code}</span>
+                      <span className="font-mono text-cyan-600 dark:text-cyan-400 mr-1.5">{sku?.code}</span>
                       <span>{sku?.name}</span>
                     </div>
                     <div className="font-mono font-bold text-xs">
                       <span className={
                         isPositive ? 'text-emerald-600 dark:text-emerald-400' :
                         isNegative ? 'text-rose-600 dark:text-rose-400' :
-                        'text-indigo-600 dark:text-indigo-400'
+                        'text-amber-600 dark:text-amber-400'
                       }>
                         {isPositive ? `+${formatNumber(t.quantity)}` : isNegative ? `-${formatNumber(t.quantity)}` : `${formatNumber(t.quantity)} (HOLD)`}
                       </span>
@@ -192,18 +192,18 @@ function LedgerTab({ data, currentUser }) {
                       <td className="py-2.5 px-3.5 font-mono text-slate-500 text-[11px] whitespace-nowrap">
                         {formatDateTime(t.timestamp || t.createdAt)}
                       </td>
-                      <td className="py-2.5 px-3.5 font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                      <td className="py-2.5 px-3.5 font-mono font-bold text-cyan-600 dark:text-cyan-400">
                         {t.referenceDocCode || 'AUTO-SYSTEM'}
                       </td>
                       <td className="py-2.5 px-3.5">
                         <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                           t.type === 'RECEIPT'
-                            ? 'bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20'
+                            ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20'
                             : t.type === 'DISPATCH'
                             ? 'bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20'
                             : t.type === 'RESERVATION_HOLD'
-                            ? 'bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20'
-                            : 'bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20'
+                            ? 'bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20'
+                            : 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20'
                         }`}>
                           {t.type}
                         </span>
@@ -215,13 +215,13 @@ function LedgerTab({ data, currentUser }) {
                       <td className="py-2.5 px-3.5 text-[11px]">
                         <span className="text-slate-700 dark:text-slate-300">{wh?.code?.slice(0, 8)}</span>
                         <span className="text-slate-400 mx-1">/</span>
-                        <span className="font-mono text-indigo-600 dark:text-indigo-400">{bin?.code || 'Kệ chính'}</span>
+                        <span className="font-mono text-cyan-600 dark:text-cyan-400">{bin?.code || 'Kệ chính'}</span>
                       </td>
                       <td className="py-2.5 px-3 text-right font-mono font-bold whitespace-nowrap">
                         <span className={
                           isPositive ? 'text-emerald-600 dark:text-emerald-400' :
                           isNegative ? 'text-rose-600 dark:text-rose-400' :
-                          'text-indigo-600 dark:text-indigo-400'
+                          'text-amber-600 dark:text-amber-400'
                         }>
                           {isPositive ? `+${formatNumber(t.quantity)}` : isNegative ? `-${formatNumber(t.quantity)}` : `${formatNumber(t.quantity)} (HOLD)`}
                         </span>

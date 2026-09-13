@@ -1,8 +1,8 @@
 /* Fact-Forcing Gate Answer:
-1. Importers/Callers: public/index.html via <script src="/js/dataConstants.js"></script> and all React components
+1. Importers/Callers: public/index.html via <script src="/js/dataConstants.js?v=2026.09.13"></script> and all React components
 2. Affected API: Role matrix, navigation filters, permission checks (window.WMS_CONSTANTS)
 3. Data schemas: ROLE_CONFIG, getNavDomainsForRole, hasPermission, isTabAllowed, formatters
-4. User verbatim: "cần bạn tách các dự liệu tài khoản và phân luồng các tài khoản và có phần đăng nhập"
+4. User verbatim: "giao diện quá hỗn loạn không biết ở trong có cái gì quá loạn và chữ thì nhiều và hỗn loạn hãy kiểm tra lại vè mấy cái huy chương hay icon tương tự đi phèn quá"
 */
 
 window.WMS_CONSTANTS = {
@@ -20,7 +20,7 @@ window.WMS_CONSTANTS = {
 
   ROLES: [
     { id: 'all', name: 'Tất cả Vai trò', icon: 'fa-users', color: 'text-slate-500' },
-    { id: 'ADMIN', name: 'Ban Giám Đốc / Admin', icon: 'fa-crown', color: 'text-amber-500' },
+    { id: 'ADMIN', name: 'Ban Giám Đốc / Admin', icon: 'fa-user-tie', color: 'text-cyan-600 dark:text-cyan-400' },
     { id: 'THU_KHO', name: 'Thủ Kho (Điện & Đồng)', icon: 'fa-warehouse', color: 'text-blue-500' },
     { id: 'KY_THUAT', name: 'Kỹ Sư BOM Thiết Kế', icon: 'fa-ruler-combined', color: 'text-indigo-500' },
     { id: 'MUA_HANG', name: 'Nhân Viên Thu Mua PO', icon: 'fa-cart-shopping', color: 'text-rose-500' },
@@ -34,8 +34,8 @@ window.WMS_CONSTANTS = {
       roleKey: 'ADMIN',
       roleName: 'Ban Giám Đốc / Quản Trị Hệ Thống',
       department: 'Ban Điều Hành & Quản Trị',
-      icon: 'fa-crown',
-      badgeBg: 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-800',
+      icon: 'fa-user-tie',
+      badgeBg: 'bg-cyan-100 dark:bg-cyan-950/60 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-800',
       allowedTabs: ['dashboard', 'kpi', 'orders', 'boms', 'pos', 'grns', 'dispatch', 'returns', 'inventory', 'ledger'],
       permissions: ['ALL', 'CREATE_ORDER', 'SUBMIT_BOM', 'VERIFY_BOM', 'CREATE_PO', 'RECEIVE_GRN', 'REGISTER_PICKUP', 'APPROVE_GDN', 'DISPATCH_GDN', 'CREATE_RETURN', 'IMPORT_STOCK', 'RESET_SEED'],
       description: 'Toàn quyền điều hành, phê duyệt, giám sát 10 phân hệ và 3 KPI ISO.'

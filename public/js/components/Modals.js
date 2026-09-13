@@ -270,7 +270,7 @@ function Modals({
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold shadow-md shadow-blue-500/20 liquid-touch flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 rounded-2xl font-bold shadow-xs liquid-touch flex items-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer active:scale-95"
             >
               {isSubmitting ? (
                 <>
@@ -415,7 +415,7 @@ function Modals({
                   items: rows,
                 });
               }}
-              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold text-xs shadow-md shadow-blue-500/20 liquid-touch"
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 rounded-2xl font-bold text-xs shadow-xs liquid-touch cursor-pointer active:scale-95"
             >
               Lưu & Phát Hành BOM
             </button>
@@ -921,7 +921,7 @@ function Modals({
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-2xl font-bold shadow-md shadow-blue-500/20 liquid-touch"
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 rounded-2xl font-bold shadow-xs liquid-touch cursor-pointer active:scale-95"
             >
               Tạo Phiếu Xuất
             </button>
@@ -1044,7 +1044,7 @@ function Modals({
             </button>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-2xl font-bold shadow-md shadow-purple-500/20 liquid-touch"
+              className="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 rounded-2xl font-bold shadow-xs liquid-touch cursor-pointer active:scale-95"
             >
               Tạo Phiếu Trả
             </button>
@@ -1158,7 +1158,7 @@ function Modals({
             <div className="flex items-center gap-2">
               <button
                 onClick={() => window.print()}
-                className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-md shadow-blue-500/25 flex items-center gap-1.5 liquid-touch"
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs flex items-center gap-1.5 liquid-touch cursor-pointer active:scale-95"
               >
                 <i className="fa-solid fa-print"></i> In Chứng Từ / Xuất PDF
               </button>

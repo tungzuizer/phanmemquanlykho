@@ -1,9 +1,9 @@
 /**
  * Fact-Forcing Gate Details:
- * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/DashboardTab.js?v=2026.09.13"></script>
- * 2. Affected API: window.WMS_COMPONENTS.DashboardTab (Action-Direct & Zero-Fluff Executive Overview)
- * 3. Data schemas: data ({ orders, stockBalances, skus, warehouses, uoms }), currentUser, handlers, onNavigateTab, onSelectOrder
- * 4. User's verbatim instruction: "tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
+ * Importers/Callers: public/index.html, public/js/app.js
+ * Affected API: window.WMS_COMPONENTS.DashboardTab
+ * Data schemas: { orders, stockBalances, skus, warehouses, uoms }, currentUser, handlers, onNavigateTab, onSelectOrder
+ * User's verbatim instruction: "giao diện quá hỗn loạn không biết ở trong có cái gì quá loạn và chữ thì nhiều và hỗn loạn hãy kiểm tra lại vè mấy cái huy chương hay icon tương tự đi phèn quá"
  */
 
 function DashboardTab({ data, currentUser, handlers, onNavigateTab, onSelectOrder }) {
@@ -33,144 +33,98 @@ function DashboardTab({ data, currentUser, handlers, onNavigateTab, onSelectOrde
   }).filter(item => item.isLow);
 
   return (
-    <div className="space-y-4 sm:space-y-5 animate-fade-in font-sans">
-      {/* 1. Header Hero Banner: Action-Direct & Crisp */}
-      <div className="rounded-3xl p-6 sm:p-7 text-white shadow-xl relative overflow-hidden bg-gradient-to-r from-indigo-900/90 via-purple-900/85 to-slate-900 border border-white/20 backdrop-blur-2xl">
-        {/* Soft Ambient Light Spot */}
-        <div className="absolute top-0 right-0 w-80 h-80 bg-cyan-400/20 rounded-full blur-3xl pointer-events-none"></div>
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 text-xs font-semibold text-cyan-300 mb-1">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>Tổng quan vận hành kho & sản xuất</span>
-            </div>
-            <h1 className="text-xl sm:text-2xl font-black tracking-tight font-display text-white">
-              Xin chào, {currentUser?.fullName || 'Quý khách'}!
-            </h1>
-            <p className="text-xs text-indigo-100/80 mt-1 max-w-xl">
-              Hệ thống đang điều phối <strong className="text-white font-bold">{inProgressOrders} đơn hàng</strong> đang chạy. Vật tư được tự động giữ chỗ theo đúng định mức BOM.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2.5 flex-wrap">
-            <button
-              onClick={() => handlers.onOpenOrderModal()}
-              className="px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-2 transition active:scale-95 cursor-pointer"
-            >
-              <i className="fa-solid fa-plus text-xs"></i>
-              <span>Tạo Đơn Hàng</span>
-            </button>
-            <button
-              onClick={() => onNavigateTab('kpi')}
-              className="px-3.5 py-2.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-xs rounded-xl border border-white/20 flex items-center gap-1.5 transition active:scale-95 backdrop-blur-md cursor-pointer"
-            >
-              <i className="fa-solid fa-chart-pie text-cyan-300"></i>
-              <span>Chỉ Số Vận Hành</span>
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* 2. Top 5 Key Metric Cards (Vibrant Glow Badges) */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 sm:gap-3.5">
-        {/* Orders Card */}
+    <div className="space-y-4 animate-fade-in font-sans">
+      {/* ==========================================
+          TẦNG 1: EXECUTIVE KPI BAR (4 CHỈ SỐ CỐT LÕI)
+          ========================================== */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* KPI 1: Đơn Hàng Đang Chạy */}
         <div
           onClick={() => onNavigateTab('orders')}
-          className="liquid-glass p-4 rounded-2xl border border-white/40 dark:border-white/10 shadow-sm hover:shadow-md transition cursor-pointer group active:scale-95"
+          className="liquid-glass p-3.5 sm:p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-cyan-400/50 transition cursor-pointer group active:scale-98"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Đơn Hàng</span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xs group-hover:scale-110 transition">
-              <i className="fa-solid fa-folder-open"></i>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">Đơn Hàng Đang Chạy</span>
+            <div className="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center text-xs group-hover:scale-110 transition">
+              <i className="fa-solid fa-boxes-stacked"></i>
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 dark:text-white mt-2 font-display">
-            {data.orders?.length || 0}
+          <div className="text-2xl font-black text-slate-900 dark:text-white mt-1.5 font-display tracking-tight">
+            {inProgressOrders}
+            <span className="text-xs font-normal text-slate-400 dark:text-slate-500 ml-1.5 font-mono">/ {data.orders?.length || 0} tổng</span>
           </div>
-          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">
-            <span className="text-indigo-600 dark:text-indigo-400 font-bold">{inProgressOrders} đơn</span> đang sản xuất
+          <div className="text-[11px] text-cyan-600 dark:text-cyan-400 mt-1 font-medium flex items-center gap-1">
+            <i className="fa-solid fa-arrow-right text-[9px]"></i>
+            <span>Xem tiến độ đơn</span>
           </div>
         </div>
 
-        {/* Ready Orders Card */}
+        {/* KPI 2: Sẵn Sàng Xuất Kho */}
         <div
           onClick={() => onNavigateTab('dispatch')}
-          className="liquid-glass p-4 rounded-2xl border border-emerald-500/30 dark:border-emerald-500/20 shadow-sm hover:shadow-md transition cursor-pointer group active:scale-95"
+          className="liquid-glass p-3.5 sm:p-4 rounded-2xl border border-emerald-500/30 dark:border-emerald-500/20 shadow-xs hover:border-emerald-400/60 transition cursor-pointer group active:scale-98"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Sẵn Sàng Xuất</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs group-hover:scale-110 transition">
-              <i className="fa-solid fa-circle-check"></i>
+            <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">Sẵn Sàng Xuất Kho</span>
+            <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xs group-hover:scale-110 transition">
+              <i className="fa-solid fa-truck-ramp-box"></i>
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-emerald-600 dark:text-emerald-400 mt-2 font-display">
+          <div className="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1.5 font-display tracking-tight">
             {readyOrders}
+            <span className="text-xs font-normal text-emerald-600/70 dark:text-emerald-400/70 ml-1.5">đơn hàng</span>
           </div>
-          <div className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 font-medium">
-            Đã đủ 100% BOM
+          <div className="text-[11px] text-emerald-600/80 dark:text-emerald-400/80 mt-1 font-medium flex items-center gap-1">
+            <i className="fa-solid fa-check text-[9px]"></i>
+            <span>Đã khóa đủ 100% BOM</span>
           </div>
         </div>
 
-        {/* PO Shortage Card */}
+        {/* KPI 3: Thiếu Vật Tư Cần Mua (PO) */}
         <div
           onClick={() => onNavigateTab('pos')}
-          className="liquid-glass p-4 rounded-2xl border border-rose-500/30 dark:border-rose-500/20 shadow-sm hover:shadow-md transition cursor-pointer group active:scale-95"
+          className="liquid-glass p-3.5 sm:p-4 rounded-2xl border border-rose-500/30 dark:border-rose-500/20 shadow-xs hover:border-rose-400/60 transition cursor-pointer group active:scale-98"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-rose-600 dark:text-rose-400">Thiếu Vật Tư</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs group-hover:scale-110 transition">
-              <i className="fa-solid fa-triangle-exclamation"></i>
+            <span className="text-xs font-semibold text-rose-700 dark:text-rose-300">Thiếu Vật Tư (PO)</span>
+            <div className="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400 flex items-center justify-center text-xs group-hover:scale-110 transition">
+              <i className="fa-solid fa-cart-shopping"></i>
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-rose-600 dark:text-rose-400 mt-2 font-display">
+          <div className="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1.5 font-display tracking-tight">
             {pendingPoOrders}
+            <span className="text-xs font-normal text-rose-600/70 dark:text-rose-400/70 ml-1.5">đơn thiếu</span>
           </div>
-          <div className="text-[11px] text-rose-600/80 dark:text-rose-400/80 mt-1 font-medium">
-            Cần mua bổ sung
-          </div>
-        </div>
-
-        {/* Reserved Stock Card */}
-        <div
-          onClick={() => onNavigateTab('inventory')}
-          className="liquid-glass p-4 rounded-2xl border border-purple-500/30 dark:border-purple-500/20 shadow-sm hover:shadow-md transition cursor-pointer group active:scale-95"
-        >
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-purple-600 dark:text-purple-400">Đã Giữ Chỗ</span>
-            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center text-xs group-hover:scale-110 transition">
-              <i className="fa-solid fa-lock"></i>
-            </div>
-          </div>
-          <div className="text-2xl font-extrabold text-purple-600 dark:text-purple-300 mt-2 font-mono">
-            {formatNumber(totalReserved)}
-          </div>
-          <div className="text-[11px] text-purple-600/80 dark:text-purple-400/80 mt-1 font-medium">
-            Khóa theo tiến độ đơn
+          <div className="text-[11px] text-rose-600/80 dark:text-rose-400/80 mt-1 font-medium flex items-center gap-1">
+            <i className="fa-solid fa-triangle-exclamation text-[9px]"></i>
+            <span>Cần tạo đơn đặt hàng</span>
           </div>
         </div>
 
-        {/* Available Stock Card */}
+        {/* KPI 4: Tồn Kho Khả Dụng */}
         <div
           onClick={() => onNavigateTab('inventory')}
-          className="col-span-2 md:col-span-1 liquid-glass p-4 rounded-2xl border border-cyan-500/30 dark:border-cyan-500/20 shadow-sm hover:shadow-md transition cursor-pointer group active:scale-95"
+          className="liquid-glass p-3.5 sm:p-4 rounded-2xl border border-cyan-500/30 dark:border-cyan-500/20 shadow-xs hover:border-cyan-400/60 transition cursor-pointer group active:scale-98"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-400">Khả Dụng</span>
-            <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center text-xs group-hover:scale-110 transition">
-              <i className="fa-solid fa-box-open"></i>
+            <span className="text-xs font-semibold text-cyan-700 dark:text-cyan-300">Tồn Kho Khả Dụng</span>
+            <div className="w-7 h-7 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center text-xs group-hover:scale-110 transition">
+              <i className="fa-solid fa-cubes"></i>
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-cyan-600 dark:text-cyan-300 mt-2 font-mono">
+          <div className="text-2xl font-black text-cyan-600 dark:text-cyan-300 mt-1.5 font-mono tracking-tight">
             {formatNumber(totalAvailable)}
           </div>
-          <div className="text-[11px] text-cyan-600/80 dark:text-cyan-400/80 mt-1 font-medium">
-            Tồn tự do có thể cấp
+          <div className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium flex items-center gap-1">
+            <span>Khóa giữ chỗ:</span>
+            <strong className="text-amber-600 dark:text-amber-400 font-mono">{formatNumber(totalReserved)}</strong>
           </div>
         </div>
       </div>
 
-      {/* 3. Action Required Inbox */}
+      {/* ==========================================
+          TẦNG 2: MY ROLE ACTION QUEUE (TÁC VỤ 1 CHẠM)
+          ========================================== */}
       {ActionInbox && (
         <ActionInbox
           data={data}
@@ -187,53 +141,77 @@ function DashboardTab({ data, currentUser, handlers, onNavigateTab, onSelectOrde
         />
       )}
 
-      {/* 4. Bottom Row: Safety Stock & Warehouse Overview */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
-        {/* Safety Stock Alert */}
-        <div className="liquid-glass rounded-2xl border border-white/40 dark:border-white/10 p-5 shadow-sm space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3">
+      {/* ==========================================
+          TẦNG 3: CLEAN INDUSTRIAL DATA GRIDS
+          ========================================== */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Bảng 1: Cảnh Báo Tồn Kho Dưới Mức An Toàn */}
+        <div className="liquid-glass rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/80 pb-3">
             <div className="flex items-center gap-2">
-              <i className="fa-solid fa-shield-exclamation text-amber-500 text-sm"></i>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white font-display">Cảnh Báo Tồn Kho Tối Thiểu</h2>
+              <i className="fa-solid fa-triangle-exclamation text-amber-500 text-xs"></i>
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white font-display">
+                Cảnh Báo Tồn Kho Tối Thiểu
+              </h3>
             </div>
-            <span className="text-xs font-semibold text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2.5 py-0.5 rounded-full border border-amber-500/20">
-              {lowStockSkus.length} Mã Dưới Mức An Toàn
+            <span className="text-[11px] font-mono font-bold text-amber-700 dark:text-amber-300 bg-amber-500/10 px-2 py-0.5 rounded-full border border-amber-500/20">
+              {lowStockSkus.length} mã cần bổ sung
             </span>
           </div>
 
           {lowStockSkus.length === 0 ? (
-            <p className="text-xs text-slate-500 dark:text-slate-400 py-6 text-center">
-              Toàn bộ danh mục vật tư đều đang duy trì trên mức an toàn.
-            </p>
+            <div className="py-6 text-center text-slate-400 dark:text-slate-500 text-xs font-medium">
+              Toàn bộ vật tư hiện tại đều duy trì trên mức an toàn.
+            </div>
           ) : (
-            <div className="space-y-2">
-              {lowStockSkus.slice(0, 4).map(({ sku, available, minStock, uomName }) => (
-                <div key={sku.id} className="p-3 bg-white/40 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-800 flex items-center justify-between">
-                  <div className="min-w-0 flex-1 pr-2">
-                    <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">{sku.code}</span>
-                    <div className="text-xs text-slate-800 dark:text-slate-200 font-medium truncate">{sku.name}</div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <div className="text-xs font-bold text-rose-600 dark:text-rose-400 font-mono">
-                      Khả dụng: {available} {uomName}
-                    </div>
-                    <div className="text-[10px] text-slate-500 font-mono">Mức an toàn: {minStock} {uomName}</div>
-                  </div>
-                </div>
-              ))}
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="text-slate-400 border-b border-slate-200/60 dark:border-slate-800/80 text-[10px] uppercase font-mono tracking-wider">
+                    <th className="pb-2 font-bold">Mã SKU</th>
+                    <th className="pb-2 font-bold">Tên Vật Tư</th>
+                    <th className="pb-2 font-bold text-right">Khả Dụng</th>
+                    <th className="pb-2 font-bold text-right">Min An Toàn</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {lowStockSkus.slice(0, 5).map(({ sku, available, minStock, uomName }) => (
+                    <tr key={sku.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition">
+                      <td className="py-2.5 font-mono font-bold text-cyan-600 dark:text-cyan-400">
+                        {sku.code}
+                      </td>
+                      <td className="py-2.5 text-slate-800 dark:text-slate-200 font-medium max-w-[180px] truncate">
+                        {sku.name}
+                      </td>
+                      <td className="py-2.5 text-right font-mono font-bold text-rose-600 dark:text-rose-400">
+                        {available} <span className="text-[10px] font-normal text-slate-400">{uomName}</span>
+                      </td>
+                      <td className="py-2.5 text-right font-mono text-slate-500 dark:text-slate-400">
+                        {minStock} <span className="text-[10px] font-normal text-slate-400">{uomName}</span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
 
-        {/* Warehouse Balances Overview */}
-        <div className="liquid-glass rounded-2xl border border-white/40 dark:border-white/10 p-5 shadow-sm space-y-3">
-          <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3">
+        {/* Bảng 2: Phân Bổ Tồn Kho Theo Kho Hàng */}
+        <div className="liquid-glass rounded-2xl border border-slate-200/80 dark:border-slate-800 p-4 sm:p-5 shadow-sm space-y-3">
+          <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800/80 pb-3">
             <div className="flex items-center gap-2">
-              <i className="fa-solid fa-warehouse text-indigo-500 text-sm"></i>
-              <h2 className="text-sm font-bold text-slate-900 dark:text-white font-display">Phân Bổ Các Kho Hàng</h2>
+              <i className="fa-solid fa-warehouse text-cyan-500 text-xs"></i>
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white font-display">
+                Phân Bổ Tồn Kho Theo Kho Hàng
+              </h3>
             </div>
-            <button onClick={() => onNavigateTab('inventory')} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-semibold">
-              Chi tiết tồn kho →
+            <button
+              onClick={() => onNavigateTab('inventory')}
+              className="text-[11px] font-bold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 cursor-pointer"
+            >
+              <span>Xem chi tiết kệ</span>
+              <i className="fa-solid fa-arrow-right text-[9px]"></i>
             </button>
           </div>
 
@@ -245,23 +223,28 @@ function DashboardTab({ data, currentUser, handlers, onNavigateTab, onSelectOrde
               const avail = Math.max(0, phys - resv);
 
               return (
-                <div key={wh.id} className="p-3 bg-white/40 dark:bg-slate-900/40 rounded-xl border border-slate-200/60 dark:border-slate-800 space-y-2">
+                <div
+                  key={wh.id}
+                  className="p-3 bg-white/60 dark:bg-slate-900/60 rounded-xl border border-slate-200/80 dark:border-slate-800 space-y-2"
+                >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-xs text-slate-900 dark:text-white truncate">{wh.name}</span>
-                    <span className="text-[10px] font-mono bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 px-1.5 py-0.5 rounded font-bold">{wh.code}</span>
+                    <span className="text-[10px] font-mono bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 px-1.5 py-0.5 rounded font-bold">
+                      {wh.code}
+                    </span>
                   </div>
                   <div className="grid grid-cols-3 gap-1 text-center font-mono">
-                    <div className="bg-white/60 dark:bg-slate-800/60 p-1.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50 text-[10px]">
+                    <div className="bg-slate-100 dark:bg-slate-800/70 p-1.5 rounded-lg text-[10px]">
                       <div className="text-slate-400 text-[9px]">Vật lý</div>
-                      <div className="font-bold text-slate-800 dark:text-slate-200">{phys}</div>
+                      <div className="font-bold text-slate-800 dark:text-slate-200">{formatNumber(phys)}</div>
                     </div>
-                    <div className="bg-purple-50/10 p-1.5 rounded-lg border border-purple-500/20 text-[10px]">
-                      <div className="text-purple-500 text-[9px]">Giữ chỗ</div>
-                      <div className="font-bold text-purple-600 dark:text-purple-400">{resv}</div>
+                    <div className="bg-amber-50 dark:bg-amber-950/40 p-1.5 rounded-lg text-[10px] border border-amber-500/20">
+                      <div className="text-amber-500 text-[9px]">Giữ chỗ</div>
+                      <div className="font-bold text-amber-600 dark:text-amber-400">{formatNumber(resv)}</div>
                     </div>
-                    <div className="bg-cyan-50/10 p-1.5 rounded-lg border border-cyan-500/20 text-[10px]">
-                      <div className="text-cyan-500 text-[9px]">Khả dụng</div>
-                      <div className="font-bold text-cyan-600 dark:text-cyan-400">{avail}</div>
+                    <div className="bg-cyan-50 dark:bg-cyan-950/40 p-1.5 rounded-lg text-[10px] border border-cyan-500/20">
+                      <div className="text-cyan-600 dark:text-cyan-400 text-[9px]">Khả dụng</div>
+                      <div className="font-bold text-cyan-700 dark:text-cyan-300">{formatNumber(avail)}</div>
                     </div>
                   </div>
                 </div>

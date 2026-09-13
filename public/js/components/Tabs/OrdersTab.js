@@ -3,7 +3,7 @@
  * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/OrdersTab.js"></script>
  * 2. Affected API: window.WMS_COMPONENTS.OrdersTab (Action-Direct Order Lifecycle & Allocation Tab)
  * 3. Data schemas: data ({ orders, boms, stockBalances, skus, uoms }), currentUser, handlers, onSelectOrder, onOpenPrintPreview
- * 4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
+ * 4. User's verbatim instruction: "giao diện quá hỗn loạn không biết ở trong có cái gì quá loạn và chữ thì nhiều và hỗn loạn hãy kiểm tra lại vè mấy cái huy chương hay icon tương tự đi phèn quá"
  */
 
 function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPreview }) {
@@ -63,7 +63,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Tìm theo Mã đơn, Dự án tủ điện, Khách hàng..."
-            className="w-full pl-9 pr-4 py-2.5 bg-white/50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+            className="w-full pl-9 pr-4 py-2.5 bg-white/50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
           />
         </div>
 
@@ -74,7 +74,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
               onClick={() => setViewMode('grid')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
                 viewMode === 'grid'
-                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                  ? 'bg-white dark:bg-slate-900 text-cyan-600 dark:text-cyan-400 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
@@ -84,7 +84,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
               onClick={() => setViewMode('table')}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
                 viewMode === 'table'
-                  ? 'bg-white dark:bg-slate-900 text-indigo-600 dark:text-indigo-400 shadow-xs'
+                  ? 'bg-white dark:bg-slate-900 text-cyan-600 dark:text-cyan-400 shadow-xs'
                   : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
               }`}
             >
@@ -94,7 +94,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
 
           <button
             onClick={() => handlers.onOpenOrderModal()}
-            className="px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-400 hover:to-purple-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-500/25 flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
+            className="px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs flex items-center gap-2 transition active:scale-95 cursor-pointer whitespace-nowrap"
           >
             <i className="fa-solid fa-plus text-xs"></i>
             <span>Tạo Đơn Hàng</span>
@@ -110,7 +110,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
             onClick={() => setFilterStatus(chip.id)}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 whitespace-nowrap cursor-pointer active:scale-95 ${
               filterStatus === chip.id
-                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20'
+                ? 'bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
                 : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
             }`}
           >
@@ -118,7 +118,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
             <span
               className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                 filterStatus === chip.id
-                  ? 'bg-white/20 text-white'
+                  ? 'bg-white/20 text-white dark:bg-slate-950/20 dark:text-slate-950'
                   : 'bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
               }`}
             >
@@ -151,7 +151,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                 <div className="p-4 sm:p-5 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono font-bold text-xs bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-lg border border-indigo-500/20">
+                      <span className="font-mono font-bold text-xs bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded-lg border border-cyan-500/20">
                         {order.code}
                       </span>
                       <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${statusInfo.color}`}>
@@ -164,7 +164,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                   </div>
 
                   <div>
-                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition leading-snug font-display">
+                    <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white group-hover:text-cyan-600 dark:group-hover:text-cyan-400 transition leading-snug font-display">
                       {order.title}
                     </h3>
                     <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
@@ -176,14 +176,14 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                   <div className="space-y-1">
                     <div className="flex items-center justify-between text-[10px] text-slate-400">
                       <span>Tiến độ sản xuất:</span>
-                      <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">Bước {statusInfo.step}/9</span>
+                      <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">Bước {statusInfo.step}/9</span>
                     </div>
                     <div className="w-full bg-slate-200/70 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden flex">
                       {Array.from({ length: 9 }).map((_, i) => (
                         <div
                           key={i}
                           className={`flex-1 h-full border-r border-white/40 dark:border-slate-900 ${
-                            i < statusInfo.step ? 'bg-gradient-to-r from-indigo-500 to-purple-600' : 'bg-transparent'
+                            i < statusInfo.step ? 'bg-cyan-500 dark:bg-cyan-400' : 'bg-transparent'
                           }`}
                         ></div>
                       ))}
@@ -194,7 +194,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                   <div className="p-3 bg-white/40 dark:bg-slate-800/40 rounded-xl border border-slate-200/60 dark:border-slate-800 space-y-1.5">
                     <div className="flex items-center justify-between text-[11px]">
                       <span className="text-slate-500 dark:text-slate-400 font-semibold flex items-center gap-1">
-                        <i className="fa-solid fa-lock text-[10px] text-purple-500"></i> Giữ chỗ BOM:
+                        <i className="fa-solid fa-lock text-[10px] text-amber-500"></i> Giữ chỗ BOM:
                       </span>
                       <span className="font-mono font-bold text-xs text-slate-800 dark:text-slate-200">
                         {alloc.percent}% ({alloc.reserved}/{alloc.required})
@@ -202,7 +202,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                     </div>
                     <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                       <div
-                        className={`h-full transition-all ${alloc.percent === 100 ? 'bg-emerald-500' : 'bg-indigo-600'}`}
+                        className={`h-full transition-all ${alloc.percent === 100 ? 'bg-emerald-500' : 'bg-cyan-600'}`}
                         style={{ width: `${alloc.percent}%` }}
                       ></div>
                     </div>
@@ -217,7 +217,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => onSelectOrder(order)}
-                      className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline flex items-center gap-1 cursor-pointer"
+                      className="text-xs font-bold text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1 cursor-pointer"
                     >
                       Chi tiết <i className="fa-solid fa-chevron-right text-[9px]"></i>
                     </button>
@@ -251,7 +251,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                     {!alloc.hasBom && (
                       <button
                         onClick={() => handlers.onOpenBomModal(order)}
-                        className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-[11px] rounded-lg shadow-xs cursor-pointer"
+                        className="px-3 py-1 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 font-bold text-[11px] rounded-lg shadow-xs cursor-pointer active:scale-95"
                       >
                         Nạp BOM
                       </button>
@@ -259,7 +259,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                     {alloc.bomStatus === 'SUBMITTED' && (
                       <button
                         onClick={() => handlers.onVerifyBom(alloc.bomId)}
-                        className="px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white font-bold text-[11px] rounded-lg shadow-xs cursor-pointer"
+                        className="px-3 py-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-[11px] rounded-lg shadow-xs cursor-pointer active:scale-95"
                       >
                         Khóa giữ chỗ
                       </button>
@@ -267,7 +267,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                     {order.status === 'CHO_MUA' && (
                       <button
                         onClick={() => handlers.onOpenPoModal(order)}
-                        className="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] rounded-lg shadow-xs cursor-pointer"
+                        className="px-3 py-1 bg-rose-600 hover:bg-rose-500 text-white font-bold text-[11px] rounded-lg shadow-xs cursor-pointer active:scale-95"
                       >
                         Lập PO bù
                       </button>
@@ -275,7 +275,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                     {order.status === 'SAN_SANG_XUAT' && (
                       <button
                         onClick={() => handlers.onOpenPickupModal(order)}
-                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] rounded-lg shadow-xs cursor-pointer"
+                        className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] rounded-lg shadow-xs cursor-pointer active:scale-95"
                       >
                         Đăng ký ca
                       </button>
@@ -302,7 +302,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                   className="p-4 rounded-2xl liquid-glass space-y-2.5 cursor-pointer active:scale-98"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono font-bold text-xs bg-indigo-500/10 text-indigo-600 px-2 py-0.5 rounded-lg border border-indigo-500/20">
+                    <span className="font-mono font-bold text-xs bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded-lg border border-cyan-500/20">
                       {order.code}
                     </span>
                     <span className={`text-[10px] px-2.5 py-0.5 rounded-full border font-bold ${statusInfo.color}`}>
@@ -315,7 +315,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                   </div>
                   <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-200/60 dark:border-slate-800">
                     <span className="text-slate-400">Hạn: {formatDate(order.targetDeliveryDate)}</span>
-                    <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400">BOM: {alloc.percent}%</span>
+                    <span className="font-mono font-bold text-cyan-600 dark:text-cyan-400">BOM: {alloc.percent}%</span>
                   </div>
                 </div>
               );
@@ -366,7 +366,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                           </div>
                           <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden">
                             <div
-                              className={`h-full ${alloc.percent === 100 ? 'bg-emerald-500' : 'bg-indigo-600'}`}
+                              className={`h-full ${alloc.percent === 100 ? 'bg-emerald-500' : 'bg-cyan-600'}`}
                               style={{ width: `${alloc.percent}%` }}
                             ></div>
                           </div>
@@ -388,7 +388,7 @@ function OrdersTab({ data, currentUser, handlers, onSelectOrder, onOpenPrintPrev
                           )}
                           <button
                             onClick={() => onSelectOrder(order)}
-                            className="px-3 py-1.5 bg-indigo-50 dark:bg-indigo-950/60 hover:bg-indigo-100 text-indigo-600 dark:text-indigo-400 rounded-lg text-xs font-bold cursor-pointer"
+                            className="px-3 py-1.5 bg-cyan-50 dark:bg-cyan-950/60 hover:bg-cyan-100 text-cyan-600 dark:text-cyan-400 rounded-lg text-xs font-bold cursor-pointer"
                           >
                             Chi tiết
                           </button>

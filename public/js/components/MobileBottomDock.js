@@ -1,10 +1,10 @@
-/*
-Fact-Forcing Gate Details:
-1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/MobileBottomDock.js"></script>
-2. Affected API: iOS Floating Liquid Bottom Dock & Quick SKU Field Lens with Role-Adaptive Filtering (window.WMS_COMPONENTS.MobileBottomDock)
-3. Data schemas: activeTab, setActiveTab, counts, data (skus, stockBalances, bins, warehouses), currentUser, onOpenCommandPalette
-4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
-*/
+/**
+ * Fact-Forcing Gate Details:
+ * 1. Importers/Callers: public/index.html, public/js/app.js
+ * 2. Affected API: window.WMS_COMPONENTS.MobileBottomDock
+ * 3. Data schemas: { activeTab, setActiveTab, counts, data, currentUser, onOpenCommandPalette }
+ * 4. User's verbatim instruction: "giao diện quá hỗn loạn không biết ở trong có cái gì quá loạn và chữ thì nhiều và hỗn loạn hãy kiểm tra lại vè mấy cái huy chương hay icon tương tự đi phèn quá"
+ */
 
 function MobileBottomDock({
   activeTab,
@@ -45,12 +45,12 @@ function MobileBottomDock({
   const mainTabs = allMainTabs.filter(t => t.isAction || t.isMore || isTabAllowed(currentUser, t.id));
 
   const allMoreItems = [
-    { id: 'boms', label: 'BOM & Delta', icon: 'fa-diagram-project', color: 'text-indigo-500', badge: counts.boms },
+    { id: 'boms', label: 'BOM & Giữ Chỗ', icon: 'fa-diagram-project', color: 'text-cyan-500', badge: counts.boms },
     { id: 'pos', label: 'Mua Hàng PO', icon: 'fa-cart-shopping', color: 'text-amber-500', badge: counts.pos },
     { id: 'grns', label: 'Nhập Kho GRN', icon: 'fa-truck-ramp-box', color: 'text-teal-500', badge: counts.grns },
     { id: 'dispatch', label: 'Xuất Kho GDN', icon: 'fa-truck-fast', color: 'text-emerald-500', badge: counts.dispatch },
-    { id: 'returns', label: 'Nhập Trả / Phế Phẩm', icon: 'fa-arrow-rotate-left', color: 'text-purple-500' },
-    { id: 'kpi', label: '3 Chỉ Số KPI ISO', icon: 'fa-chart-pie', color: 'text-blue-500' },
+    { id: 'returns', label: 'Nhập Trả / Phế Liệu', icon: 'fa-arrow-rotate-left', color: 'text-amber-500' },
+    { id: 'kpi', label: '3 Chỉ Số KPI ISO', icon: 'fa-chart-pie', color: 'text-cyan-500' },
     { id: 'ledger', label: 'Sổ Cái Biến Động', icon: 'fa-shield-halved', color: 'text-cyan-500' },
   ];
 
@@ -66,7 +66,7 @@ function MobileBottomDock({
               <button
                 key={tab.id}
                 onClick={() => setShowSkuLens(true)}
-                className="relative -top-3 w-12 h-12 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/40 border-2 border-white/80 dark:border-slate-800 cursor-pointer active:scale-95"
+                className="relative -top-3 w-12 h-12 rounded-full bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 flex items-center justify-center shadow-lg shadow-cyan-500/20 border-2 border-white/80 dark:border-slate-800 cursor-pointer active:scale-95"
                 aria-label="Tra cứu nhanh SKU hiện trường"
               >
                 <i className={`fa-solid ${tab.icon} text-lg`}></i>
@@ -82,7 +82,7 @@ function MobileBottomDock({
                 onClick={() => setShowMoreMenu(true)}
                 className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative cursor-pointer active:scale-95 ${
                   isMoreActive
-                    ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+                    ? 'text-cyan-600 dark:text-cyan-400 font-bold'
                     : 'text-slate-500 dark:text-slate-400 font-medium'
                 }`}
               >
@@ -104,14 +104,14 @@ function MobileBottomDock({
               onClick={() => setActiveTab(tab.id)}
               className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-2xl relative cursor-pointer active:scale-95 ${
                 isActive
-                  ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+                  ? 'text-cyan-600 dark:text-cyan-400 font-bold'
                   : 'text-slate-500 dark:text-slate-400 font-medium'
               }`}
             >
               <i className={`fa-solid ${tab.icon} text-base`}></i>
               <span className="text-[10px] mt-0.5">{tab.label}</span>
               {tab.badge > 0 && (
-                <span className="absolute -top-0.5 right-1 w-4 h-4 bg-indigo-600 text-white text-[9px] font-black rounded-full flex items-center justify-center">
+                <span className="absolute -top-0.5 right-1 w-4 h-4 bg-cyan-600 text-white text-[9px] font-black rounded-full flex items-center justify-center">
                   {tab.badge}
                 </span>
               )}
@@ -131,7 +131,7 @@ function MobileBottomDock({
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold border border-indigo-500/20">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center font-bold border border-cyan-500/20">
                   <i className="fa-solid fa-qrcode"></i>
                 </div>
                 <div>
@@ -153,13 +153,13 @@ function MobileBottomDock({
 
             {/* Quick Search Input */}
             <div className="relative">
-              <i className="fa-solid fa-barcode absolute left-3.5 top-1/2 -translate-y-1/2 text-indigo-500 text-sm"></i>
+              <i className="fa-solid fa-barcode absolute left-3.5 top-1/2 -translate-y-1/2 text-cyan-500 text-sm"></i>
               <input
                 type="text"
                 value={skuQuery}
                 onChange={e => setSkuQuery(e.target.value)}
                 placeholder="Nhập mã SKU, quét barcode hoặc tên..."
-                className="w-full pl-10 pr-4 py-2.5 bg-white/60 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-2xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                className="w-full pl-10 pr-4 py-2.5 bg-white/60 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700 rounded-2xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
                 autoFocus
               />
             </div>
@@ -178,7 +178,7 @@ function MobileBottomDock({
                     className="p-3.5 rounded-2xl bg-white/60 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700/60 shadow-xs space-y-2"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">
+                      <span className="font-mono font-bold text-xs text-cyan-600 dark:text-cyan-400">
                         {sku.code}
                       </span>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
@@ -195,13 +195,13 @@ function MobileBottomDock({
                         <div className="text-[9px] text-slate-400">Vật Lý</div>
                         <div className="font-bold text-slate-900 dark:text-white">{formatNumber(totalPhys)}</div>
                       </div>
-                      <div className="bg-indigo-50 dark:bg-indigo-950/40 p-1.5 rounded-xl">
-                        <div className="text-[9px] text-indigo-400">Giữ Chỗ</div>
-                        <div className="font-bold text-indigo-600 dark:text-indigo-400">{formatNumber(totalResv)}</div>
+                      <div className="bg-amber-50 dark:bg-amber-950/40 p-1.5 rounded-xl border border-amber-500/20">
+                        <div className="text-[9px] text-amber-500">Giữ Chỗ</div>
+                        <div className="font-bold text-amber-600 dark:text-amber-400">{formatNumber(totalResv)}</div>
                       </div>
-                      <div className="bg-emerald-50 dark:bg-emerald-950/40 p-1.5 rounded-xl">
-                        <div className="text-[9px] text-emerald-400">Khả Dụng</div>
-                        <div className="font-bold text-emerald-600 dark:text-emerald-400">{formatNumber(totalAvail)}</div>
+                      <div className="bg-cyan-50 dark:bg-cyan-950/40 p-1.5 rounded-xl border border-cyan-500/20">
+                        <div className="text-[9px] text-cyan-600 dark:text-cyan-400">Khả Dụng</div>
+                        <div className="font-bold text-cyan-600 dark:text-cyan-400">{formatNumber(totalAvail)}</div>
                       </div>
                     </div>
                   </div>
@@ -243,7 +243,7 @@ function MobileBottomDock({
                   }}
                   className={`p-3.5 rounded-2xl border text-left flex items-center gap-3 cursor-pointer active:scale-95 relative ${
                     activeTab === item.id
-                      ? 'bg-indigo-50/80 dark:bg-indigo-950/50 border-indigo-300 dark:border-indigo-700 shadow-xs'
+                      ? 'bg-cyan-50/80 dark:bg-cyan-950/50 border-cyan-300 dark:border-cyan-700 shadow-xs'
                       : 'bg-white/60 dark:bg-slate-800/60 border-slate-200/80 dark:border-slate-700/60'
                   }`}
                 >

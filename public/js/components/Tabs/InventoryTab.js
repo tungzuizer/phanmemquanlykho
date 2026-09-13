@@ -3,7 +3,7 @@
  * 1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/Tabs/InventoryTab.js"></script>
  * 2. Affected API: window.WMS_COMPONENTS.InventoryTab (Action-Direct 2-Warehouse Inventory & Bin Map)
  * 3. Data schemas: data ({ stockBalances, skus, uoms, warehouses, bins }), currentUser
- * 4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
+ * 4. User's verbatim instruction: "giao diện quá hỗn loạn không biết ở trong có cái gì quá loạn và chữ thì nhiều và hỗn loạn hãy kiểm tra lại vè mấy cái huy chương hay icon tương tự đi phèn quá"
  */
 
 function InventoryTab({ data, currentUser }) {
@@ -33,11 +33,11 @@ function InventoryTab({ data, currentUser }) {
       <div className="liquid-glass p-4 sm:p-5 rounded-2xl border border-white/40 dark:border-white/10 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-3.5">
         <div>
           <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 font-display">
-            <i className="fa-solid fa-boxes-stacked text-indigo-500"></i>
+            <i className="fa-solid fa-boxes-stacked text-cyan-500"></i>
             Quản Lý Tồn Kho & Vị Trí Kệ Hàng
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Phân loại 3 trạng thái: <strong className="text-slate-700 dark:text-slate-300">Vật lý</strong>, <strong className="text-purple-600 dark:text-purple-400">Giữ chỗ BOM</strong> và <strong className="text-cyan-600 dark:text-cyan-400">Khả dụng tự do</strong>.
+            Phân loại 3 trạng thái: <strong className="text-slate-700 dark:text-slate-300">Vật lý</strong>, <strong className="text-amber-600 dark:text-amber-400">Giữ chỗ BOM</strong> và <strong className="text-cyan-600 dark:text-cyan-400">Khả dụng tự do</strong>.
           </p>
         </div>
 
@@ -47,7 +47,7 @@ function InventoryTab({ data, currentUser }) {
             onClick={() => setSelectedWhId('ALL')}
             className={`px-3.5 py-2 rounded-xl text-xs font-bold transition active:scale-95 cursor-pointer ${
               selectedWhId === 'ALL'
-                ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20'
+                ? 'bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
                 : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
             }`}
           >
@@ -59,11 +59,11 @@ function InventoryTab({ data, currentUser }) {
               onClick={() => setSelectedWhId(wh.id)}
               className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 active:scale-95 cursor-pointer ${
                 selectedWhId === wh.id
-                  ? 'bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-md shadow-indigo-500/20'
+                  ? 'bg-slate-900 text-white dark:bg-cyan-500 dark:text-slate-950 shadow-xs'
                   : 'liquid-glass text-slate-600 dark:text-slate-300 hover:bg-white/90 dark:hover:bg-slate-800/90'
               }`}
             >
-              <i className={`fa-solid ${wh.code.includes('DONG') ? 'fa-cubes text-orange-400' : 'fa-bolt text-amber-400'}`}></i>
+              <i className={`fa-solid ${wh.code.includes('DONG') ? 'fa-cubes text-amber-500' : 'fa-bolt text-cyan-500'}`}></i>
               <span>{wh.name}</span>
             </button>
           ))}
@@ -74,7 +74,7 @@ function InventoryTab({ data, currentUser }) {
       <div className="liquid-glass p-4 sm:p-5 rounded-2xl border border-white/40 dark:border-white/10 shadow-sm space-y-3.5">
         <div className="flex items-center justify-between border-b border-slate-200/60 dark:border-slate-800 pb-3">
           <div className="flex items-center gap-2">
-            <i className="fa-solid fa-map text-indigo-500 text-xs"></i>
+            <i className="fa-solid fa-map text-cyan-500 text-xs"></i>
             <h3 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider font-display">
               Sơ Đồ Mặt Bằng Kệ Hàng (Bin Map)
             </h3>
@@ -96,12 +96,12 @@ function InventoryTab({ data, currentUser }) {
                 key={bin.id}
                 className={`p-3 rounded-xl border text-center transition ${
                   hasItems
-                    ? 'bg-gradient-to-b from-indigo-500/10 to-purple-500/10 border-indigo-500/30 text-slate-900 dark:text-white shadow-xs'
+                    ? 'bg-cyan-500/10 border-cyan-500/30 text-slate-900 dark:text-white shadow-xs'
                     : 'bg-white/30 dark:bg-slate-800/20 border-dashed border-slate-200 dark:border-slate-800'
                 }`}
               >
                 <div className="flex items-center justify-between text-[10px] mb-1 font-mono">
-                  <span className="font-bold text-indigo-600 dark:text-indigo-400">{bin.code}</span>
+                  <span className="font-bold text-cyan-700 dark:text-cyan-300">{bin.code}</span>
                   <span className="text-slate-400 text-[9px]">{wh?.code?.slice(0, 4)}</span>
                 </div>
                 <div className="text-lg font-bold font-mono text-slate-900 dark:text-white my-1">
@@ -126,7 +126,7 @@ function InventoryTab({ data, currentUser }) {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Tìm nhanh SKU, tên vật tư, thông số..."
-              className="w-full pl-9 pr-4 py-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+              className="w-full pl-9 pr-4 py-2 bg-white/50 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50"
             />
           </div>
           <span className="text-xs text-slate-500 font-mono font-bold">
@@ -155,7 +155,7 @@ function InventoryTab({ data, currentUser }) {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-lg border border-indigo-500/20">
+                    <span className="font-mono font-bold text-xs text-cyan-700 dark:text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded-lg border border-cyan-500/20">
                       {sku?.code}
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200/60 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
@@ -163,11 +163,11 @@ function InventoryTab({ data, currentUser }) {
                     </span>
                   </div>
                   {isLow ? (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/20">
                       Dưới an toàn
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20">
                       Đảm bảo
                     </span>
                   )}
@@ -180,7 +180,7 @@ function InventoryTab({ data, currentUser }) {
 
                 <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400 bg-white/40 dark:bg-slate-900/60 p-2 rounded-xl border border-slate-200/60 dark:border-slate-800">
                   <span className="font-medium"><i className="fa-solid fa-warehouse mr-1 text-slate-400"></i>{wh?.name}</span>
-                  <span className="font-mono font-bold text-indigo-600 dark:text-indigo-400"><i className="fa-solid fa-layer-group mr-1 text-slate-400"></i>Kệ: {bin?.code || 'Kệ mặc định'}</span>
+                  <span className="font-mono font-bold text-cyan-700 dark:text-cyan-300"><i className="fa-solid fa-layer-group mr-1 text-slate-400"></i>Kệ: {bin?.code || 'Kệ mặc định'}</span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-2 text-center font-mono pt-1">
@@ -190,14 +190,14 @@ function InventoryTab({ data, currentUser }) {
                       {formatNumber(phys)} <span className="text-[9px] font-normal text-slate-400">{uom?.name}</span>
                     </div>
                   </div>
-                  <div className="bg-purple-500/10 p-2 rounded-xl border border-purple-500/20">
-                    <div className="text-[9px] uppercase font-bold text-purple-400">Giữ Chỗ</div>
-                    <div className="text-xs font-bold text-purple-600 dark:text-purple-400 mt-0.5">
+                  <div className="bg-amber-500/10 p-2 rounded-xl border border-amber-500/20">
+                    <div className="text-[9px] uppercase font-bold text-amber-500">Giữ Chỗ</div>
+                    <div className="text-xs font-bold text-amber-600 dark:text-amber-400 mt-0.5">
                       {formatNumber(resv)}
                     </div>
                   </div>
                   <div className="bg-cyan-500/10 p-2 rounded-xl border border-cyan-500/20">
-                    <div className="text-[9px] uppercase font-bold text-cyan-400">Khả Dụng</div>
+                    <div className="text-[9px] uppercase font-bold text-cyan-500">Khả Dụng</div>
                     <div className="text-xs font-bold text-cyan-600 dark:text-cyan-400 mt-0.5">
                       {formatNumber(avail)}
                     </div>
@@ -246,12 +246,12 @@ function InventoryTab({ data, currentUser }) {
                     </td>
                     <td className="py-3 px-4">
                       <div className="font-semibold text-slate-700 dark:text-slate-300">{wh?.name}</div>
-                      <div className="font-mono text-[10px] text-indigo-600 dark:text-indigo-400">{bin?.code || 'Kệ mặc định'}</div>
+                      <div className="font-mono text-[10px] text-cyan-600 dark:text-cyan-400">{bin?.code || 'Kệ mặc định'}</div>
                     </td>
                     <td className="py-3 px-3 text-right font-mono font-bold text-slate-900 dark:text-white">
                       {formatNumber(phys)} <span className="text-[10px] text-slate-400 font-normal">{uom?.name}</span>
                     </td>
-                    <td className="py-3 px-3 text-right font-mono text-purple-600 dark:text-purple-400 font-bold">
+                    <td className="py-3 px-3 text-right font-mono text-amber-600 dark:text-amber-400 font-bold">
                       {formatNumber(resv)}
                     </td>
                     <td className="py-3 px-3 text-right font-mono font-bold">

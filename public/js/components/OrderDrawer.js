@@ -1,10 +1,10 @@
-/*
-Fact-Forcing Gate Details:
-1. Importers/Callers: public/index.html via <script type="text/babel" src="/js/components/OrderDrawer.js"></script>
-2. Affected API: Client-side Order Detail Adaptive iOS Bottom Sheet & Desktop Slide-over Drawer (window.WMS_COMPONENTS.OrderDrawer), handlers.onRequestDelete
-3. Data schemas: Uses order, data.boms, data.stockBalances, data.skus, data.uoms, data.goodsDispatchNotes, data.purchaseOrders, data.pickupRegistrations, currentUser
-4. User's verbatim instruction: "sửa lại toàn bộ giao diện đnăg nahạp cho sáng sủa nhiều hiệu ứng sinh động tương tác và phông chữ sủa lại cho phù hợp với tiếng việt trong các mục và các trang hãy tối ưu hóa toàn bộ chữ khôgn viết dài dòng lan man hãy tập chung vào các ý chính và hãy tôn trong người dùng thiết không dùng icon quê mùa và đặc biệt không dùng phông nền màu đen hoặc trắng hãy mix nhiều màu lại và mang phong cách sáng sủa nhìn vào không biết trang web là ai làm"
-*/
+/**
+ * Fact-Forcing Gate Details:
+ * 1. Importers/Callers: public/index.html, public/js/app.js
+ * 2. Affected API: window.WMS_COMPONENTS.OrderDrawer
+ * 3. Data schemas: { order, data: { boms, stockBalances, skus, uoms, goodsDispatchNotes, purchaseOrders, pickupRegistrations }, currentUser, handlers, onOpenPrintPreview }
+ * 4. User's verbatim instruction: "giao diện quá hỗn loạn không biết ở trong có cái gì quá loạn và chữ thì nhiều và hỗn loạn hãy kiểm tra lại vè mấy cái huy chương hay icon tương tự đi phèn quá"
+ */
 
 function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOpenPrintPreview }) {
   const [activeTab, setActiveTab] = React.useState('bom');
@@ -60,7 +60,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
         <div className="p-4 sm:p-5 border-b border-slate-200/50 dark:border-slate-800 bg-white/40 dark:bg-slate-900/40 flex items-start justify-between gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1.5 sm:gap-2 mb-1.5 flex-wrap">
-              <span className="font-mono font-bold text-xs sm:text-sm bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 px-2.5 py-0.5 rounded-lg border border-indigo-500/20">
+              <span className="font-mono font-bold text-xs sm:text-sm bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 px-2.5 py-0.5 rounded-lg border border-cyan-500/20">
                 {order.code}
               </span>
               <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${currentStatus.color}`}>
@@ -91,7 +91,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
         <div className="px-4 sm:px-5 py-2.5 bg-white/30 dark:bg-slate-900/30 border-b border-slate-200/50 dark:border-slate-800">
           <div className="flex items-center justify-between text-[11px] mb-1.5 font-mono">
             <span className="font-bold text-slate-600 dark:text-slate-300 font-sans">Tiến trình vòng đời:</span>
-            <span className="font-bold text-indigo-600 dark:text-indigo-400">Bước {currentStatus.step}/9 ({currentStatus.label})</span>
+            <span className="font-bold text-cyan-600 dark:text-cyan-400">Bước {currentStatus.step}/9 ({currentStatus.label})</span>
           </div>
           <div className="w-full bg-slate-200/80 dark:bg-slate-800 h-2 rounded-full overflow-hidden flex shadow-inner">
             {Array.from({ length: 9 }).map((_, i) => (
@@ -99,9 +99,9 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
                 key={i}
                 className={`flex-1 h-full border-r border-white/40 dark:border-slate-900 ${
                   i < currentStatus.step
-                    ? 'bg-gradient-to-r from-indigo-500 to-purple-600'
+                    ? 'bg-cyan-500 dark:bg-cyan-400'
                     : i === currentStatus.step - 1
-                    ? 'bg-indigo-400 animate-pulse'
+                    ? 'bg-cyan-400 animate-pulse'
                     : 'bg-transparent'
                 }`}
               ></div>
@@ -110,15 +110,15 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
         </div>
 
         {/* Allocation Bar */}
-        <div className="px-4 sm:px-5 py-2 bg-indigo-50/40 dark:bg-indigo-950/20 border-b border-indigo-100/60 dark:border-indigo-900/40 flex items-center justify-between gap-3 flex-wrap">
+        <div className="px-4 sm:px-5 py-2 bg-cyan-50/40 dark:bg-cyan-950/20 border-b border-cyan-100/60 dark:border-cyan-900/40 flex items-center justify-between gap-3 flex-wrap">
           <div className="flex items-center gap-2">
-            <i className="fa-solid fa-boxes-stacked text-indigo-600 dark:text-indigo-400 text-xs"></i>
+            <i className="fa-solid fa-boxes-stacked text-cyan-600 dark:text-cyan-400 text-xs"></i>
             <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">Tỷ lệ giữ chỗ vật tư BOM:</span>
           </div>
           <div className="flex items-center gap-2.5">
             <div className="w-24 sm:w-32 bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
               <div
-                className={`h-full transition-all ${allocPercent === 100 ? 'bg-emerald-500' : 'bg-indigo-600'}`}
+                className={`h-full transition-all ${allocPercent === 100 ? 'bg-emerald-500' : 'bg-cyan-600'}`}
                 style={{ width: `${allocPercent}%` }}
               ></div>
             </div>
@@ -134,7 +134,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
             onClick={() => setActiveTab('bom')}
             className={`py-2.5 border-b-2 flex items-center gap-1.5 transition whitespace-nowrap cursor-pointer active:scale-95 ${
               activeTab === 'bom'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                ? 'border-cyan-600 text-cyan-600 dark:text-cyan-400'
                 : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
@@ -144,7 +144,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
             onClick={() => setActiveTab('gdn')}
             className={`py-2.5 border-b-2 flex items-center gap-1.5 transition whitespace-nowrap cursor-pointer active:scale-95 ${
               activeTab === 'gdn'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                ? 'border-cyan-600 text-cyan-600 dark:text-cyan-400'
                 : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
@@ -154,7 +154,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
             onClick={() => setActiveTab('schedule')}
             className={`py-2.5 border-b-2 flex items-center gap-1.5 transition whitespace-nowrap cursor-pointer active:scale-95 ${
               activeTab === 'schedule'
-                ? 'border-indigo-600 text-indigo-600 dark:text-indigo-400'
+                ? 'border-cyan-600 text-cyan-600 dark:text-cyan-400'
                 : 'border-transparent text-slate-500 hover:text-slate-800 dark:hover:text-slate-200'
             }`}
           >
@@ -173,7 +173,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
                   <p className="text-xs text-slate-500 font-medium">Đơn hàng này chưa có Định mức vật tư (BOM) được nạp.</p>
                   <button
                     onClick={() => handlers.onOpenBomModal(order)}
-                    className="mt-3 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-500/20 cursor-pointer active:scale-95"
+                    className="mt-3 px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs cursor-pointer active:scale-95"
                   >
                     <i className="fa-solid fa-plus mr-1"></i> Nạp BOM Ngay
                   </button>
@@ -183,7 +183,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
                   <div className="flex items-center justify-between bg-white/60 dark:bg-slate-800/50 p-3 rounded-2xl border border-slate-200/80 dark:border-slate-700">
                     <div>
                       <span className="text-xs font-bold text-slate-800 dark:text-slate-100 font-display">BOM Version {latestBom.version}</span>
-                      <span className="ml-2 text-[10px] font-mono bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded font-bold">
+                      <span className="ml-2 text-[10px] font-mono bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 px-2 py-0.5 rounded font-bold">
                         {latestBom.status}
                       </span>
                     </div>
@@ -205,7 +205,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
                       return (
                         <div key={item.id} className="p-3 bg-white/60 dark:bg-slate-800/60 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 space-y-1.5 shadow-xs">
                           <div className="flex items-center justify-between">
-                            <span className="font-mono font-bold text-xs text-indigo-600 dark:text-indigo-400">{sku?.code || 'SKU'}</span>
+                            <span className="font-mono font-bold text-xs text-cyan-600 dark:text-cyan-400">{sku?.code || 'SKU'}</span>
                             {isFulfilled ? (
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
                                 Đủ 100%
@@ -222,9 +222,9 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
                               <div className="text-[9px] text-slate-400">Định mức</div>
                               <div className="font-bold">{req} <span className="text-[9px] font-normal">{uom?.name}</span></div>
                             </div>
-                            <div className="bg-indigo-50 dark:bg-indigo-950/40 p-1 rounded-xl">
-                              <div className="text-[9px] text-indigo-400">Đã giữ</div>
-                              <div className="font-bold text-indigo-600 dark:text-indigo-400">{resv}</div>
+                            <div className="bg-cyan-50 dark:bg-cyan-950/40 p-1 rounded-xl">
+                              <div className="text-[9px] text-cyan-600">Đã giữ</div>
+                              <div className="font-bold text-cyan-600 dark:text-cyan-400">{resv}</div>
                             </div>
                             <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                               <div className="text-[9px] text-slate-400">Delta</div>
@@ -268,7 +268,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
                               <td className="py-2.5 px-2 text-right font-mono font-bold text-slate-800 dark:text-slate-200">
                                 {req} <span className="text-[10px] text-slate-400 font-normal">{uom?.name}</span>
                               </td>
-                              <td className="py-2.5 px-2 text-right font-mono text-indigo-600 dark:text-indigo-400 font-bold">
+                              <td className="py-2.5 px-2 text-right font-mono text-cyan-600 dark:text-cyan-400 font-bold">
                                 {resv}
                               </td>
                               <td className="py-2.5 px-2 text-right font-mono font-bold">
@@ -311,7 +311,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-mono font-bold text-xs text-slate-900 dark:text-white">{gdn.code}</span>
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 font-bold font-mono">
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-cyan-100 dark:bg-cyan-950 text-cyan-700 dark:text-cyan-300 font-bold font-mono">
                           {gdn.status}
                         </span>
                       </div>
@@ -324,7 +324,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
                         onClick={() => onOpenPrintPreview('GDN', gdn)}
                         className="px-2.5 py-1 bg-white dark:bg-slate-900 hover:bg-slate-100 text-slate-700 dark:text-slate-200 rounded-xl border border-slate-300 dark:border-slate-700 text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
                       >
-                        <i className="fa-solid fa-print text-indigo-500"></i> In PXK
+                        <i className="fa-solid fa-print text-cyan-500"></i> In PXK
                       </button>
                     </div>
                   </div>
@@ -410,7 +410,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
             {order.status === 'CHO_BOM' && (
               <button
                 onClick={() => { onClose(); handlers.onOpenBomModal(order); }}
-                className="px-3.5 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-500/20 cursor-pointer active:scale-95"
+                className="px-3.5 py-2 bg-slate-900 hover:bg-slate-800 text-white dark:bg-cyan-500 dark:hover:bg-cyan-400 dark:text-slate-950 font-bold text-xs rounded-xl shadow-xs cursor-pointer active:scale-95"
               >
                 <i className="fa-solid fa-file-arrow-up mr-1"></i> Nạp BOM
               </button>
@@ -418,7 +418,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
             {latestBom && latestBom.status === 'SUBMITTED' && (
               <button
                 onClick={() => { onClose(); handlers.onVerifyBom(latestBom.id); }}
-                className="px-3.5 py-2 bg-gradient-to-r from-indigo-600 to-purple-700 hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-md shadow-indigo-500/20 cursor-pointer active:scale-95"
+                className="px-3.5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer active:scale-95"
               >
                 <i className="fa-solid fa-calculator mr-1"></i> Khóa Giữ Chỗ
               </button>
@@ -426,7 +426,7 @@ function OrderDrawer({ order, isOpen, onClose, data, currentUser, handlers, onOp
             {order.status === 'SAN_SANG_XUAT' && (
               <button
                 onClick={() => { onClose(); handlers.onOpenPickupModal(order); }}
-                className="px-3.5 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 hover:opacity-90 text-white font-bold text-xs rounded-xl shadow-md shadow-emerald-500/20 cursor-pointer active:scale-95"
+                className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer active:scale-95"
               >
                 <i className="fa-solid fa-calendar-plus mr-1"></i> Đăng Ký Ca
               </button>
