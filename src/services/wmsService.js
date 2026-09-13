@@ -1433,21 +1433,84 @@ class WmsService {
 
     const trimmedInput = usernameOrEmail.trim().toLowerCase();
 
-    // Ánh xạ các tên viết tắt thông dụng sang username chuẩn trong hệ thống
+    // Ánh xạ các tên viết tắt, vai trò và email thông dụng sang 9 nhân sự chính thức của MEVN
     const USER_ALIASES = {
-      'admin': 'admin',
-      'thukho': 'thukho_dien',
-      'thukho1': 'thukho_dien',
-      'thukho2': 'thukho_co',
-      'kythuat': 'kythuat_bom',
-      'kythuat1': 'kythuat_bom',
-      'kythuat2': 'kythuat_dien',
-      'muahang': 'muahang_po',
-      'sanxuat': 'sanxuat_to1',
-      'sanxuat1': 'sanxuat_to1',
-      'sanxuat2': 'sanxuat_to2',
-      'ketoan': 'ketoan_kho',
-      'sale': 'sale_admin',
+      // 1. Admin: Đỗ Kiên (kien@gmail.com)
+      'admin': 'kien',
+      'kien': 'kien',
+      'kien.do': 'kien',
+      'dokie': 'kien',
+      'kien@gmail.com': 'kien',
+
+      // 2. Thủ kho: Nguyễn Thị Tuất (tuat@gmail.com)
+      'thukho': 'tuat',
+      'thukho_dien': 'tuat',
+      'thukho_dong': 'tuat',
+      'tuat': 'tuat',
+      'tuat.nguyen': 'tuat',
+      'nguyenthituat': 'tuat',
+      'tuat@gmail.com': 'tuat',
+
+      // 3. Kỹ thuật: Bùi Thế Vũ (vu@gmail.com)
+      'kythuat': 'vu',
+      'kythuat1': 'vu',
+      'kythuat_bom': 'vu',
+      'kythuat_vu': 'vu',
+      'vu': 'vu',
+      'vu.bui': 'vu',
+      'buithevu': 'vu',
+      'vu@gmail.com': 'vu',
+
+      // 4. Kỹ thuật: Đỗ Như Mạnh (manh@gmail.com)
+      'kythuat2': 'manh',
+      'kythuat_manh': 'manh',
+      'manh': 'manh',
+      'manh.do': 'manh',
+      'donhumanh': 'manh',
+      'manh@gmail.com': 'manh',
+
+      // 5. Kế toán & Quản trị Đơn: Khuất Thị Ly Na (lyna@gmail.com)
+      'ketoan': 'lyna',
+      'sale': 'lyna',
+      'sale_admin': 'lyna',
+      'ketoan_kho': 'lyna',
+      'lyna': 'lyna',
+      'na': 'lyna',
+      'lyna.khuat': 'lyna',
+      'khuatthilyna': 'lyna',
+      'lyna@gmail.com': 'lyna',
+
+      // 6. Phụ mua (Thu mua): Khất Thị Phượng (phuong@gmail.com)
+      'muahang': 'phuong',
+      'muahang_po': 'phuong',
+      'phuong': 'phuong',
+      'phuong.khuat': 'phuong',
+      'khatthiphuong': 'phuong',
+      'phuong@gmail.com': 'phuong',
+
+      // 7. Kỹ thuật: Lê Thái (lethai@gmail.com)
+      'kythuat3': 'lethai',
+      'kythuat_lethai': 'lethai',
+      'lethai': 'lethai',
+      'thai.le': 'lethai',
+      'lethai@gmail.com': 'lethai',
+
+      // 8. Kỹ thuật: Nguyễn Ngọc Thái (ngocthai@gmail.com)
+      'kythuat4': 'ngocthai',
+      'kythuat_ngocthai': 'ngocthai',
+      'ngocthai': 'ngocthai',
+      'thai.nguyen': 'ngocthai',
+      'nguyenngocthai': 'ngocthai',
+      'ngocthai@gmail.com': 'ngocthai',
+
+      // 9. Sản xuất: Vương Duy (duy@gmail.com)
+      'sanxuat': 'duy',
+      'sanxuat_to1': 'duy',
+      'sanxuat_to2': 'duy',
+      'duy': 'duy',
+      'duy.vuong': 'duy',
+      'vuongduy': 'duy',
+      'duy@gmail.com': 'duy',
     };
 
     const targetUsername = USER_ALIASES[trimmedInput] || trimmedInput;
@@ -1459,6 +1522,7 @@ class WmsService {
           { username: { equals: trimmedInput, mode: 'insensitive' } },
           { username: { equals: targetUsername, mode: 'insensitive' } },
           { email: { equals: trimmedInput, mode: 'insensitive' } },
+          { email: { equals: `${trimmedInput}@gmail.com`, mode: 'insensitive' } },
         ],
       },
     });

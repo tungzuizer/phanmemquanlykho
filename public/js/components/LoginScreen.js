@@ -291,11 +291,11 @@ function LoginScreen({ onLoginSuccess, darkMode, setDarkMode }) {
             onClick={() => setShowHelpModal(false)}
             className="fixed inset-0 bg-slate-950/75 backdrop-blur-md"
           ></div>
-          <div className="relative w-full max-w-md bg-slate-900/95 backdrop-blur-2xl border border-cyan-400/30 rounded-3xl p-6 shadow-2xl z-10 space-y-4 text-white max-h-[90vh] overflow-y-auto">
+          <div className="relative w-full max-w-lg bg-slate-900/95 backdrop-blur-2xl border border-cyan-400/30 rounded-3xl p-6 shadow-2xl z-10 space-y-4 text-white max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-cyan-400">
-                <i className="fa-solid fa-circle-question text-lg"></i>
-                <h3 className="font-display font-bold text-sm text-white">TÀI KHOẢN MẪU & TRỢ GIÚP</h3>
+                <i className="fa-solid fa-users text-lg"></i>
+                <h3 className="font-display font-bold text-sm text-white">DANH SÁCH NHÂN SỰ MEVN</h3>
               </div>
               <button
                 onClick={() => setShowHelpModal(false)}
@@ -306,18 +306,21 @@ function LoginScreen({ onLoginSuccess, darkMode, setDarkMode }) {
             </div>
 
             <p className="text-xs text-cyan-200 leading-relaxed font-medium">
-              Bấm nhanh vào một tài khoản bên dưới để tự động điền thông tin đăng nhập:
+              Bấm chọn nhân sự bên dưới để tự động điền tài khoản đăng nhập vào hệ thống:
             </p>
 
-            {/* Quick Demo Accounts Selector */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            {/* Quick Demo Accounts Selector (9 Official MEVN Staff) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               {[
-                { name: 'Ban Giám Đốc', user: 'admin', role: 'ADMIN', color: 'border-amber-400/40 text-amber-300' },
-                { name: 'Thủ Kho Điện', user: 'thukho', role: 'THU_KHO', color: 'border-cyan-400/40 text-cyan-300' },
-                { name: 'Kỹ Thuật BOM', user: 'kythuat', role: 'KY_THUAT', color: 'border-teal-400/40 text-teal-300' },
-                { name: 'Phòng Thu Mua', user: 'muahang', role: 'MUA_HANG', color: 'border-emerald-400/40 text-emerald-300' },
-                { name: 'Kế Toán Kho', user: 'ketoan', role: 'KE_TOAN', color: 'border-sky-400/40 text-sky-300' },
-                { name: 'Tổ Trưởng SX', user: 'sanxuat', role: 'SAN_XUAT', color: 'border-blue-400/40 text-blue-300' },
+                { name: 'Đỗ Kiên', roleName: 'Ban Giám Đốc (Admin)', user: 'kien', email: 'kien@gmail.com', role: 'ADMIN', color: 'border-amber-400/50 bg-amber-500/10 text-amber-300' },
+                { name: 'Nguyễn Thị Tuất', roleName: 'Thủ Kho', user: 'tuat', email: 'tuat@gmail.com', role: 'THU_KHO', color: 'border-cyan-400/50 bg-cyan-500/10 text-cyan-300' },
+                { name: 'Bùi Thế Vũ', roleName: 'Kỹ Thuật BOM', user: 'vu', email: 'vu@gmail.com', role: 'KY_THUAT', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
+                { name: 'Đỗ Như Mạnh', roleName: 'Kỹ Thuật BOM', user: 'manh', email: 'manh@gmail.com', role: 'KY_THUAT', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
+                { name: 'Khuất Thị Ly Na', roleName: 'Kế Toán & Đơn Hàng', user: 'lyna', email: 'lyna@gmail.com', role: 'KE_TOAN', color: 'border-sky-400/50 bg-sky-500/10 text-sky-300' },
+                { name: 'Khất Thị Phượng', roleName: 'Phụ Mua (Thu Mua)', user: 'phuong', email: 'phuong@gmail.com', role: 'MUA_HANG', color: 'border-emerald-400/50 bg-emerald-500/10 text-emerald-300' },
+                { name: 'Lê Thái', roleName: 'Kỹ Thuật BOM', user: 'lethai', email: 'lethai@gmail.com', role: 'KY_THUAT', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
+                { name: 'Nguyễn Ngọc Thái', roleName: 'Kỹ Thuật BOM', user: 'ngocthai', email: 'ngocthai@gmail.com', role: 'KY_THUAT', color: 'border-teal-400/50 bg-teal-500/10 text-teal-300' },
+                { name: 'Vương Duy', roleName: 'Tổ Trưởng Sản Xuất', user: 'duy', email: 'duy@gmail.com', role: 'SAN_XUAT', color: 'border-blue-400/50 bg-blue-500/10 text-blue-300' },
               ].map((acc) => (
                 <button
                   key={acc.user}
@@ -328,29 +331,29 @@ function LoginScreen({ onLoginSuccess, darkMode, setDarkMode }) {
                     setShowHelpModal(false);
                     setErrorMsg('');
                   }}
-                  className={`p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border ${acc.color} text-left transition flex flex-col justify-between cursor-pointer`}
+                  className={`p-2.5 rounded-2xl border ${acc.color} hover:brightness-125 text-left transition flex flex-col justify-between cursor-pointer group`}
                 >
-                  <span className="font-bold text-white text-[11px]">{acc.name}</span>
-                  <div className="flex items-center justify-between text-[10px] opacity-80 mt-1 font-mono">
-                    <span>{acc.user}</span>
-                    <span>Pass: admin</span>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-white text-xs">{acc.name}</span>
+                    <span className="text-[10px] font-semibold px-1.5 py-0.5 rounded-full bg-white/10">{acc.role}</span>
+                  </div>
+                  <div className="text-[11px] opacity-90 mt-1 text-cyan-200">{acc.roleName}</div>
+                  <div className="flex items-center justify-between text-[10px] opacity-75 mt-1.5 font-mono pt-1 border-t border-white/10">
+                    <span>{acc.email}</span>
+                    <span className="text-amber-300 font-bold">Pass: admin</span>
                   </div>
                 </button>
               ))}
             </div>
 
-            <div className="p-3.5 bg-white/5 rounded-2xl border border-white/10 text-xs space-y-1.5 font-medium mt-2">
-              <div className="flex items-center justify-between">
-                <span className="text-cyan-300">Bộ phận:</span>
-                <span className="text-white font-bold">Phòng CNTT MEVN</span>
+            <div className="p-3 bg-white/5 rounded-2xl border border-white/10 text-xs space-y-1 font-medium mt-2">
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-cyan-300">Quản trị viên IT:</span>
+                <span className="text-white font-bold">Đỗ Kiên (kien@gmail.com)</span>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-cyan-300">Hotline:</span>
-                <span className="text-amber-300 font-mono font-bold">024 3999 xxxx</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-cyan-300">Email:</span>
-                <span className="text-emerald-300 font-mono font-bold">it@maxelectric.vn</span>
+              <div className="flex items-center justify-between text-[11px]">
+                <span className="text-cyan-300">Mật khẩu chuẩn:</span>
+                <span className="text-amber-300 font-mono font-bold">admin (hoặc mevn@2026)</span>
               </div>
             </div>
 

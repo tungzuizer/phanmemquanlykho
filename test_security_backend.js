@@ -108,11 +108,11 @@ async function runSecuritySuite() {
   });
 
   try {
-    // Tokens for different roles
-    const adminToken = generateToken({ id: 'usr-admin-1', username: 'admin', role: 'ADMIN', fullName: 'Ban Giám Đốc' });
-    const techToken = generateToken({ id: 'usr-tech-1', username: 'kythuat', role: 'KY_THUAT', fullName: 'Kỹ Sư Trưởng' });
-    const whToken = generateToken({ id: 'usr-wh-1', username: 'thukho', role: 'THU_KHO', fullName: 'Trưởng Kho' });
-    const buyerToken = generateToken({ id: 'usr-buyer-1', username: 'muahang', role: 'MUA_HANG', fullName: 'Bộ Phận Thu Mua' });
+    // Tokens for 9 MEVN official roles
+    const adminToken = generateToken({ id: 'usr-admin-1', username: 'kien', role: 'ADMIN', fullName: 'Đỗ Kiên' });
+    const techToken = generateToken({ id: 'usr-tech-1', username: 'vu', role: 'KY_THUAT', fullName: 'Bùi Thế Vũ' });
+    const whToken = generateToken({ id: 'usr-wh-1', username: 'tuat', role: 'THU_KHO', fullName: 'Nguyễn Thị Tuất' });
+    const buyerToken = generateToken({ id: 'usr-buyer-1', username: 'phuong', role: 'MUA_HANG', fullName: 'Khất Thị Phượng' });
 
     // 3.1: Chặn truy cập không có Token (401 Unauthorized)
     const unauthRes = await makeRequest({
